@@ -8,6 +8,7 @@ type DocumentStore = {
   onSetDocument: (doc: Doc) => void
 }
 
+// TODO: Extracts a hook for all common behaviors of the current document
 export const useDocument = create<DocumentStore>((set) => ({
   document: undefined,
   onSetDocument: (doc) => {
