@@ -8,6 +8,7 @@ import { SearchCommand } from '@/components/search-command'
 import { useSession } from '@/hooks/use-session'
 import Navigation from './components/navigation'
 
+// TODO: Change the navigation to useTransition
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useSession()
 
