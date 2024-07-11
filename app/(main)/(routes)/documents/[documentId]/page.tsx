@@ -28,6 +28,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
 
   const debounceOnChange = debounce(onChange, 1000)
 
+  // TODO: perf these fetch way,because it has resulted in a network waterfall
   useEffect(() => {
     const fetchDocument = async () => {
       const response = await getById(params.documentId)

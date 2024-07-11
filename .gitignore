@@ -37,6 +37,4 @@ yarn-error.log*
 next-env.d.ts
 
 # Editor
-.vscode/laf-exec.json
-.vscode/laf.json
 .idea

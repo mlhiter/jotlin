@@ -1,7 +1,3 @@
-package.json
-tsconfig.json
-types
 node_modules
+.env
 .app.yaml
-package.json
-package-lock.json
