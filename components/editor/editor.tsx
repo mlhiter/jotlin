@@ -1,6 +1,7 @@
 'use client'
 
 import * as Y from 'yjs'
+import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { useTheme } from 'next-themes'
 import { locales } from '@blocknote/core'
@@ -61,24 +62,22 @@ const Editor = ({
         : undefined,
   })
 
-  // FIXME: 粘贴大量markdown文本时会出现粘贴两次的情况
-  // monitor clipboard,when last paste item is image,update currentBlock;
-  // when last paste item is md-text,insert after currentBlock.
+  // monitor clipboard,when last paste item is md-text,insert after currentBlock.
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
-      event.preventDefault()
       const items = event.clipboardData ? event.clipboardData.items : []
-
       const item = items[items.length - 1]
       const currentBlock = editor.getTextCursorPosition().block
 
-      if (item.kind === 'string') {
+      // markhtml will be parsed to blocks, so we only handle text/plain
+      if (item.kind === 'string' && item.type === 'text/plain') {
         item.getAsString(async (markdown) => {
-          console.log(markdown)
-          const markdownHtml = await marked.parse(markdown, { breaks: true })
-          console.log(markdownHtml)
-
-          const blocksFromHTML = await editor.tryParseHTMLToBlocks(markdownHtml)
+          const markdownHtml = await marked.parse(
+            markdown.replace(/^[\u200B\u200C\u200D\u200E\u200F\uFEFF]/, ''),
+            { breaks: true, async: true }
+          )
+          const cleanedHtml = DOMPurify.sanitize(markdownHtml)
+          const blocksFromHTML = await editor.tryParseHTMLToBlocks(cleanedHtml)
           editor.replaceBlocks([currentBlock], blocksFromHTML)
         })
       }
