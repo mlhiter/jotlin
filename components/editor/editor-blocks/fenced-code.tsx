@@ -52,7 +52,7 @@ const fencedCodeBlock = createReactBlockSpec(
       const language = block.props.language
       const code = block.props.code
       return (
-        <div className="relative rounded-md bg-foreground/5 p-2">
+        <div className="relative w-full rounded-md bg-foreground/5 p-2">
           <Select
             defaultValue={language}
             onValueChange={(newValue) => {

@@ -1,18 +1,17 @@
 'use client'
 
-import {
-  BlockNoteView,
-  useCreateBlockNote,
-  SuggestionMenuController,
-} from '@blocknote/react'
 import * as Y from 'yjs'
 import { marked } from 'marked'
 import { useTheme } from 'next-themes'
+import { locales } from '@blocknote/core'
 import { WebrtcProvider } from 'y-webrtc'
 import { useCallback, useEffect } from 'react'
+import { BlockNoteView } from '@blocknote/mantine'
 import { filterSuggestionItems } from '@blocknote/core'
+import { useCreateBlockNote, SuggestionMenuController } from '@blocknote/react'
 
-import '@blocknote/react/style.css'
+import '@blocknote/mantine/style.css'
+import '@blocknote/core/fonts/inter.css'
 
 import { upload } from '@/api/image'
 import { useSession } from '@/hooks/use-session'
@@ -48,6 +47,7 @@ const Editor = ({
     schema: blockSchema,
     initialContent: initialContent ? JSON.parse(initialContent) : undefined,
     uploadFile: handleUpload,
+    dictionary: locales.en,
     collaboration:
       webrtcProvider && ydoc
         ? {
@@ -66,21 +66,13 @@ const Editor = ({
   // when last paste item is md-text,insert after currentBlock.
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
+      event.preventDefault()
       const items = event.clipboardData ? event.clipboardData.items : []
 
       const item = items[items.length - 1]
       const currentBlock = editor.getTextCursorPosition().block
 
-      if (item.kind === 'file' && item.type.match('^image/')) {
-        const file = item.getAsFile() as File
-
-        handleUpload(file).then((imageUrl: string) => {
-          editor.updateBlock(currentBlock, {
-            type: 'image',
-            props: { url: imageUrl },
-          })
-        })
-      } else if (item.kind === 'string') {
+      if (item.kind === 'string') {
         item.getAsString(async (markdown) => {
           console.log(markdown)
           const markdownHtml = await marked.parse(markdown, { breaks: true })
@@ -102,8 +94,8 @@ const Editor = ({
   return (
     <div>
       <BlockNoteView
-        editable={editable}
         editor={editor}
+        editable={editable}
         theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
         onChange={() => {
           onChange(JSON.stringify(editor.document, null, 2))
