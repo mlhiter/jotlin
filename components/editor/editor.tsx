@@ -9,7 +9,11 @@ import { WebrtcProvider } from 'y-webrtc'
 import { useCallback, useEffect } from 'react'
 import { BlockNoteView } from '@blocknote/mantine'
 import { filterSuggestionItems } from '@blocknote/core'
-import { useCreateBlockNote, SuggestionMenuController } from '@blocknote/react'
+import {
+  useCreateBlockNote,
+  SuggestionMenuController,
+  FormattingToolbarController,
+} from '@blocknote/react'
 
 import '@blocknote/mantine/style.css'
 import '@blocknote/core/fonts/inter.css'
@@ -18,6 +22,7 @@ import { upload } from '@/api/image'
 import { useSession } from '@/hooks/use-session'
 import { getRandomLightColor } from '@/lib/utils'
 import { blockSchema, getCustomSlashMenuItems } from './editor-blocks'
+import { formattingToolbar } from './editor-toolbars'
 
 interface EditorProps {
   onChange: (value: string) => void
@@ -99,6 +104,7 @@ const Editor = ({
         onChange={() => {
           onChange(JSON.stringify(editor.document, null, 2))
         }}
+        formattingToolbar={false}
         slashMenu={false}>
         <SuggestionMenuController
           triggerCharacter={'/'}
@@ -106,6 +112,7 @@ const Editor = ({
             filterSuggestionItems(getCustomSlashMenuItems(editor), query)
           }
         />
+        <FormattingToolbarController formattingToolbar={formattingToolbar} />
       </BlockNoteView>
     </div>
   )
