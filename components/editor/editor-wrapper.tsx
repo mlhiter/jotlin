@@ -3,7 +3,7 @@
 import * as Y from 'yjs'
 import dynamic from 'next/dynamic'
 import { WebrtcProvider } from 'y-webrtc'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface EditorWrapperProps {
   onChange: (value: string) => void
@@ -18,10 +18,9 @@ export const EditorWrapper = ({
   documentId,
   isShared,
 }: EditorWrapperProps) => {
-  const Editor = useMemo(
-    () => dynamic(() => import('@/components/editor/editor'), { ssr: false }),
-    []
-  )
+  const Editor = dynamic(() => import('@/components/editor/editor'), {
+    ssr: false,
+  })
   const [ydoc, setYdoc] = useState<Y.Doc>()
   const [webrtcProvider, setWebrtcProvider] = useState<
     WebrtcProvider | undefined
