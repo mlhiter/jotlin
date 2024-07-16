@@ -71,6 +71,12 @@ const Editor = ({
     const handlePaste = (event: ClipboardEvent) => {
       const items = event.clipboardData ? event.clipboardData.items : []
       const item = items[items.length - 1]
+
+      // fenced code return directly, no need to parse
+      if (editor.getTextCursorPosition().block.type === 'fencedCode') {
+        return
+      }
+
       const currentBlock = editor.getTextCursorPosition().block
 
       // markhtml will be parsed to blocks, so we only handle text/plain
