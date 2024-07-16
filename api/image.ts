@@ -5,16 +5,17 @@ interface ImageUpload {
   replaceTargetUrl?: string
 }
 
-export const upload = ({ file, replaceTargetUrl }: ImageUpload) => {
+export const upload = async ({ file, replaceTargetUrl }: ImageUpload) => {
   const formData = new FormData()
   formData.append('image', file)
   formData.append('replaceTargetUrl', replaceTargetUrl || '')
 
-  return axios.post('/api/image/upload', formData, {
+  const res = await axios.post('/api/image/upload', formData, {
     headers: {
       'Content-type': 'multipart/form-data',
     },
   })
+  return res.data
 }
 
 export const deleteImage = (url: string) => {

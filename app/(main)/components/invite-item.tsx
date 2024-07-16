@@ -10,11 +10,10 @@ import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 
 import { useSession } from '@/hooks/use-session'
-import { Doc, getBasicInfoById } from '@/api/document'
+import { useBasicInfoById } from '@/api/document'
 import { User, getUserInfoByEmail } from '@/api/user'
 import { Invitation, update } from '@/api/invitation'
 
-type DocumentInfo = Pick<Doc, 'title' | 'icon'>
 type UserInfo = Pick<User, 'username' | 'imageUrl'>
 
 interface InviteItemProps {
@@ -32,25 +31,11 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
     isReplied,
     isValid,
   } = invitation
-  const [documentInfo, setDocumentInfo] = useState<DocumentInfo | undefined>(
-    undefined
-  )
+  const { documentInfo } = useBasicInfoById(documentId)
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>(undefined)
 
   useEffect(() => {
-    const fetchDocument = async () => {
-      try {
-        const response = await getBasicInfoById(documentId)
-        setDocumentInfo(response.data)
-      } catch (error) {
-        console.error('Error fetching documentInfo:', error)
-      }
-    }
-
-    fetchDocument()
-  }, [documentId])
-
-  useEffect(() => {
+    // TODO: 逻辑看不懂了
     if (collaboratorEmail === user?.emailAddress) {
       const fetchUserInfo = async () => {
         try {
@@ -68,11 +53,6 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
   const accept = async () => {
     try {
       await update({ _id, isAccepted: true })
-      mutate(
-        (key) =>
-          typeof key === 'string' &&
-          key.startsWith('/api/invitation/get-by-email')
-      )
     } catch (error) {
       console.log(error)
     }
@@ -80,11 +60,6 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
   const reject = async () => {
     try {
       await update({ _id, isAccepted: false })
-      mutate(
-        (key) =>
-          typeof key === 'string' &&
-          key.startsWith('/api/invitation/get-by-email')
-      )
     } catch (error) {
       console.log(error)
     }

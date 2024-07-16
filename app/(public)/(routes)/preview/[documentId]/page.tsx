@@ -7,8 +7,7 @@ import Cover from '@/components/cover'
 import Toolbar from '@/components/toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { update } from '@/api/document'
-import { useDocumentById } from '@/hooks/use-document-by-id'
+import { useDocumentById, update } from '@/api/document'
 
 interface DocumentIdPageProps {
   params: {

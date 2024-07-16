@@ -1,6 +1,5 @@
 'use client'
 
-import useSWR from 'swr'
 import { File } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
@@ -14,17 +13,14 @@ import {
   CommandList,
 } from '@/components/ui/command'
 
-import axios from '@/lib/axios'
-import { Doc } from '@/api/document'
 import { useSearch } from '@/stores/use-search'
+import { Doc, useSearchDocuments } from '@/api/document'
 import { useSession } from '@/hooks/use-session'
 
 export const SearchCommand = () => {
   const { user } = useSession()
   const router = useRouter()
-
-  const fetcher = (url: string) => axios.get(url).then((res) => res.data)
-  const { data: documents } = useSWR('/api/document/get-search', fetcher)
+  const { documents } = useSearchDocuments()
 
   const [isMounted, setIsMounted] = useState(false)
 

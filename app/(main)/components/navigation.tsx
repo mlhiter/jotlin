@@ -129,13 +129,8 @@ const Navigation = () => {
   const handleCreate = async () => {
     try {
       toast.loading('Create a new note...')
-      const response = await create('Untitled', '')
-      const documentId = response.data
+      const documentId = await create('Untitled', '')
       toast.success('New note created!')
-      mutate(
-        (key) =>
-          typeof key === 'string' && key.startsWith('/api/document/sidebar')
-      )
       router.push(`/documents/${documentId}`)
     } catch (error) {
       toast.error('Failed to create a new note')

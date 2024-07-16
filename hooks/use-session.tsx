@@ -39,14 +39,13 @@ export const useSession = () => {
 
   const signIn = async (code: string) => {
     setIsLoading(true)
-    const response = await githubLogin(code)
-    console.log(response)
-    if (response.data.error) {
-      toast.error(response.data.error)
+    const res = await githubLogin(code)
+    if (res.error) {
+      toast.error(res.error)
     }
-    if (response.data.access_token) {
+    if (res.access_token) {
       setAuthentication(true)
-      setToken(response.data.access_token)
+      setToken(res.access_token)
       toast.success('Login successfully')
 
       // get user info and store to localStorage

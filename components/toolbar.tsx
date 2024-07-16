@@ -1,6 +1,5 @@
 'use client'
 
-import { mutate } from 'swr'
 import { ImageIcon, Smile, X } from 'lucide-react'
 import { ElementRef, useRef, useState } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
@@ -9,7 +8,7 @@ import { Button } from './ui/button'
 import IconPicker from './icon-picker'
 import { useDocument } from '@/stores/use-document'
 import { useCoverImage } from '@/stores/use-cover-image'
-import { removeIcon, update } from '@/api/document'
+import { update, removeIcon } from '@/api/document'
 
 interface ToolbarProps {
   preview?: boolean
@@ -32,16 +31,11 @@ const Toolbar = ({ preview }: ToolbarProps) => {
 
   const disableInput = async () => {
     setIsEditing(false)
-    const response = await update({
+    const newDocument = await update({
       _id: document?._id!,
       title: document?.title || 'Untitled',
     })
-    const newDocument = response.data
     onSetDocument(newDocument)
-    mutate(
-      (key) =>
-        typeof key === 'string' && key.startsWith('/api/document/sidebar')
-    )
   }
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -51,17 +45,15 @@ const Toolbar = ({ preview }: ToolbarProps) => {
     }
   }
   const onIconSelect = async (icon: string) => {
-    const response = await update({
+    const newDocument = await update({
       _id: document?._id!,
       icon,
     })
-    const newDocument = response.data
     onSetDocument(newDocument)
   }
 
   const onRemoveIcon = async () => {
-    const response = await removeIcon(document?._id!)
-    const newDocument = response.data
+    const newDocument = await removeIcon(document?._id!)
     onSetDocument(newDocument)
   }
 

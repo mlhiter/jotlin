@@ -42,10 +42,10 @@ const Editor = ({
   const { user } = useSession()
 
   const handleUpload = useCallback(async (file: File) => {
-    const response = await upload({
+    const res = await upload({
       file,
     })
-    return response.data
+    return res
   }, [])
   const editor = BlockNoteEditor.create({
     schema: blockSchema,

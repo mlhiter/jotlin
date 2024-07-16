@@ -1,15 +1,13 @@
 'use client'
 
 import { debounce } from 'lodash'
-import { useEffect } from 'react'
 
 import Cover from '@/components/cover'
 import Toolbar from '@/components/toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EditorWrapper } from '@/components/editor/editor-wrapper'
 
-import { useDocument } from '@/stores/use-document'
-import { getById, update } from '@/api/document'
+import { useDocumentById, update } from '@/api/document'
 
 interface DocumentIdPageProps {
   params: {
@@ -18,7 +16,7 @@ interface DocumentIdPageProps {
 }
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-  const { document, onSetDocument } = useDocument()
+  const { document } = useDocumentById(params.documentId)
   const onChange = async (content: string) => {
     await update({
       _id: params.documentId,
@@ -27,17 +25,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   }
 
   const debounceOnChange = debounce(onChange, 1000)
-
-  // TODO: perf these fetch way,because it has resulted in a network waterfall
-  useEffect(() => {
-    const fetchDocument = async () => {
-      const response = await getById(params.documentId)
-      const document = response.data
-      onSetDocument(document)
-    }
-
-    fetchDocument()
-  }, [params.documentId])
 
   if (document === undefined) {
     return (

@@ -6,8 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 
 import Item from './item'
 import { cn } from '@/lib/utils'
-import { Doc } from '@/api/document'
-import { useSidebar } from '@/hooks/use-sidebar'
+import { Doc, useSidebar } from '@/api/document'
 
 interface DocumentListProps {
   parentDocumentId?: string

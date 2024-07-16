@@ -1,6 +1,6 @@
 'use client'
 
-import { useDocumentById } from '@/hooks/use-document-by-id'
+import { useDocumentById } from '@/api/document'
 import { InviteUser } from './invite-user'
 
 interface UserBoardProps {

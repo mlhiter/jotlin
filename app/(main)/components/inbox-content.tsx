@@ -1,24 +1,16 @@
 'use client'
 
-import useSWR from 'swr'
-import axios from 'axios'
-
-import { Invitation } from '@/api/invitation'
+import { useInvitationByEmail } from '@/api/invitation'
 import { useSession } from '@/hooks/use-session'
 import { Spinner } from '@/components/spinner'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 import InviteItem from './invite-item'
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data)
-
 const InboxContent = () => {
   const { user } = useSession()
+  const { invitations } = useInvitationByEmail(user?.emailAddress as string)
 
-  const { data: invitations } = useSWR<Invitation[]>(
-    `/api/invitation/get-by-email?email=${user?.emailAddress}`,
-    fetcher
-  )
   if (invitations === undefined) {
     return (
       <div className="flex h-full items-center justify-center p-4">

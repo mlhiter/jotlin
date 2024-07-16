@@ -33,11 +33,10 @@ const CoverImageModal = () => {
         file,
         replaceTargetUrl: coverImage.url,
       })
-      const response = await update({
+      const newDocument = await update({
         _id: params.documentId as string,
-        coverImage: res.data,
+        coverImage: res,
       })
-      const newDocument = response.data
       onSetDocument(newDocument)
     }
     onClose()

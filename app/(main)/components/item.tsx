@@ -23,7 +23,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 import { cn } from '@/lib/utils'
 import { useSession } from '@/hooks/use-session'
-import { archive, create, removeAccess } from '@/api/document'
+import { create, archive } from '@/api/document'
+import { removeAccess } from '@/api/document'
 
 interface ItemProps {
   id?: string
@@ -65,10 +66,6 @@ const Item = ({
       await archive(id)
       router.push('/documents')
       toast.success('Note moved to trash!')
-      mutate(
-        (key) =>
-          typeof key === 'string' && key.startsWith('/api/document/sidebar')
-      )
     } catch (error) {
       toast.error('Failed to archive note.')
     }
@@ -108,15 +105,10 @@ const Item = ({
     if (!id) return
 
     try {
-      const response = await create('Untitled', id)
-      const documentId = response.data
+      const documentId = await create('Untitled', id)
       if (!expanded) {
         onExpand?.()
       }
-      mutate(
-        (key) =>
-          typeof key === 'string' && key.startsWith('/api/document/sidebar')
-      )
       router.push(`/documents/${documentId}`)
     } catch (error) {
       toast.error('Failed to create a new note.')

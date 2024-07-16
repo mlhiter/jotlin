@@ -1,6 +1,5 @@
 'use client'
 
-import useSWR from 'swr'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { Search, Trash, Undo } from 'lucide-react'
@@ -10,14 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/spinner'
 import ConfirmModal from '@/components/modals/confirm-modal'
 
-import axios from '@/lib/axios'
-import { remove, restore, Doc } from '@/api/document'
+import { useTrash, restore, remove } from '@/api/document'
 
 const TrashBox = () => {
   const router = useRouter()
   const params = useParams()
-  const fetcher = (url: string) => axios.get(url).then((res) => res.data)
-  const { data: documents } = useSWR<Doc[]>('/api/document/get-trash', fetcher)
+  const { documents } = useTrash()
 
   const [search, setSearch] = useState('')
   const filteredDocuments = documents?.filter((document) => {

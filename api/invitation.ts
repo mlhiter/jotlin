@@ -1,4 +1,5 @@
 import axios from '@/lib/axios'
+import useSWR, { mutate as globalMutate } from 'swr'
 
 export interface Invitation {
   _id: string
@@ -20,12 +21,31 @@ export const create = (invitation: CreateParams) => {
 }
 
 // get invitation by email
-export const getByEmail = (email: string) => {
-  return axios.get(`/api/invitation/get-by-email?email=${email}`)
+const fetcher = (url: string) => axios.get(url).then((res) => res.data)
+export const useInvitationByEmail = (email: string) => {
+  const {
+    data: invitations,
+    mutate,
+    isLoading,
+    error,
+  } = useSWR<Invitation[]>(
+    `/api/invitation/get-by-email?email=${email}`,
+    fetcher
+  )
+  return {
+    invitations,
+    mutate,
+    isLoading,
+    error,
+  }
 }
 
 type UpdateParams = Pick<Invitation, 'isAccepted' | '_id'>
 // update invitation
-export const update = (invitation: UpdateParams) => {
-  return axios.put('/api/invitation/update', invitation)
+export const update = async (invitation: UpdateParams) => {
+  await axios.put('/api/invitation/update', invitation)
+  globalMutate(
+    (key) =>
+      typeof key === 'string' && key.startsWith('/api/invitation/get-by-email')
+  )
 }

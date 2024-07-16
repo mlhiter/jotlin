@@ -1,6 +1,5 @@
 'use client'
 
-import { mutate } from 'swr'
 import { toast } from 'sonner'
 import { useState } from 'react'
 
@@ -8,10 +7,9 @@ import { Spinner } from '@/components/spinner'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 
-import { Doc } from '@/api/document'
-import { removeAccess } from '@/api/document'
+import { Doc, removeAccess } from '@/api/document'
 import { useSession } from '@/hooks/use-session'
-import { useUserInfo } from '@/hooks/use-user-info'
+import { useUserInfoByEmail } from '@/api/user'
 
 interface InviteUserProps {
   collaborator: string
@@ -26,22 +24,17 @@ export const InviteUser = ({
 }: InviteUserProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { user } = useSession()
-  const { userInfo: collaboratorInfo, isLoading } = useUserInfo(collaborator)
+  const { userInfo: collaboratorInfo, isLoading } =
+    useUserInfoByEmail(collaborator)
 
   const isOwner = document.userId === user?._id
 
   const onRemovePrivilege = () => {
     setIsSubmitting(true)
 
-    const promise = removeAccess(document._id, collaborator)
-      .then((res) => {
-        console.log(res)
-        mutate(
-          (key) =>
-            typeof key === 'string' && key.startsWith('/api/document/get-by-id')
-        )
-      })
-      .finally(() => setIsSubmitting(false))
+    const promise = removeAccess(document._id, collaborator).finally(() =>
+      setIsSubmitting(false)
+    )
 
     toast.promise(promise, {
       loading: 'removing...',

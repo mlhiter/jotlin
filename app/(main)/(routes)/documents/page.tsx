@@ -1,6 +1,5 @@
 'use client'
 
-import { mutate } from 'swr'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { PlusCircle } from 'lucide-react'
@@ -17,12 +16,7 @@ const DocumentsPage = () => {
   const onCreate = async () => {
     try {
       toast.loading('Creating a new note.....')
-      const response = await create('untitled', '')
-      const documentId = response.data
-      mutate(
-        (key) =>
-          typeof key === 'string' && key.startsWith('/api/document/sidebar')
-      )
+      const documentId = await create('untitled', '')
       router.push(`/documents/${documentId}`)
     } catch (error) {
       toast.error('Failed to create a new note.')

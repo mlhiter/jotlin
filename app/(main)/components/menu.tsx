@@ -1,7 +1,6 @@
 'use client'
 
 import { toast } from 'sonner'
-import { mutate } from 'swr'
 import { useRouter } from 'next/navigation'
 import { MoreHorizontal, Trash, FolderUp, Download } from 'lucide-react'
 
@@ -16,9 +15,8 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCreateBlockNote } from '@blocknote/react'
 
-import { archive, update } from '@/api/document'
+import { archive, update, useDocumentById } from '@/api/document'
 import { useSession } from '@/hooks/use-session'
-import { useDocument } from '@/stores/use-document'
 
 interface MenuProps {
   documentId: string
@@ -28,16 +26,12 @@ const Menu = ({ documentId }: MenuProps) => {
   const router = useRouter()
   const { user } = useSession()
   const editor = useCreateBlockNote()
-  const { document: currentDocument } = useDocument()
+  const { document: currentDocument, mutate } = useDocumentById(documentId)
 
   const onArchive = async () => {
     try {
       toast.loading('Moving to trash...')
       archive(documentId)
-      mutate(
-        (key) =>
-          typeof key === 'string' && key.startsWith('/api/document/sidebar')
-      )
       toast.success('Note moved to trash.')
       router.push('/documents')
     } catch (error) {
@@ -62,11 +56,8 @@ const Menu = ({ documentId }: MenuProps) => {
             title,
             content: JSON.stringify(blocks),
           })
-          mutate(
-            (key) =>
-              typeof key === 'string' &&
-              key.startsWith('/api/document/get-document-by-id')
-          )
+          // NOTE: 这里有点特殊,不能将mutate嵌入到api请求里，否则正常书写容易出问题
+          mutate()
           toast.success('Note imported.')
         } catch (error) {
           toast.error('Failed to import note.')

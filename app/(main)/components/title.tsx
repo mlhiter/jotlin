@@ -28,11 +28,10 @@ const Title = ({ initialData }: TitleProps) => {
   }
   const disableInput = async () => {
     setIsEditing(false)
-    const response = await update({
+    const document = await update({
       _id: initialData._id,
       title: title || 'untitled',
     })
-    const document = response.data
     onSetDocument(document)
   }
 
