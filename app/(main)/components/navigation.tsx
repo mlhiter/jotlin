@@ -8,7 +8,6 @@ import {
   Trash,
   Inbox,
 } from 'lucide-react'
-import { mutate } from 'swr'
 import { toast } from 'sonner'
 import { useMediaQuery } from 'usehooks-ts'
 import { ElementRef, useRef, useState, useEffect } from 'react'

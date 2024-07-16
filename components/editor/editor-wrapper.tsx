@@ -21,6 +21,7 @@ export const EditorWrapper = ({
   const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false,
   })
+
   const [ydoc, setYdoc] = useState<Y.Doc>()
   const [webrtcProvider, setWebrtcProvider] = useState<
     WebrtcProvider | undefined
@@ -39,7 +40,7 @@ export const EditorWrapper = ({
       newWebrtcProvider.destroy()
       newYdoc.destroy()
     }
-  }, [])
+  }, [documentId])
 
   if (!isShared) {
     return <Editor onChange={onChange} initialContent={initialContent} />

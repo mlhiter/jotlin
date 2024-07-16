@@ -4,7 +4,7 @@ import * as Y from 'yjs'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { useTheme } from 'next-themes'
-import { BlockNoteEditor, locales } from '@blocknote/core'
+import { locales } from '@blocknote/core'
 import { WebrtcProvider } from 'y-webrtc'
 import { useCallback, useEffect } from 'react'
 import { BlockNoteView } from '@blocknote/mantine'
@@ -12,6 +12,7 @@ import { filterSuggestionItems } from '@blocknote/core'
 import {
   SuggestionMenuController,
   FormattingToolbarController,
+  useCreateBlockNote,
 } from '@blocknote/react'
 
 import '@blocknote/mantine/style.css'
@@ -47,7 +48,7 @@ const Editor = ({
     })
     return res
   }, [])
-  const editor = BlockNoteEditor.create({
+  const editor = useCreateBlockNote({
     schema: blockSchema,
     initialContent: initialContent ? JSON.parse(initialContent) : undefined,
     uploadFile: handleUpload,
@@ -64,7 +65,6 @@ const Editor = ({
           }
         : undefined,
   })
-  console.log('editor', editor)
 
   // monitor clipboard,when last paste item is md-text,insert after currentBlock.
   useEffect(() => {
