@@ -13,8 +13,13 @@ import { blockSchema } from './index'
 import Editor from 'react-simple-code-editor'
 import Prism, { highlight } from 'prismjs'
 import 'prismjs/themes/prism.css'
+import 'prismjs/components/prism-go'
+import 'prismjs/components/prism-c'
+import 'prismjs/components/prism-cpp'
+import 'prismjs/components/prism-rust'
+import 'prismjs/components/prism-python'
+import 'prismjs/components/prism-java'
 
-//PERF: 语言列表这里可以优化，暂时只使用这些
 const languageOptions = [
   'js',
   'html',
@@ -26,17 +31,6 @@ const languageOptions = [
   'python',
   'java',
 ]
-
-languageOptions.forEach((lang) => {
-  if (lang === 'js' || lang === 'html' || lang === 'css') return
-  import(`prismjs/components/prism-${lang}`)
-    .then(() => {
-      console.log(`Prism language component for ${lang} loaded.`)
-    })
-    .catch((err) => {
-      console.error(`Failed to load Prism language component for ${lang}:`, err)
-    })
-})
 
 const fencedCodeBlock = createReactBlockSpec(
   {
