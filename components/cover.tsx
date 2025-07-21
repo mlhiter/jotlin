@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { deleteImage } from '@/api/image'
 import { removeCoverImage } from '@/api/document'
-import { useCoverImage } from '@/stores/use-cover-image'
+import { useCoverImage } from '@/store/use-cover-image'
 
 interface CoverImageProps {
   url?: string

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 import { upload } from '@/api/image'
 import { update } from '@/api/document'
 import { useDocument } from '@/stores/use-document'
-import { useCoverImage } from '@/stores/use-cover-image'
+import { useCoverImage } from '@/store/use-cover-image'
 
 const CoverImageModal = () => {
   const params = useParams()
