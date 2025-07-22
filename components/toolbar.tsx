@@ -7,7 +7,7 @@ import TextareaAutosize from 'react-textarea-autosize'
 import { Button } from './ui/button'
 import IconPicker from './icon-picker'
 import { useDocument } from '@/stores/use-document'
-import { useCoverImage } from '@/store/use-cover-image'
+import { useCoverImage } from '@/stores/use-cover-image'
 import { update, removeIcon } from '@/api/document'
 
 interface ToolbarProps {

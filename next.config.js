@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['oss.laf.dev'],
+    // domains: ['oss.laf.dev'],
   },
   async rewrites() {
     return [

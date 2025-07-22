@@ -1,37 +1,3 @@
 {
-  "cSpell.words": [
-    "apiurl",
-    "Autosize",
-    "blocknote",
-    "calumk",
-    "clike",
-    "clsx",
-    "cmdk",
-    "codecup",
-    "dompurify",
-    "editorjs",
-    "fastnote",
-    "hljs",
-    "jotlin",
-    "lafjs",
-    "Linkpreview",
-    "lucide",
-    "mantine",
-    "markhtml",
-    "nestedchecklist",
-    "prismjs",
-    "shadcn",
-    "sonner",
-    "sotaproject",
-    "tailwindcss",
-    "trunkio",
-    "Unnest",
-    "unpublish",
-    "Unpublishing",
-    "usehooks",
-    "Webrtc",
-    "ydoc",
-    "zustand"
-  ],
-  "typescript.tsdk": "node_modules\\typescript\\lib"
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
