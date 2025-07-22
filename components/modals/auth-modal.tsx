@@ -1,5 +1,4 @@
 import { Github } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 
 import {
   Dialog,
@@ -8,20 +7,15 @@ import {
   DialogHeader,
 } from '@/components/ui/dialog'
 
-import { useAuth } from '@/stores/use-auth'
 import AuthSocialButton from '@/components/buttons/auth-social-button'
+
+import { useAuth } from '@/stores/use-auth'
+import { useSession } from '@/hooks/use-session'
 
 const SettingsModal = () => {
   const authModal = useAuth()
-  const router = useRouter()
 
-  const socialLogin = (platform: string) => {
-    if (platform === 'github') {
-      router.push(
-        `https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_ID}`
-      )
-    }
-  }
+  const { signIn } = useSession()
 
   return (
     <Dialog open={authModal.isOpen} onOpenChange={authModal.onClose}>
@@ -33,7 +27,7 @@ const SettingsModal = () => {
         <div className="flex  items-center justify-between">
           <AuthSocialButton
             icon={Github}
-            onClick={() => socialLogin('github')}
+            onClick={() => signIn('github')}
             platform="GitHub"
           />
         </div>

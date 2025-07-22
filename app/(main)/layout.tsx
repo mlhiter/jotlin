@@ -8,11 +8,9 @@ import { SearchCommand } from '@/components/search-command'
 import { useSession } from '@/hooks/use-session'
 import Navigation from './components/navigation'
 
-// TODO: Change the navigation to useTransition
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useSession()
+  const { session, isLoading } = useSession()
 
-  // 加载动画
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -20,10 +18,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       </div>
     )
   }
-  // 没有登录则跳转到marketing页面
-  if (!isAuthenticated) {
+  if (!session) {
     return redirect('/')
   }
+
   return (
     <div className="flex h-full dark:bg-[#1F1F1F]">
       <Navigation />

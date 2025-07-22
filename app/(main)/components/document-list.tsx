@@ -24,7 +24,6 @@ const DocumentList = ({
   const router = useRouter()
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
-  // function: 切换展开状态
   const onExpand = (documentId: string) => {
     setExpanded((prevExpanded) => ({
       ...prevExpanded,
@@ -36,7 +35,6 @@ const DocumentList = ({
 
   const { documents } = useSidebar(parentDocumentId, type)
 
-  // function: 点击重定向到文档详情页
   const onRedirect = (documentId: string) => {
     router.push(`/documents/${documentId}`)
   }
@@ -57,7 +55,6 @@ const DocumentList = ({
 
   return (
     <>
-      {/* 展开时渲染 */}
       <p
         style={{
           paddingLeft: `${level * 12 + 25}px`,

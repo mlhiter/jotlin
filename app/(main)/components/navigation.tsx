@@ -59,7 +59,6 @@ const Navigation = () => {
     }
   }, [pathname, isMobile])
 
-  // 鼠标按下添加事件监听器
   const handleMouseDown = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
@@ -71,7 +70,6 @@ const Navigation = () => {
     document.addEventListener('mouseup', handleMouseUp)
   }
 
-  // 鼠标移动->改变侧边栏宽度和主栏样式
   const handleMouseMove = (event: MouseEvent) => {
     if (!isResizingRef.current) return
     let newWidth = event.clientX
@@ -85,14 +83,12 @@ const Navigation = () => {
     }
   }
 
-  // 鼠标抬起则移除事件监听器
   const handleMouseUp = () => {
     isResizingRef.current = false
     document.removeEventListener('mousemove', handleMouseMove)
     document.removeEventListener('mouseup', handleMouseUp)
   }
 
-  // function：重置侧边栏宽度
   const resetWidth = () => {
     if (sidebarRef.current && navbarRef.current) {
       setIsCollapsed(false)
@@ -105,14 +101,12 @@ const Navigation = () => {
       )
       navbarRef.current.style.setProperty('left', isMobile ? '100%' : '240px')
 
-      // 这里是为了实现重置过程的一个小动画，300ms的动画当isResetting为true时，动画结束则设置isResetting为false
       setTimeout(() => {
         setIsResetting(false)
       }, 300)
     }
   }
 
-  // function:折叠按钮
   const collapse = () => {
     if (sidebarRef.current && navbarRef.current) {
       setIsCollapsed(true)
@@ -125,7 +119,6 @@ const Navigation = () => {
     }
   }
 
-  // function:创建一个新文件
   const handleCreate = async () => {
     try {
       toast.loading('Create a new note...')
@@ -138,7 +131,7 @@ const Navigation = () => {
   }
   return (
     <>
-      {/* 左侧边栏 */}
+      {/* left sidebar */}
       <aside
         ref={sidebarRef}
         className={cn(
@@ -155,7 +148,7 @@ const Navigation = () => {
           )}>
           <ChevronsLeft className="h-6 w-6" />
         </div>
-        {/* 用户信息+操作栏 */}
+        {/* userinfo+action */}
         <div>
           <UserItem />
           <Item onClick={search.onOpen} label="Search" icon={Search} isSearch />
@@ -173,16 +166,16 @@ const Navigation = () => {
           </Popover>
           <Item onClick={handleCreate} label="New Page" icon={PlusCircle} />
         </div>
-        {/* 文档列表:共享和私人 */}
+        {/* document list */}
         <div className="mt-4">
-          {/* 共享 */}
+          {/* shared */}
           <div>
             <div className="ml-4 text-base font-medium text-muted-foreground">
               Share
             </div>
             <DocumentList type="share" />
           </div>
-          {/* 私人 */}
+          {/* private */}
           <div>
             <div className="ml-4 text-base font-medium text-muted-foreground">
               Private
@@ -190,7 +183,7 @@ const Navigation = () => {
             <DocumentList type="private" />
           </div>
 
-          {/* 创建新页面 */}
+          {/* create new page */}
           <Item onClick={handleCreate} icon={Plus} label="Add a page" />
 
           {/* Trash */}
@@ -205,14 +198,13 @@ const Navigation = () => {
             </PopoverContent>
           </Popover>
         </div>
-        {/* 侧栏和主栏的分界线 */}
         <div
           onMouseDown={handleMouseDown}
           onClick={resetWidth}
           className="absolute right-0 top-0 h-full w-1 cursor-ew-resize bg-primary/10 opacity-0 transition group-hover/sidebar:opacity-100"
         />
       </aside>
-      {/* 顶部导航 */}
+      {/* top navbar */}
       <div
         ref={navbarRef}
         className={cn(

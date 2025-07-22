@@ -40,7 +40,7 @@ const DocumentsPage = () => {
         className="hidden dark:block"
       />
       <h2 className="text-lg font-medium">
-        Welcome to {user?.username}&apos;s Jotlin
+        Welcome to {user?.name || 'your'}&apos;s Jotlin
       </h2>
       <Button onClick={onCreate}>
         <PlusCircle className="mr-2 h-4 w-4" />

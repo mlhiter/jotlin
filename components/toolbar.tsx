@@ -62,7 +62,6 @@ const Toolbar = ({ preview }: ToolbarProps) => {
       {!!document?.icon && !preview && (
         <div className="group/icon flex items-center gap-x-2 pt-6">
           <IconPicker onChange={onIconSelect}>
-            {/* FIXME:浏览器无法正确渲染emoji */}
             <p className="text-6xl transition hover:opacity-75">
               {document?.icon}
             </p>

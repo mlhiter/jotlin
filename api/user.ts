@@ -9,11 +9,6 @@ export interface User {
   created_at: string
 }
 
-export const githubLogin = async (code: string) => {
-  const res = await axios.get(`/api/github-auth?code=${code}`)
-  return res.data
-}
-
 export const getUserInfo = () => {
   return axios.get('/api/user/get-info')
 }

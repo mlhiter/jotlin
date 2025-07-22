@@ -14,7 +14,7 @@ model User {
   id            String    @id @default(uuid())
   username      String?
   email         String    @unique
-  emailVerified DateTime?
+  emailVerified Boolean   @default(false)
   password      String?
   imageUrl      String?
   createdAt     DateTime  @default(now())

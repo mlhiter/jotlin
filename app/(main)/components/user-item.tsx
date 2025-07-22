@@ -25,11 +25,11 @@ const UserItem = () => {
           <div className="flex max-w-[150px] items-center gap-x-2">
             <Avatar className="h-5 w-5">
               <AvatarImage
-                src={user?.imageUrl}
-                alt={user?.username!}></AvatarImage>
+                src={user?.image || ''}
+                alt={user?.name || 'anonymous'}></AvatarImage>
             </Avatar>
             <span className="line-clamp-1 text-start font-medium">
-              {user?.username}&apos;s Jotlin
+              {user?.name}&apos;s Jotlin
             </span>
           </div>
           <ChevronsLeftRight className="ml-2 h-4 w-4 rotate-90 text-muted-foreground" />
@@ -41,20 +41,21 @@ const UserItem = () => {
         alignOffset={11}
         forceMount>
         <div className="flex flex-col space-y-4 p-2">
-          {/* 邮件地址 */}
           <p className="text-xs font-medium leading-none text-muted-foreground">
-            {user?.emailAddress}
+            {user?.email}
           </p>
-          {/* 头像+空间名 */}
           <div className="flex items-center gap-x-2">
             <div className="rounded-md bg-secondary p-1">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.imageUrl} />
+                <AvatarImage
+                  src={user?.image || ''}
+                  alt={user?.name || 'anonymous'}
+                />
               </Avatar>
             </div>
             <div className="space-y-1">
               <p className="line-clamp-1 text-sm">
-                {user?.username}&apos;s Jotlin
+                {user?.name || 'anonymous'}&apos;s Jotlin
               </p>
             </div>
           </div>
