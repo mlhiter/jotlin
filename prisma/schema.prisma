@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  username      String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  imageUrl      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Auth fields
+  provider          String?   @default("credentials")
+  providerAccountId String?
+  refreshToken      String?   @unique
+  accessToken       String?   @unique
+  expiresAt         DateTime?
+
+  // Relations
+  documents           Document[]   @relation("UserDocuments")
+  invitationsSent     Invitation[] @relation("SentInvitations")
+  invitationsReceived Invitation[] @relation("ReceivedInvitations")
+  name                String
+  image               String?
+  sessions            Session[]
+  accounts            Account[]
+
+  @@map("user")
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  title       String
+  content     String?  @db.Text
+  icon        String?
+  coverImage  String?
+  isArchived  Boolean  @default(false)
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId        String
+  user          User                   @relation("UserDocuments", fields: [userId], references: [id])
+  parentId      String?
+  parent        Document?              @relation("DocumentHierarchy", fields: [parentId], references: [id])
+  children      Document[]             @relation("DocumentHierarchy")
+  collaborators DocumentCollaborator[]
+
+  @@index([userId])
+  @@index([parentId])
+}
+
+model DocumentCollaborator {
+  id         String   @id @default(uuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id])
+  userEmail  String
+  createdAt  DateTime @default(now())
+
+  @@unique([documentId, userEmail])
+  @@index([userEmail])
+}
+
+model Invitation {
+  id                String   @id @default(uuid())
+  documentId        String
+  userEmail         String // 邀请者的邮箱
+  collaboratorEmail String // 被邀请者的邮箱
+  isAccepted        Boolean  @default(false)
+  isReplied         Boolean  @default(false)
+  isValid           Boolean  @default(true)
+  createdAt         DateTime @default(now())
+
+  // Relations
+  user         User @relation("SentInvitations", fields: [userEmail], references: [email])
+  collaborator User @relation("ReceivedInvitations", fields: [collaboratorEmail], references: [email])
+
+  @@index([documentId])
+  @@index([userEmail])
+  @@index([collaboratorEmail])
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String
+  filename  String
+  createdAt DateTime @default(now())
+  userId    String
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
