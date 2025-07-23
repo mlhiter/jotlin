@@ -1,189 +1,46 @@
-import { useEffect } from 'react'
-import useSWR, { mutate as globalMutate } from 'swr'
+import { GET, POST, DELETE, PUT } from '@/libs/axios'
 
-import axios from '@/lib/axios'
-import { useDocument } from '@/stores/use-document'
+import { Doc } from '@/types/document'
 
-export interface Doc {
-  _id: string
-  title?: string
-  userId?: string
-  isArchived?: boolean
-  isPublished?: boolean
-  collaborators?: [string]
-  parentDocument?: string
-  content?: string
-  icon?: string
-  coverImage?: string
-}
+export const getDocumentList = (data: {
+  parentDocumentId: string
+  type: string
+}) => GET<Doc[]>('/api/documents/list', data)
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data)
+export const getDocumentById = (id: string) => GET<Doc>(`/api/documents/${id}`)
 
-// get document by Id
-export const useDocumentById = (id: string) => {
-  const { data, mutate, error, isLoading } = useSWR<Doc>(
-    `/api/document/get-by-id?id=${id}`,
-    fetcher
-  )
-  const { document, onSetDocument } = useDocument()
-  useEffect(() => {
-    if (data) {
-      onSetDocument(data as Doc)
-    }
-  }, [data])
-  return {
-    document,
-    mutate,
-    error,
-    isLoading,
-  }
-}
+export const getSearchDocuments = () => GET<Doc[]>('/api/documents/get-search')
 
-// get sidebar info
-export const useSidebar = (parentDocumentId: string, type: string) => {
-  const {
-    data: documents,
-    mutate,
-    error,
-    isLoading,
-  } = useSWR<Doc[]>(
-    `/api/document/sidebar?parentDocument=${parentDocumentId}&type=${type}`,
-    fetcher
-  )
-  return {
-    documents,
-    mutate,
-    error,
-    isLoading,
-  }
-}
+export type DocumentInfo = Pick<Doc, 'title' | 'icon'>
+export const getBasicInfoById = (id: string) =>
+  GET<DocumentInfo>(`/api/documents/get-basic-info-by-id?id=${id}`)
 
-// get search document
-export const useSearchDocuments = () => {
-  const {
-    data: documents,
-    mutate,
-    error,
-    isLoading,
-  } = useSWR<Doc[]>('/api/document/get-search', fetcher)
-  return {
-    documents,
-    mutate,
-    error,
-    isLoading,
-  }
-}
+export const getTrashDocuments = () => GET<Doc[]>('/api/documents/get-trash')
 
-// get basic information by id: title and icon
-type DocumentInfo = Pick<Doc, 'title' | 'icon'>
-export const useBasicInfoById = (id: string) => {
-  const {
-    data: documentInfo,
-    mutate,
-    error,
-    isLoading,
-  } = useSWR<DocumentInfo>(
-    `/api/document/get-basic-info-by-id?id=${id}`,
-    fetcher
-  )
-  return {
-    documentInfo,
-    mutate,
-    error,
-    isLoading,
-  }
-}
+export const createDocument = (data: {
+  title: string
+  parentDocument: string | null
+}) => POST<Doc>('/api/documents/create', data)
 
-// get documents which are archived
-export const useTrash = () => {
-  const {
-    data: documents,
-    mutate,
-    error,
-    isLoading,
-  } = useSWR<Doc[]>('/api/document/get-trash', fetcher)
-  return {
-    documents,
-    mutate,
-    error,
-    isLoading,
-  }
-}
+export const archiveDocument = (id: string) =>
+  PUT(`/api/documents/archive?id=${id}`)
 
-// create a new document
-export const create = async (title: string, parentDocument: string) => {
-  const res = await axios.post('/api/document/create', {
-    title,
-    parentDocument,
-  })
-  globalMutate(
-    (key) => typeof key === 'string' && key.startsWith('/api/document/sidebar')
-  )
-  return res.data
-}
+export const restoreDocument = (id: string) =>
+  PUT(`/api/documents/restore?id=${id}`)
 
-// archive a document to trash
-export const archive = async (id: string) => {
-  await axios.put(`/api/document/archive?id=${id}`)
-  globalMutate(
-    (key) => typeof key === 'string' && key.startsWith('/api/document/sidebar')
-  )
-}
+export const removeDocument = (id: string) =>
+  DELETE(`/api/documents/remove?id=${id}`)
 
-// restore document to normal
-export const restore = async (id: string) => {
-  await axios.put(`/api/document/restore?id=${id}`)
-  globalMutate(
-    (key) => typeof key === 'string' && key.startsWith('/api/document/sidebar')
-  )
-  globalMutate(
-    (key) =>
-      typeof key === 'string' && key.startsWith('/api/document/get-trash')
-  )
-}
+export const updateDocument = (data: Doc) =>
+  PUT<Doc>(`/api/documents/${data.id}`, data)
 
-// remove document forever
-export const remove = async (id: string) => {
-  await axios.delete(`/api/document/remove?id=${id}`)
-  globalMutate(
-    (key) =>
-      typeof key === 'string' && key.startsWith('/api/document/get-trash')
-  )
-}
+export const removeDocumentIcon = (id: string) =>
+  DELETE(`/api/documents/remove-icon?id=${id}`)
 
-// update document content
-// TODO: update document content to global store
-export const update = async (document: Doc) => {
-  const res = await axios.put('/api/document/update', document)
-  globalMutate(
-    (key) => typeof key === 'string' && key.startsWith('/api/document/sidebar')
-  )
-  return res.data
-}
+export const removeCoverImage = (id: string) =>
+  DELETE(`/api/documents/remove-cover-image?id=${id}`)
 
-// remove Icon
-export const removeIcon = async (id: string) => {
-  const res = await axios.delete(`/api/document/remove-icon?id=${id}`)
-  return res.data
-}
-
-// remove coverImage
-export const removeCoverImage = async (id: string) => {
-  const res = await axios.delete(`/api/document/remove-cover-image?id=${id}`)
-  return res.data
-}
-
-// remove access to this document
-export const removeAccess = async (
-  documentId: string,
+export const removeDocumentAccess = (data: {
+  documentId: string
   collaboratorEmail: string
-) => {
-  await axios.put('/api/document/remove-access', {
-    documentId,
-    collaboratorEmail,
-  })
-  globalMutate(
-    (key) =>
-      typeof key === 'string' && key.startsWith('/api/document/get-by-id')
-  )
-}
+}) => PUT('/api/documents/remove-access', data)

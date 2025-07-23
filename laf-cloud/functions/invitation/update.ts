@@ -3,12 +3,12 @@ import { FunctionContext } from '@lafjs/cloud'
 import { ObjectId } from 'mongodb'
 
 export default async function (ctx: FunctionContext) {
-  const { _id, isAccepted } = ctx.body
+  const { id, isAccepted } = ctx.body
   const userId = ctx.user.uid
 
   // if there is one invitation which is not replied
   const existingInvitation = await db.collection('invitations').findOne({
-    _id: new ObjectId(_id),
+    id: new ObjectId(id),
   })
 
   if (!existingInvitation) {
@@ -18,7 +18,7 @@ export default async function (ctx: FunctionContext) {
   const documentId = existingInvitation.documentId
 
   const user = await db.collection('users').findOne({
-    _id: new ObjectId(userId),
+    id: new ObjectId(userId),
   })
 
   // you are invited,so is collaboratorEmail
@@ -27,7 +27,7 @@ export default async function (ctx: FunctionContext) {
   }
 
   const invitationNotice = await db.collection('invitations').updateOne(
-    { _id: new ObjectId(_id) },
+    { id: new ObjectId(id) },
     {
       $set: {
         isReplied: true,
@@ -50,26 +50,26 @@ export default async function (ctx: FunctionContext) {
       .toArray()
     for (const child of children) {
       await db.collection('documents').updateOne(
-        { _id: child._id },
+        { id: child.id },
         {
           $set: {
             collaborators: [...child.collaborators, user.emailAddress],
           },
         }
       )
-      const stringId = child._id.toString()
+      const stringId = child.id.toString()
       await recursiveUpdate(stringId)
     }
   }
 
   const document = await db.collection('documents').findOne({
-    _id: new ObjectId(documentId),
+    id: new ObjectId(documentId),
   })
 
   const updateCollaborators = [...document.collaborators, user.emailAddress]
 
   const updateDocumentNotice = await db.collection('documents').updateOne(
-    { _id: new ObjectId(documentId) },
+    { id: new ObjectId(documentId) },
     {
       $set: {
         collaborators: updateCollaborators,
@@ -84,7 +84,7 @@ export default async function (ctx: FunctionContext) {
   recursiveUpdate(documentId)
 
   const updatedInvitation = await db.collection('invitations').findOne({
-    _id: new ObjectId(_id),
+    id: new ObjectId(id),
   })
 
   return updatedInvitation

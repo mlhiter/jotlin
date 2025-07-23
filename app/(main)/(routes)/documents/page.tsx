@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { PlusCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-import { create } from '@/api/document'
+import { createDocument } from '@/api/document'
 import { Button } from '@/components/ui/button'
 import { useSession } from '@/hooks/use-session'
 
@@ -16,7 +16,10 @@ const DocumentsPage = () => {
   const onCreate = async () => {
     try {
       toast.loading('Creating a new note.....')
-      const documentId = await create('untitled', '')
+      const documentId = await createDocument({
+        title: 'Untitled',
+        parentDocument: null,
+      })
       router.push(`/documents/${documentId}`)
     } catch (error) {
       toast.error('Failed to create a new note.')

@@ -1,6 +1,8 @@
 'use client'
 
-import { useDocumentById } from '@/api/document'
+import { useQuery } from '@tanstack/react-query'
+
+import { getDocumentById } from '@/api/document'
 import { InviteUser } from './invite-user'
 
 interface UserBoardProps {
@@ -8,7 +10,10 @@ interface UserBoardProps {
 }
 
 export const UserBoard = ({ documentId }: UserBoardProps) => {
-  const { document } = useDocumentById(documentId)
+  const { data: document } = useQuery({
+    queryKey: ['document', documentId],
+    queryFn: () => getDocumentById(documentId),
+  })
 
   return (
     <div className="mt-2 space-y-2">

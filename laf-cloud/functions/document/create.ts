@@ -18,7 +18,7 @@ interface Document {
 export default async function (ctx: FunctionContext) {
   const uid = ctx.user.uid
   const userInfo = await db.collection('users').findOne({
-    _id: new ObjectId(uid),
+    id: new ObjectId(uid),
   })
 
   const userEmail = userInfo.emailAddress

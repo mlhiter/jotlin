@@ -8,21 +8,20 @@ import {
   Trash,
   Inbox,
 } from 'lucide-react'
-import { mutate } from 'swr'
 import { toast } from 'sonner'
 import { useMediaQuery } from 'usehooks-ts'
 import { ElementRef, useRef, useState, useEffect } from 'react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/libs/utils'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { create } from '@/api/document'
-import { useSearch } from '@/stores/use-search'
-import { useSettings } from '@/stores/use-settings'
+import { createDocument } from '@/api/document'
+import { useSearch } from '@/stores/search'
+import { useSettings } from '@/stores/settings'
 
 import Item from './item'
 import Navbar from './navbar'
@@ -122,7 +121,10 @@ const Navigation = () => {
   const handleCreate = async () => {
     try {
       toast.loading('Create a new note...')
-      const documentId = await create('Untitled', '')
+      const documentId = await createDocument({
+        title: 'Untitled',
+        parentDocument: null,
+      })
       toast.success('New note created!')
       router.push(`/documents/${documentId}`)
     } catch (error) {

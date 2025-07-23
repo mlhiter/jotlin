@@ -11,7 +11,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-import { Doc, update } from '@/api/document'
+import { updateDocument } from '@/api/document'
+import { Doc } from '@/types/document'
 import { useOrigin } from '@/hooks/use-origin'
 
 interface PublishProps {
@@ -24,14 +25,14 @@ const Publish = ({ initialData }: PublishProps) => {
   const [copied, setCopied] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const url = `${origin}/preview/${initialData._id}`
+  const url = `${origin}/preview/${initialData.id}`
 
   const onPublish = async () => {
     setIsSubmitting(true)
     try {
       toast.loading('Publishing...')
-      await update({
-        _id: initialData._id,
+      await updateDocument({
+        id: initialData.id,
         isPublished: true,
       }).finally(() => setIsSubmitting(false))
       toast.success('Note published')
@@ -44,8 +45,8 @@ const Publish = ({ initialData }: PublishProps) => {
     setIsSubmitting(true)
     try {
       toast.loading('Unpublishing...')
-      await update({
-        _id: initialData._id,
+      await updateDocument({
+        id: initialData.id,
         isPublished: false,
       }).finally(() => setIsSubmitting(false))
       toast.success('Note unpublished')

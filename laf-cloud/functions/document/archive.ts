@@ -9,7 +9,7 @@ export default async function (ctx: FunctionContext) {
   const objectId = new ObjectId(documentId)
 
   const existingDocument = await db.collection('documents').findOne({
-    _id: objectId,
+    id: objectId,
   })
 
   if (!existingDocument) {
@@ -32,20 +32,20 @@ export default async function (ctx: FunctionContext) {
     for (const child of children) {
       await db.collection('documents').updateOne(
         {
-          _id: child._id,
+          id: child.id,
         },
         {
           $set: { isArchived: true },
         }
       )
-      const stringId = child._id.toString()
+      const stringId = child.id.toString()
       await recursiveArchive(stringId)
     }
   }
 
   await db.collection('documents').updateMany(
     {
-      _id: objectId,
+      id: objectId,
     },
     {
       $set: {
@@ -57,7 +57,7 @@ export default async function (ctx: FunctionContext) {
   recursiveArchive(documentId)
 
   const updatedDocument = await db.collection('documents').findOne({
-    _id: objectId,
+    id: objectId,
   })
 
   return updatedDocument

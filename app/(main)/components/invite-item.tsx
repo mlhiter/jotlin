@@ -1,18 +1,20 @@
 'use client'
 
-import { mutate } from 'swr'
-import { useEffect, useState } from 'react'
 import { FileIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import { Spinner } from '@/components/spinner'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 
+import { User } from '@/types/user'
+import { getUserInfoByEmail } from '@/api/user'
+import { Invitation } from '@/types/invitation'
 import { useSession } from '@/hooks/use-session'
-import { useBasicInfoById } from '@/api/document'
-import { User, getUserInfoByEmail } from '@/api/user'
-import { Invitation, update } from '@/api/invitation'
+import { getBasicInfoById } from '@/api/document'
+import { updateInvitation as update } from '@/api/invitation'
 
 type UserInfo = Pick<User, 'username' | 'imageUrl'>
 
@@ -23,7 +25,7 @@ interface InviteItemProps {
 const InviteItem = ({ invitation }: InviteItemProps) => {
   const { user } = useSession()
   const {
-    _id,
+    id,
     documentId,
     userEmail,
     collaboratorEmail,
@@ -31,35 +33,36 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
     isReplied,
     isValid,
   } = invitation
-  const { documentInfo } = useBasicInfoById(documentId)
+  const { data: documentInfo } = useQuery({
+    queryKey: ['documentInfo', documentId],
+    queryFn: () => getBasicInfoById(documentId),
+  })
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>(undefined)
 
   useEffect(() => {
-    // TODO: 逻辑看不懂了
-    if (collaboratorEmail === user?.emailAddress) {
+    if (collaboratorEmail === user?.email) {
       const fetchUserInfo = async () => {
         try {
-          const response = await getUserInfoByEmail(userEmail)
-          setUserInfo(response.data)
-          console.log(response)
+          const response = await getUserInfoByEmail({ email: userEmail })
+          setUserInfo(response)
         } catch (error) {
           console.error('Error fetching userInfo:', error)
         }
       }
       fetchUserInfo()
     }
-  }, [collaboratorEmail, user?.emailAddress, userEmail])
+  }, [collaboratorEmail, user?.email, userEmail])
 
   const accept = async () => {
     try {
-      await update({ _id, isAccepted: true })
+      await update({ id, isAccepted: true })
     } catch (error) {
       console.log(error)
     }
   }
   const reject = async () => {
     try {
-      await update({ _id, isAccepted: false })
+      await update({ id, isAccepted: false })
     } catch (error) {
       console.log(error)
     }
@@ -85,13 +88,13 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
 
   return (
     <>
-      {/* 你是邀请人 */}
-      {userEmail === user?.emailAddress && (
+      {/* you are the inviter */}
+      {userEmail === user?.email && (
         <div className="mt-2 flex items-start gap-x-2">
           <Avatar className="mt-2 h-7 w-7">
             <AvatarImage
-              src={user?.imageUrl}
-              alt={user.username!}></AvatarImage>
+              src={user?.image || ''}
+              alt={user?.name || ''}></AvatarImage>
           </Avatar>
           <div>
             You invite <span className="font-light">{collaboratorEmail}</span>{' '}
@@ -114,8 +117,8 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
           </div>
         </div>
       )}
-      {/* 你是被邀请人 */}
-      {collaboratorEmail === user?.emailAddress && (
+      {/* you are the invited person */}
+      {collaboratorEmail === user?.email && (
         <div className="mt-2 flex items-start gap-x-2">
           <Avatar className="mt-2 h-7 w-7">
             <AvatarImage

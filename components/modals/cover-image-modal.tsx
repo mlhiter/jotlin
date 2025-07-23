@@ -7,16 +7,16 @@ import { SingleImageDropzone } from '../single-image-dropzone'
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 
 import { upload } from '@/api/image'
-import { update } from '@/api/document'
-import { useDocument } from '@/stores/use-document'
-import { useCoverImage } from '@/stores/use-cover-image'
+import { updateDocument } from '@/api/document'
+import { useDocumentStore } from '@/stores/document'
+import { useCoverImage } from '@/stores/cover-image'
 
 const CoverImageModal = () => {
   const params = useParams()
   const coverImage = useCoverImage()
   const [file, setFile] = useState<File>()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { onSetDocument } = useDocument()
+  const { setCurrentDocument } = useDocumentStore()
 
   const onClose = () => {
     setFile(undefined)
@@ -33,11 +33,11 @@ const CoverImageModal = () => {
         file,
         replaceTargetUrl: coverImage.url,
       })
-      const newDocument = await update({
-        _id: params.documentId as string,
+      const newDocument = await updateDocument({
+        id: params.documentId as string,
         coverImage: res,
       })
-      onSetDocument(newDocument)
+      setCurrentDocument(newDocument)
     }
     onClose()
   }

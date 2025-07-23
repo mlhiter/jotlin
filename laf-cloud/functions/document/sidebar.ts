@@ -7,7 +7,7 @@ export default async function (ctx: FunctionContext) {
   const userId = ctx.user.uid
 
   const userInfo = await db.collection('users').findOne({
-    _id: new ObjectId(userId),
+    id: new ObjectId(userId),
   })
 
   const userEmail = userInfo?.emailAddress

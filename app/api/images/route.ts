@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { auth } from '@/libs/auth'
+import { prisma } from '@/libs/prisma'
 import {
   S3Client,
   PutObjectCommand,

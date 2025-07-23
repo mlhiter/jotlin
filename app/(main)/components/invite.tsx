@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-import { create } from '@/api/invitation'
+import { createInvitation } from '@/api/invitation'
 import { useSession } from '@/hooks/use-session'
 
 import { UserBoard } from './user-board'
@@ -19,8 +19,6 @@ interface InviteProps {
   documentId: string
 }
 
-// TODO: invite 相关组件style很丑，需要重构，这里只是简单的实现功能
-// TODO: invite相应文件结构也不合理，不清晰，需要重构
 const Invite = ({ documentId }: InviteProps) => {
   const [collaboratorEmail, setCollaboratorEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -32,10 +30,10 @@ const Invite = ({ documentId }: InviteProps) => {
     setIsSubmitting(true)
     try {
       toast.loading('Inviting...')
-      await create({
+      await createInvitation({
         documentId,
         collaboratorEmail,
-        userEmail: user!.emailAddress,
+        userEmail: user!.email,
       }).finally(() => setIsSubmitting(false))
       toast.success('Invitation has been sent')
     } catch (error) {

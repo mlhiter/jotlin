@@ -2,12 +2,13 @@
 
 import { useMemo } from 'react'
 import dynamic from 'next/dynamic'
+import { useQuery } from '@tanstack/react-query'
 
 import Cover from '@/components/cover'
 import Toolbar from '@/components/toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { useDocumentById, update } from '@/api/document'
+import { getDocumentById, updateDocument } from '@/api/document'
 
 interface DocumentIdPageProps {
   params: {
@@ -20,11 +21,14 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     () => dynamic(() => import('@/components/editor/editor'), { ssr: false }),
     []
   )
-  const { document } = useDocumentById(params.documentId)
+  const { data: document } = useQuery({
+    queryKey: ['document', params.documentId],
+    queryFn: () => getDocumentById(params.documentId),
+  })
 
   const onChange = async (content: string) => {
-    await update({
-      _id: params.documentId,
+    await updateDocument({
+      id: params.documentId,
       content,
     })
   }

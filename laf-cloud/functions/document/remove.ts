@@ -9,7 +9,7 @@ export default async function (ctx: FunctionContext) {
   const objectId = new ObjectId(documentId)
 
   const existingDocument = await db.collection('documents').findOne({
-    _id: objectId,
+    id: objectId,
   })
 
   if (!existingDocument) {
@@ -21,7 +21,7 @@ export default async function (ctx: FunctionContext) {
   }
 
   const deleteNotice = await db.collection('documents').deleteOne({
-    _id: objectId,
+    id: objectId,
   })
 
   if (!deleteNotice.deletedCount) {

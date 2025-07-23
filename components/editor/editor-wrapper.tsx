@@ -21,25 +21,25 @@ export const EditorWrapper = ({
   const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false,
   })
-  const [ydoc, setYdoc] = useState<Y.Doc>()
-  const [webrtcProvider, setWebrtcProvider] = useState<
-    WebrtcProvider | undefined
-  >()
+  // const [ydoc, setYdoc] = useState<Y.Doc>()
+  // const [webrtcProvider, setWebrtcProvider] = useState<
+  //   WebrtcProvider | undefined
+  // >()
 
-  useEffect(() => {
-    const newYdoc = new Y.Doc()
-    setYdoc(newYdoc)
+  // useEffect(() => {
+  //   const newYdoc = new Y.Doc()
+  //   setYdoc(newYdoc)
 
-    const newWebrtcProvider = new WebrtcProvider(documentId, newYdoc, {
-      signaling: [process.env.NEXT_PUBLIC_WS_URL!],
-    })
-    setWebrtcProvider(newWebrtcProvider)
+  //   const newWebrtcProvider = new WebrtcProvider(documentId, newYdoc, {
+  //     signaling: [process.env.NEXT_PUBLIC_WS_URL!],
+  //   })
+  //   setWebrtcProvider(newWebrtcProvider)
 
-    return () => {
-      newWebrtcProvider.destroy()
-      newYdoc.destroy()
-    }
-  }, [])
+  //   return () => {
+  //     newWebrtcProvider.destroy()
+  //     newYdoc.destroy()
+  //   }
+  // }, [])
 
   if (!isShared) {
     return <Editor onChange={onChange} initialContent={initialContent} />
@@ -47,8 +47,8 @@ export const EditorWrapper = ({
   return (
     <Editor
       onChange={onChange}
-      ydoc={ydoc}
-      webrtcProvider={webrtcProvider}
+      // ydoc={ydoc}
+      // webrtcProvider={webrtcProvider}
       initialContent={initialContent}
     />
   )

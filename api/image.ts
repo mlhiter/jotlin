@@ -1,4 +1,4 @@
-import axios from '@/lib/axios'
+import { POST, DELETE } from '@/libs/axios'
 
 interface ImageUpload {
   file: File
@@ -10,7 +10,7 @@ export const upload = async ({ file, replaceTargetUrl }: ImageUpload) => {
   formData.append('image', file)
   formData.append('replaceTargetUrl', replaceTargetUrl || '')
 
-  const res = await axios.post('/api/image/upload', formData, {
+  const res = await POST('/api/image/upload', formData, {
     headers: {
       'Content-type': 'multipart/form-data',
     },
@@ -18,6 +18,5 @@ export const upload = async ({ file, replaceTargetUrl }: ImageUpload) => {
   return res.data
 }
 
-export const deleteImage = (url: string) => {
-  return axios.delete(`/api/image/delete?url=${url}`)
-}
+export const deleteImage = (url: string) =>
+  DELETE(`/api/image/delete?url=${url}`)

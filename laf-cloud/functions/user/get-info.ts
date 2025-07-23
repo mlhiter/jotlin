@@ -8,7 +8,7 @@ export default async function (ctx: FunctionContext) {
   const objectId = new ObjectId(uid)
 
   const userInfo = await db.collection('users').findOne({
-    _id: objectId,
+    id: objectId,
   })
 
   return userInfo

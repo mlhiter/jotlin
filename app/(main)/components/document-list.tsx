@@ -5,8 +5,11 @@ import { FileIcon } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 
 import Item from './item'
-import { cn } from '@/lib/utils'
-import { Doc, useSidebar } from '@/api/document'
+
+import { cn } from '@/libs/utils'
+import { Doc } from '@/types/document'
+import { useQuery } from '@tanstack/react-query'
+import { useDocumentStore } from '@/stores/document'
 
 interface DocumentListProps {
   parentDocumentId?: string
@@ -23,6 +26,7 @@ const DocumentList = ({
   const params = useParams()
   const router = useRouter()
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const { setDocuments, getDocuments } = useDocumentStore()
 
   const onExpand = (documentId: string) => {
     setExpanded((prevExpanded) => ({
@@ -33,7 +37,10 @@ const DocumentList = ({
 
   parentDocumentId = parentDocumentId ? parentDocumentId : ''
 
-  const { documents } = useSidebar(parentDocumentId, type)
+  const { data: documents } = useQuery({
+    queryKey: ['documents', parentDocumentId, type],
+    queryFn: () => setDocuments(parentDocumentId, type),
+  })
 
   const onRedirect = (documentId: string) => {
     router.push(`/documents/${documentId}`)
@@ -66,22 +73,22 @@ const DocumentList = ({
         No pages inside
       </p>
       {documents.map((document: Doc) => (
-        <div key={document._id}>
+        <div key={document.id}>
           <Item
             type={type}
-            id={document._id}
-            onClick={() => onRedirect(document._id)}
+            id={document.id}
+            onClick={() => onRedirect(document.id)}
             label={document.title as string}
             icon={FileIcon}
             documentIcon={document.icon}
-            active={params.documentId === document._id}
+            active={params.documentId === document.id}
             level={level}
-            onExpand={() => onExpand(document._id)}
-            expanded={expanded[document._id]}
+            onExpand={() => onExpand(document.id)}
+            expanded={expanded[document.id]}
           />
-          {expanded[document._id] && (
+          {expanded[document.id] && (
             <DocumentList
-              parentDocumentId={document._id}
+              parentDocumentId={document.id}
               level={level + 1}
               type={type}
             />

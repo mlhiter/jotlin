@@ -33,7 +33,7 @@ export default async function (ctx: FunctionContext) {
 
       await db.collection('documents').updateOne(
         {
-          _id: child._id,
+          id: child.id,
         },
         {
           $set: {
@@ -41,21 +41,21 @@ export default async function (ctx: FunctionContext) {
           },
         }
       )
-      const stringId = child._id.toString()
+      const stringId = child.id.toString()
       await recursiveRemove(stringId)
     }
   }
 
   const objectdocumentId = new ObjectId(documentId)
   const document = await db.collection('documents').findOne({
-    _id: objectdocumentId,
+    id: objectdocumentId,
   })
   afterRemovedCollaborators = document.collaborators.filter(
     (collaborator) => collaborator !== collaboratorEmail
   )
   const removeNotice = await db.collection('documents').updateOne(
     {
-      _id: objectdocumentId,
+      id: objectdocumentId,
     },
     {
       $set: {

@@ -3,7 +3,7 @@
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
-import { restore, remove } from '@/api/document'
+import { restoreDocument, removeDocument } from '@/api/document'
 import ConfirmModal from '@/components/modals/confirm-modal'
 import { Button } from '@/components/ui/button'
 
@@ -18,7 +18,7 @@ const Banner = ({ documentId }: BannerProps) => {
     try {
       toast.loading('Deleting note...')
 
-      await remove(documentId)
+      await removeDocument(documentId)
 
       toast.success('Note deleted!')
 
@@ -31,7 +31,7 @@ const Banner = ({ documentId }: BannerProps) => {
     try {
       toast.loading('Restoring note...')
 
-      await restore(documentId)
+      await restoreDocument(documentId)
 
       toast.success('Note restored!')
     } catch (error) {

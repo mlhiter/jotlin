@@ -1,32 +1,5 @@
-import axios from '@/lib/axios'
-import useSWR from 'swr'
+import { GET } from '@/libs/axios'
+import { User } from '@/types/user'
 
-export interface User {
-  _id: string
-  username: string
-  imageUrl: string
-  emailAddress: string
-  created_at: string
-}
-
-export const getUserInfo = () => {
-  return axios.get('/api/user/get-info')
-}
-
-export const getUserInfoByEmail = (email: string) => {
-  return axios.get(`/api/user/get-info-by-email?email=${email}`)
-}
-
-const fetcher = (url: string) => axios.get(url).then((res) => res.data)
-
-export const useUserInfoByEmail = (email: string) => {
-  const { data, isLoading } = useSWR<User>(
-    `/api/user/get-info-by-email?email=${email}`,
-    fetcher
-  )
-
-  return {
-    userInfo: data,
-    isLoading,
-  }
-}
+export const getUserInfoByEmail = (data: { email: string }) =>
+  GET<User>('/api/users/get-info-by-email', data)

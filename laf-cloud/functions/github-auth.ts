@@ -70,7 +70,7 @@ export default async function (ctx: FunctionContext) {
     })
     insertedId = insertedInfo.insertedId.toString()
   } else {
-    insertedId = existingUser._id
+    insertedId = existingUser.id
   }
 
   // 写入成功后返回用户id制成的jwt token

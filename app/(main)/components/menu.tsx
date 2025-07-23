@@ -15,8 +15,13 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCreateBlockNote } from '@blocknote/react'
 
-import { archive, update, useDocumentById } from '@/api/document'
+import {
+  archiveDocument,
+  updateDocument,
+  getDocumentById,
+} from '@/api/document'
 import { useSession } from '@/hooks/use-session'
+import { useQuery } from '@tanstack/react-query'
 
 interface MenuProps {
   documentId: string
@@ -26,12 +31,15 @@ const Menu = ({ documentId }: MenuProps) => {
   const router = useRouter()
   const { user } = useSession()
   const editor = useCreateBlockNote()
-  const { document: currentDocument, mutate } = useDocumentById(documentId)
+  const { data: currentDocument } = useQuery({
+    queryKey: ['document', documentId],
+    queryFn: () => getDocumentById(documentId),
+  })
 
   const onArchive = async () => {
     try {
       toast.loading('Moving to trash...')
-      archive(documentId)
+      archiveDocument(documentId)
       toast.success('Note moved to trash.')
       router.push('/documents')
     } catch (error) {
@@ -51,13 +59,11 @@ const Menu = ({ documentId }: MenuProps) => {
         const blocks = await editor.tryParseMarkdownToBlocks(markdownContent)
         try {
           toast.loading('Importing note...')
-          await update({
-            _id: documentId,
+          await updateDocument({
+            id: documentId,
             title,
             content: JSON.stringify(blocks),
           })
-          // NOTE: 这里有点特殊,不能将mutate嵌入到api请求里，否则正常书写容易出问题
-          mutate()
           toast.success('Note imported.')
         } catch (error) {
           toast.error('Failed to import note.')
@@ -112,7 +118,7 @@ const Menu = ({ documentId }: MenuProps) => {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <div className="p-2 text-xs text-muted-foreground">
-          Last edited by:{user?.username}
+          Last edited by:{user?.name}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

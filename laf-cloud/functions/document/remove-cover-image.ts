@@ -9,7 +9,7 @@ export default async function (ctx: FunctionContext) {
   const objectId = new ObjectId(id)
 
   const existingDocument = await db.collection('documents').findOne({
-    _id: objectId,
+    id: objectId,
   })
 
   if (!existingDocument) {
@@ -22,7 +22,7 @@ export default async function (ctx: FunctionContext) {
 
   const updateNotice = await db.collection('documents').updateOne(
     {
-      _id: objectId,
+      id: objectId,
     },
     {
       $set: { coverImage: undefined },
@@ -34,7 +34,7 @@ export default async function (ctx: FunctionContext) {
   }
 
   const updatedDocument = await db.collection('documents').findOne({
-    _id: objectId,
+    id: objectId,
   })
 
   return updatedDocument

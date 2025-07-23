@@ -2,6 +2,7 @@
 
 import { toast } from 'sonner'
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Search, Trash, Undo } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 
@@ -9,12 +10,19 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/spinner'
 import ConfirmModal from '@/components/modals/confirm-modal'
 
-import { useTrash, restore, remove } from '@/api/document'
+import {
+  getTrashDocuments,
+  restoreDocument,
+  removeDocument,
+} from '@/api/document'
 
 const TrashBox = () => {
   const router = useRouter()
   const params = useParams()
-  const { documents } = useTrash()
+  const { data: documents } = useQuery({
+    queryKey: ['trash-documents'],
+    queryFn: () => getTrashDocuments(),
+  })
 
   const [search, setSearch] = useState('')
   const filteredDocuments = documents?.filter((document) => {
@@ -32,7 +40,7 @@ const TrashBox = () => {
     event.stopPropagation()
     try {
       toast.loading('Restoring note...')
-      await restore(documentId)
+      await restoreDocument(documentId)
       toast.success('Note restored!')
     } catch {
       toast.error('Failed to restore note.')
@@ -42,7 +50,7 @@ const TrashBox = () => {
   const onRemove = async (documentId: string) => {
     try {
       toast.loading('Deleting note...')
-      await remove(documentId)
+      await removeDocument(documentId)
       toast.success('Note deleted!')
     } catch {
       toast.error('Failed to delete note.')
@@ -77,19 +85,19 @@ const TrashBox = () => {
         </p>
         {filteredDocuments?.map((document) => (
           <div
-            key={document._id}
+            key={document.id}
             role="button"
-            onClick={() => onClick(document._id)}
+            onClick={() => onClick(document.id)}
             className="flex w-full items-center justify-between rounded-sm text-sm text-primary hover:bg-primary/5">
             <span className="truncate pl-2">{document.title}</span>
             <div className="flex items-center">
               <div
                 className="rounded-sm p-2 hover:bg-neutral-200 dark:hover:bg-neutral-300"
                 role="button"
-                onClick={(e) => onRestore(e, document._id)}>
+                onClick={(e) => onRestore(e, document.id)}>
                 <Undo className="h-4 w-4 text-muted-foreground" />
               </div>
-              <ConfirmModal onConfirm={() => onRemove(document._id)}>
+              <ConfirmModal onConfirm={() => onRemove(document.id)}>
                 <div
                   role="button"
                   className="rounded-sm p-2 hover:bg-neutral-200 dark:hover:bg-neutral-300">

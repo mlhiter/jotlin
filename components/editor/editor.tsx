@@ -19,7 +19,7 @@ import '@blocknote/core/fonts/inter.css'
 
 import { upload } from '@/api/image'
 import { useSession } from '@/hooks/use-session'
-import { getRandomLightColor } from '@/lib/utils'
+import { getRandomLightColor } from '@/libs/utils'
 import { blockSchema, getCustomSlashMenuItems } from './editor-blocks'
 import { formattingToolbar } from './editor-toolbars'
 
@@ -52,19 +52,18 @@ const Editor = ({
     initialContent: initialContent ? JSON.parse(initialContent) : undefined,
     uploadFile: handleUpload,
     dictionary: locales.en,
-    collaboration:
-      webrtcProvider && ydoc
-        ? {
-            provider: webrtcProvider,
-            fragment: ydoc.getXmlFragment('document-store'),
-            user: {
-              name: user?.username as string,
-              color: getRandomLightColor(),
-            },
-          }
-        : undefined,
+    // collaboration:
+    //   webrtcProvider && ydoc
+    //     ? {
+    //         provider: webrtcProvider,
+    //         fragment: ydoc.getXmlFragment('document-store'),
+    //         user: {
+    //           name: user?.username as string,
+    //           color: getRandomLightColor(),
+    //         },
+    //       }
+    //     : undefined,
   })
-  console.log('editor', editor)
 
   // monitor clipboard,when last paste item is md-text,insert after currentBlock.
   useEffect(() => {

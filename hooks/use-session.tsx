@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 
-import { authClient } from '@/lib/auth-client'
+import { authClient } from '@/libs/auth-client'
 
 export const useSession = () => {
   const router = useRouter()

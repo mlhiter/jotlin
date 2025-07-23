@@ -3,6 +3,7 @@
 import { File } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import {
   CommandDialog,
@@ -13,14 +14,19 @@ import {
   CommandList,
 } from '@/components/ui/command'
 
-import { useSearch } from '@/stores/use-search'
-import { Doc, useSearchDocuments } from '@/api/document'
+import { Doc } from '@/types/document'
+import { useSearch } from '@/stores/search'
 import { useSession } from '@/hooks/use-session'
+import { getSearchDocuments } from '@/api/document'
 
 export const SearchCommand = () => {
-  const { user } = useSession()
   const router = useRouter()
-  const { documents } = useSearchDocuments()
+  const { user } = useSession()
+
+  const { data: documents } = useQuery({
+    queryKey: ['search-documents'],
+    queryFn: () => getSearchDocuments(),
+  })
 
   const [isMounted, setIsMounted] = useState(false)
 
@@ -44,29 +50,27 @@ export const SearchCommand = () => {
     return () => document.removeEventListener('keydown', down)
   }, [toggle])
 
-  // function:选定之后跳转相应document页面并关闭command栏
   const onSelect = (id: string) => {
     router.push(`/documents/${id}`)
     onClose()
   }
 
-  // 完全客户端化，阻止服务端渲染
   if (!isMounted) {
     return null
   }
 
   return (
     <CommandDialog open={isOpen} onOpenChange={onClose}>
-      <CommandInput placeholder={`Search ${user?.username}'s jotlin...`} />
+      <CommandInput placeholder={`Search ${user?.name}'s jotlin...`} />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading="Documents">
           {documents?.map((document: Doc) => (
             <CommandItem
-              key={document._id}
-              value={`${document._id}-${document.title}`}
+              key={document.id}
+              value={document.title}
               title={document.title}
-              onSelect={onSelect}>
+              onSelect={() => onSelect(document.id)}>
               {document.icon ? (
                 <p className="mr-2 text-[18px]">{document.icon}</p>
               ) : (

@@ -1,13 +1,15 @@
 'use client'
 
 import { debounce } from 'lodash'
+import { useQuery } from '@tanstack/react-query'
 
 import Cover from '@/components/cover'
 import Toolbar from '@/components/toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EditorWrapper } from '@/components/editor/editor-wrapper'
 
-import { useDocumentById, update } from '@/api/document'
+import { getDocumentById, updateDocument } from '@/api/document'
+import { useDocumentStore } from '@/stores/document'
 
 interface DocumentIdPageProps {
   params: {
@@ -16,10 +18,19 @@ interface DocumentIdPageProps {
 }
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-  const { document } = useDocumentById(params.documentId)
+  const { setCurrentDocument } = useDocumentStore()
+  const { data: document } = useQuery({
+    queryKey: ['document', params.documentId],
+    queryFn: async () => {
+      const document = await getDocumentById(params.documentId)
+      setCurrentDocument(document)
+      return document
+    },
+  })
   const onChange = async (content: string) => {
-    await update({
-      _id: params.documentId,
+    if (!document) return
+    await updateDocument({
+      id: document.id,
       content,
     })
   }

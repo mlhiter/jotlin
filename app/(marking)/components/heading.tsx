@@ -6,7 +6,7 @@ import { ArrowRight } from 'lucide-react'
 import { Spinner } from '@/components/spinner'
 import { Button } from '@/components/ui/button'
 
-import { useAuth } from '@/stores/use-auth'
+import { useAuth } from '@/stores/auth'
 import { useSession } from '@/hooks/use-session'
 
 const Heading = () => {

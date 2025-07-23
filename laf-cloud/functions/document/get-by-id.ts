@@ -6,7 +6,7 @@ export default async function (ctx: FunctionContext) {
   const objectId = new ObjectId(documentId)
 
   const document = await db.collection('documents').findOne({
-    _id: objectId,
+    id: objectId,
   })
 
   if (!document) {

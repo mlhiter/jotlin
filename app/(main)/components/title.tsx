@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { Doc, update } from '@/api/document'
-import { useDocument } from '@/stores/use-document'
+import { updateDocument } from '@/api/document'
+import { Doc } from '@/types/document'
+import { useDocumentStore } from '@/stores/document'
 
 interface TitleProps {
   initialData: Doc
@@ -16,7 +17,7 @@ const Title = ({ initialData }: TitleProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState(initialData.title || 'untitled')
   const [isEditing, setIsEditing] = useState(false)
-  const { onSetDocument } = useDocument()
+  const { setCurrentDocument } = useDocumentStore()
 
   const enableInput = () => {
     setTitle(initialData.title as string)
@@ -28,11 +29,11 @@ const Title = ({ initialData }: TitleProps) => {
   }
   const disableInput = async () => {
     setIsEditing(false)
-    const document = await update({
-      _id: initialData._id,
+    const document = await updateDocument({
+      id: initialData.id,
       title: title || 'untitled',
     })
-    onSetDocument(document)
+    setCurrentDocument(document)
   }
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {

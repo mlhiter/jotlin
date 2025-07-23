@@ -1,6 +1,49 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { auth } from '@/libs/auth'
+import { prisma } from '@/libs/prisma'
+
+export async function GET(
+  req: Request,
+  { params }: { params: { documentId: string } }
+) {
+  try {
+    const session = await auth.api.getSession({ headers: req.headers })
+    if (!session?.user?.email) {
+      return new NextResponse('Unauthorized', { status: 401 })
+    }
+
+    const { documentId } = params
+
+    const document = await prisma.document.findUnique({
+      where: {
+        id: documentId,
+      },
+      include: {
+        collaborators: true,
+      },
+    })
+
+    if (!document) {
+      return new NextResponse('Not found', { status: 404 })
+    }
+
+    // Check if user has access to the document (owner or collaborator)
+    const hasAccess =
+      document.userId === session.user.id ||
+      document.collaborators.some(
+        (collaborator) => collaborator.userEmail === session.user.email
+      )
+
+    if (!hasAccess) {
+      return new NextResponse('Unauthorized', { status: 401 })
+    }
+
+    return NextResponse.json(document)
+  } catch (error) {
+    console.error('[DOCUMENT_GET]', error)
+    return new NextResponse('Internal Error', { status: 500 })
+  }
+}
 
 export async function PUT(
   req: Request,

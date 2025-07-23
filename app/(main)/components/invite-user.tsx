@@ -2,14 +2,16 @@
 
 import { toast } from 'sonner'
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import { Spinner } from '@/components/spinner'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 
-import { Doc, removeAccess } from '@/api/document'
+import { Doc } from '@/types/document'
+import { removeDocumentAccess } from '@/api/document'
 import { useSession } from '@/hooks/use-session'
-import { useUserInfoByEmail } from '@/api/user'
+import { getUserInfoByEmail } from '@/api/user'
 
 interface InviteUserProps {
   collaborator: string
@@ -24,17 +26,20 @@ export const InviteUser = ({
 }: InviteUserProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { user } = useSession()
-  const { userInfo: collaboratorInfo, isLoading } =
-    useUserInfoByEmail(collaborator)
+  const { data: collaboratorInfo } = useQuery({
+    queryKey: ['collaborator-info', collaborator],
+    queryFn: () => getUserInfoByEmail({ email: collaborator }),
+  })
 
-  const isOwner = document.userId === user?._id
+  const isOwner = document.userId === user?.id
 
   const onRemovePrivilege = () => {
     setIsSubmitting(true)
 
-    const promise = removeAccess(document._id, collaborator).finally(() =>
-      setIsSubmitting(false)
-    )
+    const promise = removeDocumentAccess({
+      documentId: document.id,
+      collaboratorEmail: collaborator,
+    }).finally(() => setIsSubmitting(false))
 
     toast.promise(promise, {
       loading: 'removing...',
@@ -43,7 +48,7 @@ export const InviteUser = ({
     })
   }
 
-  if (isLoading)
+  if (collaboratorInfo === undefined)
     return (
       <div className="flex h-full items-center justify-center">
         <Spinner size="lg" />

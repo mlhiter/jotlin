@@ -11,7 +11,7 @@ export default async function (ctx: FunctionContext, next: Function) {
     const objectId = new ObjectId(ctx.user.uid)
     const userExist = await db
       .collection('users')
-      .find({ _id: objectId })
+      .find({ id: objectId })
       .toArray()
 
     if (userExist.length > 0) {

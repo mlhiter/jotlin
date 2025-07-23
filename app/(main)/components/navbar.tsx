@@ -7,7 +7,7 @@ import Title from './title'
 import Banner from './banner'
 import Invite from './invite'
 import Publish from './publish'
-import { useDocument } from '@/stores/use-document'
+import { useDocumentStore } from '@/stores/document'
 
 interface NavbarProps {
   isCollapsed: boolean
@@ -15,9 +15,9 @@ interface NavbarProps {
 }
 
 const Navbar = ({ isCollapsed, onResetWidth }: NavbarProps) => {
-  const { document } = useDocument()
+  const { currentDocument } = useDocumentStore()
 
-  if (document === undefined) {
+  if (currentDocument === undefined) {
     return (
       <nav className="flex w-full items-center justify-between bg-background px-3 py-2 dark:bg-[#1F1F1F]">
         <Title.Skeleton />
@@ -27,7 +27,7 @@ const Navbar = ({ isCollapsed, onResetWidth }: NavbarProps) => {
       </nav>
     )
   }
-  if (document === null) {
+  if (currentDocument === null) {
     return null
   }
   return (
@@ -41,15 +41,15 @@ const Navbar = ({ isCollapsed, onResetWidth }: NavbarProps) => {
           />
         )}
         <div className="flex w-full items-center justify-between">
-          <Title initialData={document} />
+          <Title initialData={currentDocument} />
           <div className="flex items-center gap-x-2">
-            <Invite documentId={document._id} />
-            <Publish initialData={document} />
-            <Menu documentId={document._id} />
+            <Invite documentId={currentDocument.id} />
+            <Publish initialData={currentDocument} />
+            <Menu documentId={currentDocument.id} />
           </div>
         </div>
       </nav>
-      {document.isArchived && <Banner documentId={document._id} />}
+      {currentDocument.isArchived && <Banner documentId={currentDocument.id} />}
     </>
   )
 }

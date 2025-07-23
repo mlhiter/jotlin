@@ -1,6 +1,5 @@
 'use client'
 
-import { mutate } from 'swr'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import {
@@ -21,10 +20,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/libs/utils'
 import { useSession } from '@/hooks/use-session'
-import { create, archive } from '@/api/document'
-import { removeAccess } from '@/api/document'
+import { createDocument, archiveDocument } from '@/api/document'
+import { removeDocumentAccess } from '@/api/document'
 
 interface ItemProps {
   id?: string
@@ -63,7 +62,7 @@ const Item = ({
     if (!id) return
     try {
       toast.loading('Moving to trash...')
-      await archive(id)
+      await archiveDocument(id)
       router.push('/documents')
       toast.success('Note moved to trash!')
     } catch (error) {
@@ -73,12 +72,10 @@ const Item = ({
 
   const onQuitDocument = () => {
     if (!id) return
-    const promise = removeAccess(id, user!.emailAddress).then((res) => {
-      console.log(res)
-      mutate(
-        (key) =>
-          typeof key === 'string' && key.startsWith('/api/document/get-by-id')
-      )
+    const promise = removeDocumentAccess({
+      documentId: id,
+      collaboratorEmail: user!.email,
+    }).then(() => {
       router.push('/documents')
     })
 
@@ -89,11 +86,10 @@ const Item = ({
     })
   }
 
-  //切换展开状态
   const handleExpand = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
-    event.stopPropagation() //阻止事件冒泡，因为父元素上绑定点击打开文档详情的函数，不阻止会进入详情页
+    event.stopPropagation()
     onExpand?.()
   }
 
@@ -105,7 +101,10 @@ const Item = ({
     if (!id) return
 
     try {
-      const documentId = await create('Untitled', id)
+      const documentId = await createDocument({
+        title: 'Untitled',
+        parentDocument: id,
+      })
       if (!expanded) {
         onExpand?.()
       }
@@ -126,7 +125,6 @@ const Item = ({
         'group flex min-h-[27px] w-full items-center py-1 pr-3 text-sm font-medium text-muted-foreground hover:bg-primary/5',
         active && 'bg-primary/5 text-primary'
       )}>
-      {/* 展开子文档三角符 */}
       {!!id && (
         <div
           role="button"
@@ -136,24 +134,19 @@ const Item = ({
           <ChevronIcon className="h-4 w-4 shrink-0 text-muted-foreground/50" />
         </div>
       )}
-      {/* 文档的自定义emoji Icon，如果有就渲染，没有就渲染默认的icon */}
       {documentIcon ? (
         <div className="mr-2 shrink-0 text-[18px]">{documentIcon}</div>
       ) : (
         <Icon className="mr-2 h-[18px] w-[18px] shrink-0 text-muted-foreground" />
       )}
-      {/* 文档名字 */}
       <span className="truncate">{label}</span>
-      {/* 当是搜索时呈现 */}
       {isSearch && (
         <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
           <span className="text-xs">Control</span>K
         </kbd>
       )}
-      {/* 右侧功能区 */}
       {!!id && (
         <div className="ml-auto flex items-center gap-x-2">
-          {/*下拉菜单，三个小点 */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <div
@@ -174,7 +167,7 @@ const Item = ({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <div className="p-2 text-xs text-muted-foreground">
-                Last edited by:{user?.username}
+                Last edited by:{user?.name}
               </div>
             </DropdownMenuContent>
           </DropdownMenu>

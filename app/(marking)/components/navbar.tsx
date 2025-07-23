@@ -13,15 +13,15 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-import { cn } from '@/lib/utils'
-import { useAuth } from '@/stores/use-auth'
+import { cn } from '@/libs/utils'
+import { useAuth } from '@/stores/auth'
 import { useSession } from '@/hooks/use-session'
 import { useScrollTop } from '@/hooks/use-scroll-top'
 
 import Logo from './logo'
 
 const Navbar = () => {
-  const { isAuthenticated, isLoading, user, signOut } = useSession()
+  const { session, isLoading, signOut, user } = useSession()
   const scrolled = useScrollTop()
   const authModal = useAuth()
   return (
@@ -33,7 +33,7 @@ const Navbar = () => {
       <Logo />
       <div className="flex w-full items-center justify-between gap-x-2 md:ml-auto md:justify-end">
         {isLoading && <Spinner />}
-        {!isAuthenticated && !isLoading && (
+        {!session && !isLoading && (
           <>
             <Button variant="ghost" size="sm" onClick={authModal.onOpen}>
               Log in
@@ -43,7 +43,7 @@ const Navbar = () => {
             </Button>
           </>
         )}
-        {isAuthenticated && !isLoading && (
+        {session && !isLoading && (
           <>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/documents">Enter Jotlin</Link>
@@ -51,17 +51,17 @@ const Navbar = () => {
             <Popover>
               <PopoverTrigger asChild>
                 <Avatar>
-                  <AvatarImage src={user?.imageUrl} alt={user?.username} />
+                  <AvatarImage src={user?.image || ''} alt={user?.name || ''} />
                 </Avatar>
               </PopoverTrigger>
               <PopoverContent className="mr-16 grid w-80 grid-cols-3 items-center gap-x-1 gap-y-4">
                 <div className="flex items-center justify-center">
                   <Avatar>
-                    <AvatarImage src={user?.imageUrl} alt={user?.username} />
+                    <AvatarImage src={user?.image || ''} alt={user?.name} />
                   </Avatar>
                 </div>
                 <div className="col-span-2 font-medium">
-                  <span>{user?.username}</span>
+                  <span>{user?.name}</span>
                 </div>
                 <div className="flex items-center justify-center ">
                   <Settings className="h-4 w-4 text-stone-400" />

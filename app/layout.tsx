@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { ModalProvider } from '@/components/providers/modal-provider'
+import { QueryProvider } from '@/components/providers/query-provider'
 
 import './globals.css'
 
@@ -36,16 +37,18 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-          storageKey="jotlin-theme">
-          <Toaster position="bottom-right" />
-          <ModalProvider />
-          {children}
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+            storageKey="jotlin-theme">
+            <Toaster position="bottom-right" />
+            <ModalProvider />
+            {children}
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   )

@@ -9,7 +9,7 @@ import {
 
 import AuthSocialButton from '@/components/buttons/auth-social-button'
 
-import { useAuth } from '@/stores/use-auth'
+import { useAuth } from '@/stores/auth'
 import { useSession } from '@/hooks/use-session'
 
 const SettingsModal = () => {
