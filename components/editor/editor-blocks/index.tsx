@@ -4,13 +4,11 @@ import {
 } from '@blocknote/react'
 import { BlockNoteSchema, defaultBlockSpecs } from '@blocknote/core'
 
-import { BlockQuoteBlock, insertBlockQuote } from './quote'
 import { fencedCodeBlock, insertFencedCodeBlock } from './fenced-code'
 
 const blockSchema = BlockNoteSchema.create({
   blockSpecs: {
     ...defaultBlockSpecs,
-    blockquote: BlockQuoteBlock,
     fencedCode: fencedCodeBlock,
   },
 })
@@ -24,11 +22,7 @@ const getCustomSlashMenuItems = (
     (item) => item.title !== 'Code Block'
   )
 
-  return [
-    ...filteredItems,
-    insertBlockQuote(editor),
-    insertFencedCodeBlock(editor),
-  ]
+  return [...filteredItems, insertFencedCodeBlock(editor)]
 }
 
 export { blockSchema, getCustomSlashMenuItems }
