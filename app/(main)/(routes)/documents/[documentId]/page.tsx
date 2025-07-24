@@ -8,9 +8,8 @@ import Toolbar from '@/components/toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EditorWrapper } from '@/components/editor/editor-wrapper'
 
-import { getDocumentById } from '@/api/document'
+import { getDocumentById, updateDocument } from '@/api/document'
 import { useDocumentStore } from '@/stores/document'
-import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface DocumentIdPageProps {
   params: {
@@ -20,7 +19,6 @@ interface DocumentIdPageProps {
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const { setCurrentDocument, currentDocument } = useDocumentStore()
-  const { updateDocument } = useDocumentActions()
 
   useQuery({
     queryKey: ['document', params.documentId],
@@ -30,10 +28,11 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
       return document
     },
   })
+
   const onChange = async (content: string) => {
-    if (!currentDocument) return
+    // NOTE: there we do not use the useDocumentActions hook because it will cause re-render of the whole page
     await updateDocument({
-      id: currentDocument?.id,
+      id: params.documentId,
       content,
     })
   }
@@ -59,6 +58,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   if (currentDocument === null) {
     return <div>Not found</div>
   }
+
   return (
     <div className="pb-40">
       <Cover url={currentDocument.coverImage} />

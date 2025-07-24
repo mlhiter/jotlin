@@ -14,7 +14,6 @@ import Editor from 'react-simple-code-editor'
 import Prism, { highlight } from 'prismjs'
 import 'prismjs/themes/prism.css'
 
-//PERF: 语言列表这里可以优化，暂时只使用这些
 const languageOptions = [
   'js',
   'html',
@@ -122,6 +121,7 @@ const insertFencedCodeBlock = (editor: typeof blockSchema.BlockNoteEditor) => ({
   },
   aliases: ['code'],
   group: 'Other',
+  subtext: 'Used to define a block of code',
   icon: <TbCode />,
 })
 

@@ -4,7 +4,6 @@ import * as Y from 'yjs'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { useTheme } from 'next-themes'
-import { BlockNoteEditor, locales } from '@blocknote/core'
 import { WebrtcProvider } from 'y-webrtc'
 import { useCallback, useEffect } from 'react'
 import { BlockNoteView } from '@blocknote/mantine'
@@ -12,10 +11,12 @@ import { filterSuggestionItems } from '@blocknote/core'
 import {
   SuggestionMenuController,
   FormattingToolbarController,
+  useCreateBlockNote,
 } from '@blocknote/react'
+import { en } from '@blocknote/core/locales'
 
-import '@blocknote/mantine/style.css'
 import '@blocknote/core/fonts/inter.css'
+import '@blocknote/mantine/style.css'
 
 import { uploadImage } from '@/api/image'
 import { useSession } from '@/hooks/use-session'
@@ -46,11 +47,11 @@ const Editor = ({
     })
     return res
   }, [])
-  const editor = BlockNoteEditor.create({
+  const editor = useCreateBlockNote({
     schema: blockSchema,
     initialContent: initialContent ? JSON.parse(initialContent) : undefined,
     uploadFile: handleUpload,
-    dictionary: locales.en,
+    dictionary: en,
     // collaboration:
     //   webrtcProvider && ydoc
     //     ? {
