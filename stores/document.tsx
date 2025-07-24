@@ -6,8 +6,9 @@ import { getDocumentList } from '@/api/document'
 
 type DocumentStore = {
   // Current document state
-  currentDocument: Doc | undefined
-  setCurrentDocument: (doc: Doc) => void
+  currentDocument: Doc | undefined | null
+  setCurrentDocument: (doc: Doc | null) => void
+  clearCurrentDocument: () => void
 
   // Document list state
   documentsMap: Record<string, Doc[]>
@@ -27,6 +28,11 @@ export const useDocumentStore = create(
     setCurrentDocument: (doc) => {
       set((state) => {
         state.currentDocument = doc
+      })
+    },
+    clearCurrentDocument: () => {
+      set((state) => {
+        state.currentDocument = undefined
       })
     },
 

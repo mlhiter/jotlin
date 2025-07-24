@@ -2,6 +2,7 @@
 
 import { debounce } from 'lodash'
 import { useQuery } from '@tanstack/react-query'
+import { useEffect, useMemo, useCallback } from 'react'
 
 import Cover from '@/components/cover'
 import Toolbar from '@/components/toolbar'
@@ -18,28 +19,68 @@ interface DocumentIdPageProps {
 }
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-  const { setCurrentDocument, currentDocument } = useDocumentStore()
+  const { setCurrentDocument, currentDocument, clearCurrentDocument } =
+    useDocumentStore()
 
-  useQuery({
+  useEffect(() => {
+    return () => {
+      clearCurrentDocument()
+    }
+  }, [clearCurrentDocument])
+
+  const { data: document } = useQuery({
     queryKey: ['document', params.documentId],
     queryFn: async () => {
       const document = await getDocumentById(params.documentId)
-      setCurrentDocument(document)
       return document
     },
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    enabled: !!params.documentId,
+    refetchOnReconnect: true,
   })
 
-  const onChange = async (content: string) => {
-    // NOTE: there we do not use the useDocumentActions hook because it will cause re-render of the whole page
-    await updateDocument({
-      id: params.documentId,
-      content,
-    })
-  }
+  useEffect(() => {
+    if (document) {
+      setCurrentDocument(document)
+    }
+  }, [document, setCurrentDocument])
 
-  const debounceOnChange = debounce(onChange, 1000)
+  const onChange = useCallback(
+    async (content: string) => {
+      await updateDocument({
+        id: params.documentId,
+        content,
+      })
+    },
+    [params.documentId]
+  )
 
-  if (currentDocument === undefined) {
+  const debounceOnChange = useMemo(() => debounce(onChange, 1000), [onChange])
+
+  useEffect(() => {
+    return () => {
+      debounceOnChange.cancel()
+    }
+  }, [debounceOnChange])
+
+  const editorProps = useMemo(
+    () => ({
+      onChange: debounceOnChange,
+      documentId: params.documentId,
+      initialContent: currentDocument?.content,
+      isShared: (currentDocument?.collaborators?.length ?? 0) > 1,
+    }),
+    [
+      debounceOnChange,
+      params.documentId,
+      currentDocument?.content,
+      currentDocument?.collaborators?.length,
+    ]
+  )
+
+  if (!document && currentDocument === undefined) {
     return (
       <div>
         <Cover.Skeleton />
@@ -61,15 +102,10 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
 
   return (
     <div className="pb-40">
-      <Cover url={currentDocument.coverImage} />
+      <Cover url={currentDocument?.coverImage} />
       <div className="mx-auto md:max-w-3xl lg:max-w-4xl">
         <Toolbar />
-        <EditorWrapper
-          onChange={debounceOnChange}
-          documentId={params.documentId}
-          initialContent={currentDocument.content}
-          isShared={(currentDocument.collaborators?.length ?? 0) > 1}
-        />
+        <EditorWrapper {...editorProps} />
       </div>
     </div>
   )
