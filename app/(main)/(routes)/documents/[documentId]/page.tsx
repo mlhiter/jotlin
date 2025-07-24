@@ -68,7 +68,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
           onChange={debounceOnChange}
           documentId={params.documentId}
           initialContent={currentDocument.content}
-          isShared={currentDocument.collaborators!.length > 1}
+          isShared={(currentDocument.collaborators?.length ?? 0) > 1}
         />
       </div>
     </div>
