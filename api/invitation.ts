@@ -10,8 +10,9 @@ export const createInvitation = (invitation: CreateParams) =>
   POST<Invitation>('/api/invitations/create', invitation)
 
 export const getInvitationsByEmail = (email: string) =>
-  GET<Invitation[]>(`/api/invitations/get-by-email?email=${email}`)
+  GET<Invitation[]>('/api/invitations/get-by-email', { email })
 
 type UpdateParams = Pick<Invitation, 'isAccepted' | 'id'>
+
 export const updateInvitation = (invitation: UpdateParams) =>
-  PUT<Invitation>('/api/invitations/update', invitation)
+  PUT<Invitation>(`/api/invitations/${invitation.id}`, invitation)
