@@ -1,5 +1,0 @@
-name: invitation/get-by-email
-desc: ""
-methods:
-  - GET
-tags: []

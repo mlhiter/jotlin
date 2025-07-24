@@ -1,5 +1,0 @@
-name: image/upload
-desc: ""
-methods:
-  - POST
-tags: []

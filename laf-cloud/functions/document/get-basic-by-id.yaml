@@ -1,5 +1,0 @@
-name: document/get-basic-by-id
-desc: ""
-methods:
-  - GET
-tags: []

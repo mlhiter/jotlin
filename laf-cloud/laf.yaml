@@ -1,6 +1,0 @@
-version: 1.0.0
-name: fastnote
-spec:
-  runtime: node
-  dependencies:
-    lib0: 0.2.93

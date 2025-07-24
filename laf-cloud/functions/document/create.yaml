@@ -1,6 +1,0 @@
-name: document/create
-desc: ""
-methods:
-  - GET
-  - POST
-tags: []

@@ -1,5 +1,0 @@
-name: invitation/update
-desc: ""
-methods:
-  - PUT
-tags: []

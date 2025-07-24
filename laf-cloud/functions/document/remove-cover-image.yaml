@@ -1,5 +1,0 @@
-name: document/remove-cover-image
-desc: ""
-methods:
-  - DELETE
-tags: []

@@ -1,6 +1,0 @@
-name: github-auth
-desc: ""
-methods:
-  - GET
-  - POST
-tags: []
