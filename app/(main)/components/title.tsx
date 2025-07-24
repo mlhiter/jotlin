@@ -1,13 +1,13 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { updateDocument } from '@/api/document'
 import { Doc } from '@/types/document'
-import { useDocumentStore } from '@/stores/document'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface TitleProps {
   initialData: Doc
@@ -17,23 +17,31 @@ const Title = ({ initialData }: TitleProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState(initialData.title || 'untitled')
   const [isEditing, setIsEditing] = useState(false)
-  const { setCurrentDocument } = useDocumentStore()
+  const { updateDocument } = useDocumentActions()
+
+  useEffect(() => {
+    setTitle(initialData.title || 'untitled')
+  }, [initialData.title])
 
   const enableInput = () => {
-    setTitle(initialData.title as string)
     setIsEditing(true)
     setTimeout(() => {
       inputRef.current?.focus()
-      inputRef.current?.setSelectionRange(0, inputRef.current.value.length)
+      // Only select all text when first enabling edit mode
+      if (!isEditing) {
+        inputRef.current?.setSelectionRange(0, inputRef.current.value.length)
+      }
     }, 0)
   }
+
   const disableInput = async () => {
     setIsEditing(false)
-    const document = await updateDocument({
+    const newTitle = title || 'untitled'
+    setTitle(newTitle)
+    await updateDocument({
       id: initialData.id,
-      title: title || 'untitled',
+      title: newTitle,
     })
-    setCurrentDocument(document)
   }
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -48,7 +56,6 @@ const Title = ({ initialData }: TitleProps) => {
       {isEditing ? (
         <Input
           ref={inputRef}
-          onClick={enableInput}
           onBlur={disableInput}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={onKeyDown}
@@ -61,7 +68,7 @@ const Title = ({ initialData }: TitleProps) => {
           variant="ghost"
           size="sm"
           className="h-auto p-1 font-normal">
-          <span className="truncate">{initialData?.title}</span>
+          <span className="truncate">{title}</span>
         </Button>
       )}
     </div>

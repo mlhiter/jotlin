@@ -8,7 +8,8 @@ import Cover from '@/components/cover'
 import Toolbar from '@/components/toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { getDocumentById, updateDocument } from '@/api/document'
+import { getDocumentById } from '@/api/document'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface DocumentIdPageProps {
   params: {
@@ -21,6 +22,8 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     () => dynamic(() => import('@/components/editor/editor'), { ssr: false }),
     []
   )
+  const { updateDocument } = useDocumentActions()
+
   const { data: document } = useQuery({
     queryKey: ['document', params.documentId],
     queryFn: () => getDocumentById(params.documentId),

@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {},
+  images: {
+    domains: ['objectstorageapi.cloud.sealos.io'],
+  },
 }
 
 module.exports = nextConfig

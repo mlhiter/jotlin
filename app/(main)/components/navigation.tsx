@@ -8,7 +8,6 @@ import {
   Trash,
   Inbox,
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { useMediaQuery } from 'usehooks-ts'
 import { ElementRef, useRef, useState, useEffect } from 'react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
@@ -19,7 +18,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { createDocument } from '@/api/document'
 import { useSearch } from '@/stores/search'
 import { useSettings } from '@/stores/settings'
 
@@ -29,6 +27,7 @@ import TrashBox from './trash-box'
 import UserItem from './user-item'
 import DocumentList from './document-list'
 import InboxContent from './inbox-content'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 const Navigation = () => {
   const router = useRouter()
@@ -36,6 +35,7 @@ const Navigation = () => {
   const search = useSearch()
   const pathname = usePathname()
   const params = useParams()
+  const { createDocument } = useDocumentActions()
   const isMobile = useMediaQuery('(max-width:768px)')
 
   const isResizingRef = useRef(false)
@@ -118,19 +118,8 @@ const Navigation = () => {
     }
   }
 
-  const handleCreate = async () => {
-    try {
-      toast.loading('Create a new note...')
-      const documentId = await createDocument({
-        title: 'Untitled',
-        parentDocument: null,
-      })
-      toast.success('New note created!')
-      router.push(`/documents/${documentId}`)
-    } catch (error) {
-      toast.error('Failed to create a new note')
-    }
-  }
+  const handleCreate = () => createDocument()
+
   return (
     <>
       {/* left sidebar */}

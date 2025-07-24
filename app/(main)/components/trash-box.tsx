@@ -1,24 +1,21 @@
 'use client'
 
-import { toast } from 'sonner'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, Trash, Undo } from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/spinner'
 import ConfirmModal from '@/components/modals/confirm-modal'
 
-import {
-  getTrashDocuments,
-  restoreDocument,
-  removeDocument,
-} from '@/api/document'
+import { getTrashDocuments } from '@/api/document'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 const TrashBox = () => {
   const router = useRouter()
-  const params = useParams()
+  const { restoreDocument, removeDocument } = useDocumentActions()
+
   const { data: documents } = useQuery({
     queryKey: ['trash-documents'],
     queryFn: () => getTrashDocuments(),
@@ -38,27 +35,11 @@ const TrashBox = () => {
     documentId: string
   ) => {
     event.stopPropagation()
-    try {
-      toast.loading('Restoring note...')
-      await restoreDocument(documentId)
-      toast.success('Note restored!')
-    } catch {
-      toast.error('Failed to restore note.')
-    }
+    await restoreDocument(documentId)
   }
 
   const onRemove = async (documentId: string) => {
-    try {
-      toast.loading('Deleting note...')
-      await removeDocument(documentId)
-      toast.success('Note deleted!')
-    } catch {
-      toast.error('Failed to delete note.')
-    }
-
-    if (params.documentId === documentId) {
-      router.push('/documents')
-    }
+    await removeDocument(documentId)
   }
 
   if (documents === undefined) {

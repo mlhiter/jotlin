@@ -8,8 +8,9 @@ import Toolbar from '@/components/toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EditorWrapper } from '@/components/editor/editor-wrapper'
 
-import { getDocumentById, updateDocument } from '@/api/document'
+import { getDocumentById } from '@/api/document'
 import { useDocumentStore } from '@/stores/document'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface DocumentIdPageProps {
   params: {
@@ -18,8 +19,10 @@ interface DocumentIdPageProps {
 }
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-  const { setCurrentDocument } = useDocumentStore()
-  const { data: document } = useQuery({
+  const { setCurrentDocument, currentDocument } = useDocumentStore()
+  const { updateDocument } = useDocumentActions()
+
+  useQuery({
     queryKey: ['document', params.documentId],
     queryFn: async () => {
       const document = await getDocumentById(params.documentId)
@@ -28,16 +31,16 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     },
   })
   const onChange = async (content: string) => {
-    if (!document) return
+    if (!currentDocument) return
     await updateDocument({
-      id: document.id,
+      id: currentDocument?.id,
       content,
     })
   }
 
   const debounceOnChange = debounce(onChange, 1000)
 
-  if (document === undefined) {
+  if (currentDocument === undefined) {
     return (
       <div>
         <Cover.Skeleton />
@@ -53,20 +56,19 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     )
   }
 
-  if (document === null) {
+  if (currentDocument === null) {
     return <div>Not found</div>
   }
-
   return (
     <div className="pb-40">
-      <Cover url={document.coverImage} />
+      <Cover url={currentDocument.coverImage} />
       <div className="mx-auto md:max-w-3xl lg:max-w-4xl">
         <Toolbar />
         <EditorWrapper
           onChange={debounceOnChange}
           documentId={params.documentId}
-          initialContent={document.content}
-          isShared={document.collaborators!.length > 1}
+          initialContent={currentDocument.content}
+          isShared={currentDocument.collaborators!.length > 1}
         />
       </div>
     </div>

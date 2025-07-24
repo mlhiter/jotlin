@@ -9,8 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 import { cn } from '@/libs/utils'
 import { deleteImage } from '@/api/image'
-import { removeCoverImage } from '@/api/document'
 import { useCoverImage } from '@/stores/cover-image'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface CoverImageProps {
   url?: string
@@ -19,6 +19,7 @@ interface CoverImageProps {
 const Cover = ({ url, preview }: CoverImageProps) => {
   const params = useParams()
   const coverImage = useCoverImage()
+  const { removeCoverImage } = useDocumentActions()
 
   const onRemove = async () => {
     if (url) {

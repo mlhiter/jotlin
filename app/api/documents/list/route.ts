@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url)
-    const parentDocument = searchParams.get('parentDocument')
+    const parentDocument = searchParams.get('parentDocumentId')
     const type = searchParams.get('type')
 
     if (!type || (type !== 'share' && type !== 'private')) {

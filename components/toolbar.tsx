@@ -8,7 +8,7 @@ import { Button } from './ui/button'
 import IconPicker from './icon-picker'
 import { useCoverImage } from '@/stores/cover-image'
 import { useDocumentStore } from '@/stores/document'
-import { updateDocument, removeDocumentIcon } from '@/api/document'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface ToolbarProps {
   preview?: boolean
@@ -18,6 +18,7 @@ const Toolbar = ({ preview }: ToolbarProps) => {
   const inputRef = useRef<ElementRef<'textarea'>>(null)
   const [isEditing, setIsEditing] = useState(false)
   const { currentDocument, setCurrentDocument } = useDocumentStore()
+  const { updateDocument, removeDocumentIcon } = useDocumentActions()
 
   const coverImage = useCoverImage()
   const enableInput = () => {
@@ -31,11 +32,10 @@ const Toolbar = ({ preview }: ToolbarProps) => {
 
   const disableInput = async () => {
     setIsEditing(false)
-    const newDocument = await updateDocument({
+    await updateDocument({
       id: currentDocument?.id!,
       title: currentDocument?.title || 'Untitled',
     })
-    setCurrentDocument(newDocument)
   }
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -45,16 +45,14 @@ const Toolbar = ({ preview }: ToolbarProps) => {
     }
   }
   const onIconSelect = async (icon: string) => {
-    const newDocument = await updateDocument({
+    await updateDocument({
       id: currentDocument?.id!,
       icon,
     })
-    setCurrentDocument(newDocument)
   }
 
   const onRemoveIcon = async () => {
-    const newDocument = await removeDocumentIcon(currentDocument?.id!)
-    setCurrentDocument(newDocument)
+    await removeDocumentIcon(currentDocument?.id!)
   }
 
   return (

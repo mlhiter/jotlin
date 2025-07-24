@@ -68,7 +68,7 @@ export const SearchCommand = () => {
           {documents?.map((document: Doc) => (
             <CommandItem
               key={document.id}
-              value={document.title}
+              value={document.id}
               title={document.title}
               onSelect={() => onSelect(document.id)}>
               {document.icon ? (

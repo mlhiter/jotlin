@@ -5,18 +5,18 @@ interface ImageUpload {
   replaceTargetUrl?: string
 }
 
-export const upload = async ({ file, replaceTargetUrl }: ImageUpload) => {
+export const uploadImage = async ({ file, replaceTargetUrl }: ImageUpload) => {
   const formData = new FormData()
   formData.append('image', file)
   formData.append('replaceTargetUrl', replaceTargetUrl || '')
 
-  const res = await POST('/api/image/upload', formData, {
+  const res = await POST('/api/images/upload', formData, {
     headers: {
       'Content-type': 'multipart/form-data',
     },
   })
-  return res.data
+  return res.url
 }
 
 export const deleteImage = (url: string) =>
-  DELETE(`/api/image/delete?url=${url}`)
+  DELETE(`/api/images/delete?url=${url}`)

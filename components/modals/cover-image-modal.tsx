@@ -6,17 +6,16 @@ import { useParams } from 'next/navigation'
 import { SingleImageDropzone } from '../single-image-dropzone'
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 
-import { upload } from '@/api/image'
-import { updateDocument } from '@/api/document'
-import { useDocumentStore } from '@/stores/document'
+import { uploadImage } from '@/api/image'
 import { useCoverImage } from '@/stores/cover-image'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 const CoverImageModal = () => {
   const params = useParams()
   const coverImage = useCoverImage()
   const [file, setFile] = useState<File>()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { setCurrentDocument } = useDocumentStore()
+  const { updateDocument } = useDocumentActions()
 
   const onClose = () => {
     setFile(undefined)
@@ -29,15 +28,14 @@ const CoverImageModal = () => {
       setIsSubmitting(true)
       setFile(file)
 
-      const res = await upload({
+      const res = await uploadImage({
         file,
         replaceTargetUrl: coverImage.url,
       })
-      const newDocument = await updateDocument({
+      await updateDocument({
         id: params.documentId as string,
         coverImage: res,
       })
-      setCurrentDocument(newDocument)
     }
     onClose()
   }

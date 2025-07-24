@@ -3,7 +3,7 @@ import { GET, POST, DELETE, PUT } from '@/libs/axios'
 import { Doc } from '@/types/document'
 
 export const getDocumentList = (data: {
-  parentDocumentId: string
+  parentDocumentId: string | null
   type: string
 }) => GET<Doc[]>('/api/documents/list', data)
 
@@ -23,22 +23,21 @@ export const createDocument = (data: {
 }) => POST<Doc>('/api/documents/create', data)
 
 export const archiveDocument = (id: string) =>
-  PUT(`/api/documents/archive?id=${id}`)
+  PUT(`/api/documents/${id}/archive`)
 
 export const restoreDocument = (id: string) =>
-  PUT(`/api/documents/restore?id=${id}`)
+  PUT(`/api/documents/${id}/restore`)
 
-export const removeDocument = (id: string) =>
-  DELETE(`/api/documents/remove?id=${id}`)
+export const removeDocument = (id: string) => DELETE(`/api/documents/${id}`)
 
 export const updateDocument = (data: Doc) =>
   PUT<Doc>(`/api/documents/${data.id}`, data)
 
 export const removeDocumentIcon = (id: string) =>
-  DELETE(`/api/documents/remove-icon?id=${id}`)
+  DELETE(`/api/documents/${id}/remove-icon`)
 
 export const removeCoverImage = (id: string) =>
-  DELETE(`/api/documents/remove-cover-image?id=${id}`)
+  DELETE(`/api/documents/${id}/remove-cover-image`)
 
 export const removeDocumentAccess = (data: {
   documentId: string

@@ -1,7 +1,6 @@
 'use client'
 
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
 import { MoreHorizontal, Trash, FolderUp, Download } from 'lucide-react'
 
 import {
@@ -15,36 +14,26 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCreateBlockNote } from '@blocknote/react'
 
-import {
-  archiveDocument,
-  updateDocument,
-  getDocumentById,
-} from '@/api/document'
+import { getDocumentById } from '@/api/document'
 import { useSession } from '@/hooks/use-session'
 import { useQuery } from '@tanstack/react-query'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface MenuProps {
   documentId: string
 }
 
 const Menu = ({ documentId }: MenuProps) => {
-  const router = useRouter()
   const { user } = useSession()
   const editor = useCreateBlockNote()
   const { data: currentDocument } = useQuery({
     queryKey: ['document', documentId],
     queryFn: () => getDocumentById(documentId),
   })
+  const { archiveDocument, updateDocument } = useDocumentActions()
 
-  const onArchive = async () => {
-    try {
-      toast.loading('Moving to trash...')
-      archiveDocument(documentId)
-      toast.success('Note moved to trash.')
-      router.push('/documents')
-    } catch (error) {
-      toast.error('Failed to archive note.')
-    }
+  const onArchive = () => {
+    archiveDocument(documentId)
   }
 
   const onImport = async () => {

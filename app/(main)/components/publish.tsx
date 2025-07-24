@@ -11,9 +11,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-import { updateDocument } from '@/api/document'
 import { Doc } from '@/types/document'
 import { useOrigin } from '@/hooks/use-origin'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface PublishProps {
   initialData: Doc
@@ -24,6 +24,8 @@ const Publish = ({ initialData }: PublishProps) => {
 
   const [copied, setCopied] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { updateDocument } = useDocumentActions()
 
   const url = `${origin}/preview/${initialData.id}`
 

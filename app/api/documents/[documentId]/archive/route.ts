@@ -28,7 +28,6 @@ export async function PUT(
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    // 递归归档当前文档及其子文档
     const recursiveArchive = async (documentId: string) => {
       const children = await prisma.document.findMany({
         where: {

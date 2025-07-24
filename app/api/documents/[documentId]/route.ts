@@ -120,6 +120,14 @@ export async function DELETE(
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
+    // First delete all collaborators
+    await prisma.documentCollaborator.deleteMany({
+      where: {
+        documentId: documentId,
+      },
+    })
+
+    // Then delete the document
     const deletedDocument = await prisma.document.delete({
       where: {
         id: documentId,

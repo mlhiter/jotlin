@@ -22,8 +22,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 import { cn } from '@/libs/utils'
 import { useSession } from '@/hooks/use-session'
-import { createDocument, archiveDocument } from '@/api/document'
 import { removeDocumentAccess } from '@/api/document'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface ItemProps {
   id?: string
@@ -54,20 +54,14 @@ const Item = ({
 }: ItemProps) => {
   const router = useRouter()
   const { user } = useSession()
+  const { archiveDocument, createDocument } = useDocumentActions()
 
   const onArchive = async (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
     event.stopPropagation()
     if (!id) return
-    try {
-      toast.loading('Moving to trash...')
-      await archiveDocument(id)
-      router.push('/documents')
-      toast.success('Note moved to trash!')
-    } catch (error) {
-      toast.error('Failed to archive note.')
-    }
+    await archiveDocument(id)
   }
 
   const onQuitDocument = () => {
@@ -100,18 +94,10 @@ const Item = ({
 
     if (!id) return
 
-    try {
-      const documentId = await createDocument({
-        title: 'Untitled',
-        parentDocument: id,
-      })
-      if (!expanded) {
-        onExpand?.()
-      }
-      router.push(`/documents/${documentId}`)
-    } catch (error) {
-      toast.error('Failed to create a new note.')
+    if (!expanded) {
+      onExpand?.()
     }
+    await createDocument(id)
   }
 
   const ChevronIcon = expanded ? ChevronDown : ChevronRight

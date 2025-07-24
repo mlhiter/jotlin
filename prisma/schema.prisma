@@ -76,8 +76,8 @@ model DocumentCollaborator {
 model Invitation {
   id                String   @id @default(uuid())
   documentId        String
-  userEmail         String // 邀请者的邮箱
-  collaboratorEmail String // 被邀请者的邮箱
+  userEmail         String // inviter's email
+  collaboratorEmail String // invitee's email
   isAccepted        Boolean  @default(false)
   isReplied         Boolean  @default(false)
   isValid           Boolean  @default(true)
@@ -90,14 +90,6 @@ model Invitation {
   @@index([documentId])
   @@index([userEmail])
   @@index([collaboratorEmail])
-}
-
-model Image {
-  id        String   @id @default(uuid())
-  url       String
-  filename  String
-  createdAt DateTime @default(now())
-  userId    String
 }
 
 model Session {

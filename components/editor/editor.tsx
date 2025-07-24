@@ -17,9 +17,8 @@ import {
 import '@blocknote/mantine/style.css'
 import '@blocknote/core/fonts/inter.css'
 
-import { upload } from '@/api/image'
+import { uploadImage } from '@/api/image'
 import { useSession } from '@/hooks/use-session'
-import { getRandomLightColor } from '@/libs/utils'
 import { blockSchema, getCustomSlashMenuItems } from './editor-blocks'
 import { formattingToolbar } from './editor-toolbars'
 
@@ -42,7 +41,7 @@ const Editor = ({
   const { user } = useSession()
 
   const handleUpload = useCallback(async (file: File) => {
-    const res = await upload({
+    const res = await uploadImage({
       file,
     })
     return res

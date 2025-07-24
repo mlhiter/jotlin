@@ -12,7 +12,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useDocumentStore } from '@/stores/document'
 
 interface DocumentListProps {
-  parentDocumentId?: string
+  parentDocumentId?: string | null
   level?: number
   data?: Doc[]
   type: 'private' | 'share'
@@ -35,9 +35,10 @@ const DocumentList = ({
     }))
   }
 
-  parentDocumentId = parentDocumentId ? parentDocumentId : ''
+  parentDocumentId = parentDocumentId ? parentDocumentId : null
+  const currentDocuments = getDocuments(parentDocumentId, type)
 
-  const { data: documents } = useQuery({
+  useQuery({
     queryKey: ['documents', parentDocumentId, type],
     queryFn: () => setDocuments(parentDocumentId, type),
   })
@@ -46,7 +47,7 @@ const DocumentList = ({
     router.push(`/documents/${documentId}`)
   }
 
-  if (documents === undefined) {
+  if (currentDocuments === undefined) {
     return (
       <>
         <Item.Skeleton level={level} />
@@ -72,7 +73,7 @@ const DocumentList = ({
         )}>
         No pages inside
       </p>
-      {documents.map((document: Doc) => (
+      {currentDocuments.map((document: Doc) => (
         <div key={document.id}>
           <Item
             type={type}
