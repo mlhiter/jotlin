@@ -1,7 +1,9 @@
 'use client'
 
-import { memo } from 'react'
+import * as Y from 'yjs'
 import dynamic from 'next/dynamic'
+import { WebrtcProvider } from 'y-webrtc'
+import { memo, useEffect, useState } from 'react'
 
 interface EditorWrapperProps {
   onChange: (value: string) => void
@@ -16,20 +18,36 @@ const EditorWrapper = memo(
       ssr: false,
     })
 
+    const [ydoc, setYdoc] = useState<Y.Doc>()
+    const [webrtcProvider, setWebrtcProvider] = useState<
+      WebrtcProvider | undefined
+    >()
+
+    useEffect(() => {
+      const newYdoc = new Y.Doc()
+      setYdoc(newYdoc)
+
+      const newWebrtcProvider = new WebrtcProvider(documentId, newYdoc, {
+        signaling: [process.env.NEXT_PUBLIC_WEBRTC_URL!],
+      })
+      setWebrtcProvider(newWebrtcProvider)
+
+      return () => {
+        newWebrtcProvider.destroy()
+        newYdoc.destroy()
+      }
+    }, [])
+
     if (!isShared) {
-      return (
-        <Editor
-          onChange={onChange}
-          initialContent={initialContent}
-          documentId={documentId}
-        />
-      )
+      return <Editor onChange={onChange} initialContent={initialContent} />
     }
+
     return (
       <Editor
+        ydoc={ydoc}
+        webrtcProvider={webrtcProvider}
         onChange={onChange}
         initialContent={initialContent}
-        documentId={documentId}
       />
     )
   },
