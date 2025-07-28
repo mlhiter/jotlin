@@ -12,11 +12,11 @@ datasource db {
 
 model User {
   id            String    @id @default(uuid())
-  username      String?
   email         String    @unique
   emailVerified Boolean   @default(false)
+  name          String
+  image         String?
   password      String?
-  imageUrl      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -31,8 +31,7 @@ model User {
   documents           Document[]   @relation("UserDocuments")
   invitationsSent     Invitation[] @relation("SentInvitations")
   invitationsReceived Invitation[] @relation("ReceivedInvitations")
-  name                String
-  image               String?
+
   sessions            Session[]
   accounts            Account[]
 

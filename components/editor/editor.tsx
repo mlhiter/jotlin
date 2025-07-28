@@ -58,7 +58,7 @@ const Editor = ({
     //         provider: webrtcProvider,
     //         fragment: ydoc.getXmlFragment('document-store'),
     //         user: {
-    //           name: user?.username as string,
+    //           name: user?.name as string,
     //           color: getRandomLightColor(),
     //         },
     //       }

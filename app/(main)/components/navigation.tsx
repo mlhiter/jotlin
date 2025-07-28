@@ -20,6 +20,9 @@ import {
 } from '@/components/ui/popover'
 import { useSearch } from '@/stores/search'
 import { useSettings } from '@/stores/settings'
+import { Badge } from '@/components/ui/badge'
+import { useInvitationStore } from '@/stores/invitation'
+import { useSession } from '@/hooks/use-session'
 
 import Item from './item'
 import Navbar from './navbar'
@@ -30,13 +33,20 @@ import InboxContent from './inbox-content'
 import { useDocumentActions } from '@/hooks/use-document-actions'
 
 const Navigation = () => {
-  const router = useRouter()
   const settings = useSettings()
   const search = useSearch()
   const pathname = usePathname()
   const params = useParams()
   const { createDocument } = useDocumentActions()
   const isMobile = useMediaQuery('(max-width:768px)')
+  const { unreadCount, fetchInvitations } = useInvitationStore()
+  const { user } = useSession()
+
+  useEffect(() => {
+    if (user?.email) {
+      fetchInvitations(user.email)
+    }
+  }, [user?.email, fetchInvitations])
 
   const isResizingRef = useRef(false)
   const sidebarRef = useRef<ElementRef<'aside'>>(null)
@@ -146,7 +156,16 @@ const Navigation = () => {
           <Item onClick={settings.onOpen} label="Settings" icon={Settings} />
           <Popover>
             <PopoverTrigger className="group flex min-h-[27px] w-full items-center py-1 pl-3 pr-3 text-sm font-medium text-muted-foreground hover:bg-primary/5">
-              <Inbox className="mr-2 h-[18px] w-[18px] shrink-0 text-muted-foreground" />
+              <div className="relative mr-2">
+                <Inbox className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
+                {unreadCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -right-2 -top-2 h-4 w-4 items-center justify-center p-0 text-[10px]">
+                    {unreadCount}
+                  </Badge>
+                )}
+              </div>
               <span className="truncate">Inbox</span>
             </PopoverTrigger>
             <PopoverContent

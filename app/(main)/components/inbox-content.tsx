@@ -1,22 +1,15 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-
-import { getInvitationsByEmail } from '@/api/invitation'
-import { useSession } from '@/hooks/use-session'
 import { Spinner } from '@/components/spinner'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useInvitationStore } from '@/stores/invitation'
 
 import InviteItem from './invite-item'
 
 const InboxContent = () => {
-  const { user } = useSession()
-  const { data: invitations } = useQuery({
-    queryKey: ['invitations', user?.email],
-    queryFn: () => getInvitationsByEmail(user?.email as string),
-  })
+  const { invitations } = useInvitationStore()
 
-  if (invitations === undefined) {
+  if (!invitations) {
     return (
       <div className="flex h-full items-center justify-center p-4">
         <Spinner size="lg" />

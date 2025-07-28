@@ -13,7 +13,7 @@ export const getSearchDocuments = () => GET<Doc[]>('/api/documents/get-search')
 
 export type DocumentInfo = Pick<Doc, 'title' | 'icon'>
 export const getBasicInfoById = (id: string) =>
-  GET<DocumentInfo>(`/api/documents/get-basic-info-by-id?id=${id}`)
+  GET<DocumentInfo>(`/api/documents/${id}/get-basic-info`)
 
 export const getTrashDocuments = () => GET<Doc[]>('/api/documents/get-trash')
 
