@@ -1,11 +1,11 @@
 'use client'
 
 import * as Y from 'yjs'
-import DOMPurify from 'dompurify'
-import { marked } from 'marked'
-import { useTheme } from 'next-themes'
 import { WebrtcProvider } from 'y-webrtc'
-import { useCallback, useEffect } from 'react'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+import { useTheme } from 'next-themes'
+import { useCallback, useEffect, useRef } from 'react'
 import { BlockNoteView } from '@blocknote/mantine'
 import { filterSuggestionItems } from '@blocknote/core'
 import {
@@ -20,26 +20,27 @@ import '@blocknote/mantine/style.css'
 
 import { uploadImage } from '@/api/image'
 import { useSession } from '@/hooks/use-session'
-import { blockSchema, getCustomSlashMenuItems } from './editor-blocks'
+import { getRandomLightColor } from '@/libs/utils'
 import { formattingToolbar } from './editor-toolbars'
+import { blockSchema, getCustomSlashMenuItems } from './editor-blocks'
 
 interface EditorProps {
   onChange: (value: string) => void
   initialContent?: string
-  webrtcProvider?: WebrtcProvider
-  ydoc?: Y.Doc
   editable?: boolean
+  documentId: string
 }
 
 const Editor = ({
   onChange,
   initialContent,
   editable,
-  webrtcProvider,
-  ydoc,
+  documentId,
 }: EditorProps) => {
   const { resolvedTheme } = useTheme()
   const { user } = useSession()
+  const ydocRef = useRef<Y.Doc | null>(null)
+  const providerRef = useRef<WebrtcProvider | null>(null)
 
   const handleUpload = useCallback(async (file: File) => {
     const res = await uploadImage({
@@ -47,22 +48,45 @@ const Editor = ({
     })
     return res
   }, [])
+
+  // Initialize Yjs document and provider
+  useEffect(() => {
+    if (!ydocRef.current) {
+      ydocRef.current = new Y.Doc()
+    }
+
+    if (!providerRef.current) {
+      providerRef.current = new WebrtcProvider(documentId, ydocRef.current, {
+        signaling: [process.env.NEXT_PUBLIC_WEBRTC_URL!],
+      })
+    }
+
+    return () => {
+      // Cleanup when component unmounts
+      providerRef.current?.destroy()
+      ydocRef.current?.destroy()
+    }
+  }, [documentId])
+
+  console.log('ydocRef.current', ydocRef.current)
+  console.log('providerRef.current', providerRef.current)
+
   const editor = useCreateBlockNote({
     schema: blockSchema,
     initialContent: initialContent ? JSON.parse(initialContent) : undefined,
     uploadFile: handleUpload,
     dictionary: en,
-    // collaboration:
-    //   webrtcProvider && ydoc
-    //     ? {
-    //         provider: webrtcProvider,
-    //         fragment: ydoc.getXmlFragment('document-store'),
-    //         user: {
-    //           name: user?.name as string,
-    //           color: getRandomLightColor(),
-    //         },
-    //       }
-    //     : undefined,
+    collaboration:
+      ydocRef.current && providerRef.current
+        ? {
+            provider: providerRef.current,
+            fragment: ydocRef.current.getXmlFragment('document-store'),
+            user: {
+              name: user?.name as string,
+              color: getRandomLightColor(),
+            },
+          }
+        : undefined,
   })
 
   // monitor clipboard,when last paste item is md-text,insert after currentBlock.

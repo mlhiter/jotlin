@@ -1,9 +1,7 @@
 'use client'
 
-import * as Y from 'yjs'
+import { memo } from 'react'
 import dynamic from 'next/dynamic'
-import { WebrtcProvider } from 'y-webrtc'
-import { memo, useEffect, useState } from 'react'
 
 interface EditorWrapperProps {
   onChange: (value: string) => void
@@ -19,9 +17,21 @@ const EditorWrapper = memo(
     })
 
     if (!isShared) {
-      return <Editor onChange={onChange} initialContent={initialContent} />
+      return (
+        <Editor
+          onChange={onChange}
+          initialContent={initialContent}
+          documentId={documentId}
+        />
+      )
     }
-    return <Editor onChange={onChange} initialContent={initialContent} />
+    return (
+      <Editor
+        onChange={onChange}
+        initialContent={initialContent}
+        documentId={documentId}
+      />
+    )
   },
   (prevProps, nextProps) => {
     return (

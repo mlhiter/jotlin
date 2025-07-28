@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "prettier": "prettier --write .",
-    "shadcn-ui": "npx shadcn@latest add"
+    "shadcn-ui": "npx shadcn@latest add",
+    "webrtc": "PORT=4444 node node_modules/y-webrtc/bin/server.js"
   },
   "dependencies": {
     "@blocknote/core": "^0.34.0",
@@ -55,7 +56,7 @@
     "uuid": "^11.1.0",
     "ws": "^8.18.3",
     "y-webrtc": "^10.3.0",
-    "yjs": "^13.6.11",
+    "yjs": "^13.6.27",
     "zod": "^3.22.4",
     "zustand": "^4.4.6"
   },
