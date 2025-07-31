@@ -35,6 +35,16 @@ export function CommentButton() {
         return
       }
 
+      const block = selection.blocks[0]
+
+      // Mark block as commented using backgroundColor
+      editor.updateBlock(block, {
+        props: {
+          ...block.props,
+          backgroundColor: 'commented',
+        },
+      })
+
       const response = await fetch('/api/comments', {
         method: 'POST',
         headers: {
@@ -43,11 +53,18 @@ export function CommentButton() {
         body: JSON.stringify({
           documentId: params.documentId,
           content: comment,
-          blockId: selection.blocks[0].id,
+          blockId: block.id,
         }),
       })
 
       if (!response.ok) {
+        // If comment creation fails, remove the class
+        editor.updateBlock(block, {
+          props: {
+            ...block.props,
+            backgroundColor: 'commented',
+          },
+        })
         throw new Error('Failed to add comment')
       }
 

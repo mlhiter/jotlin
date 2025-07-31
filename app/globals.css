@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+[data-background-color='commented'] {
+  @apply bg-yellow-50 dark:bg-yellow-900/20;
+  @apply border-l-4 border-yellow-400 dark:border-yellow-600;
+  @apply pl-2;
+}
+
 html,
 body,
 :root {

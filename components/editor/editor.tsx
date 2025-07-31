@@ -7,7 +7,8 @@ import { useTheme } from 'next-themes'
 import { BlockNoteEditor } from '@blocknote/core'
 import { en } from '@blocknote/core/locales'
 import { WebrtcProvider } from 'y-webrtc'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
 import { BlockNoteView } from '@blocknote/mantine'
 import { filterSuggestionItems } from '@blocknote/core'
 import {
@@ -42,6 +43,7 @@ const Editor = ({
 }: EditorProps) => {
   const { resolvedTheme } = useTheme()
   const { user } = useSession()
+  const params = useParams()
 
   const handleUpload = useCallback(async (file: File) => {
     const res = await uploadImage({
@@ -68,6 +70,38 @@ const Editor = ({
   })
 
   // monitor clipboard,when last paste item is md-text,insert after currentBlock.
+  // Load commented blocks
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        const response = await fetch(
+          `/api/comments?documentId=${params.documentId}`
+        )
+        if (!response.ok) {
+          throw new Error('Failed to fetch comments')
+        }
+        const comments = await response.json()
+        comments.forEach((comment: any) => {
+          const block = editor.getBlock(comment.blockId)
+          if (block) {
+            editor.updateBlock(block, {
+              props: {
+                ...block.props,
+                backgroundColor: 'commented',
+              },
+            })
+          }
+        })
+      } catch (error) {
+        console.error('Error loading comments:', error)
+      }
+    }
+
+    if (params.documentId) {
+      loadComments()
+    }
+  }, [params.documentId])
+
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
       const items = event.clipboardData ? event.clipboardData.items : []
