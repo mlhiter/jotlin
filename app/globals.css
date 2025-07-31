@@ -81,6 +81,7 @@ body,
   }
 }
 
+/* blocknote.js override */
 /* override link style */
 .bn-editor a {
   cursor: pointer;

@@ -23,6 +23,7 @@ import { useSession } from '@/hooks/use-session'
 import { getRandomLightColor } from '@/libs/utils'
 import { blockSchema, getCustomSlashMenuItems } from './editor-blocks'
 import { formattingToolbar } from './editor-toolbars'
+import { CommentList } from './editor-blocks/comment-list'
 
 interface EditorProps {
   onChange: (value: string) => void
@@ -65,7 +66,6 @@ const Editor = ({
           }
         : undefined,
   })
-  console.log('editor', editor)
 
   // monitor clipboard,when last paste item is md-text,insert after currentBlock.
   useEffect(() => {
@@ -96,7 +96,7 @@ const Editor = ({
   }, [editor, handleUpload])
 
   return (
-    <div>
+    <div className="grid grid-cols-[1fr,300px] gap-4">
       <BlockNoteView
         editor={editor}
         editable={editable}
@@ -114,6 +114,12 @@ const Editor = ({
         />
         <FormattingToolbarController formattingToolbar={formattingToolbar} />
       </BlockNoteView>
+      <div className="border-l">
+        <div className="border-b p-4">
+          <h2 className="font-semibold">Comments</h2>
+        </div>
+        <CommentList />
+      </div>
     </div>
   )
 }

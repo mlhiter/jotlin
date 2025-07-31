@@ -11,6 +11,8 @@ import {
   UnnestBlockButton,
 } from '@blocknote/react'
 
+import { CommentButton } from './comment-button'
+
 export const formattingToolbar = () => (
   <FormattingToolbar>
     <BlockTypeSelect key={'blockTypeSelect'} />
@@ -37,5 +39,6 @@ export const formattingToolbar = () => (
     <UnnestBlockButton key={'unnestBlockButton'} />
 
     <CreateLinkButton key={'createLinkButton'} />
+    <CommentButton key={'commentButton'} />
   </FormattingToolbar>
 )
