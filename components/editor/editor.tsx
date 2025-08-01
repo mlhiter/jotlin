@@ -152,7 +152,7 @@ const Editor = ({
         <div className="border-b p-4">
           <h2 className="font-semibold">Comments</h2>
         </div>
-        <CommentList />
+        <CommentList editor={editor} />
       </div>
     </div>
   )
