@@ -7,6 +7,8 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { formatDistanceToNow } from 'date-fns'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import { useSession } from '@/hooks/use-session'
 
 interface Comment {
   id: string
@@ -16,6 +18,7 @@ interface Comment {
   user: {
     name: string
     image: string
+    email: string
   }
 }
 
@@ -30,6 +33,44 @@ export function CommentList({ editor }: CommentListProps) {
   const params = useParams()
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  const { user: currentUser } = useSession()
+
+  const handleDeleteComment = async (commentId: string, blockId: string) => {
+    try {
+      const response = await fetch(`/api/comments?id=${commentId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete comment')
+      }
+
+      // 从列表中移除评论
+      setComments((prev) => prev.filter((c) => c.id !== commentId))
+
+      // 如果这是块的最后一个评论，移除块的背景色
+      const remainingComments = comments.filter(
+        (c) => c.blockId === blockId && c.id !== commentId
+      )
+      if (remainingComments.length === 0) {
+        const block = editor.getBlock(blockId)
+        if (block) {
+          editor.updateBlock(block, {
+            props: {
+              ...block.props,
+              backgroundColor: 'default',
+            },
+          })
+        }
+      }
+
+      toast.success('Comment deleted')
+    } catch (error) {
+      console.error('Error deleting comment:', error)
+      toast.error('Failed to delete comment')
+    }
+  }
 
   const handleScrollToComment = (blockId: string) => {
     const block = editor.getBlock(blockId)
@@ -100,13 +141,26 @@ export function CommentList({ editor }: CommentListProps) {
                 </span>
               </div>
               <p className="mt-1 text-sm">{comment.content}</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleScrollToComment(comment.blockId)}
-                className="mt-2 text-xs">
-                跳转到评论位置
-              </Button>
+              <div className="mt-2 flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleScrollToComment(comment.blockId)}
+                  className="text-xs">
+                  跳转到评论位置
+                </Button>
+                {currentUser?.email === comment.user.email && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      handleDeleteComment(comment.id, comment.blockId)
+                    }
+                    className="text-xs text-red-500 hover:text-red-600">
+                    删除评论
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ))}

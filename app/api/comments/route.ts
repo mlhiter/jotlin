@@ -50,6 +50,47 @@ export async function POST(req: Request) {
   }
 }
 
+export async function DELETE(req: Request) {
+  try {
+    const session = await auth.api.getSession({ headers: req.headers })
+    if (!session?.user?.email) {
+      return new NextResponse('Unauthorized', { status: 401 })
+    }
+
+    const { searchParams } = new URL(req.url)
+    const commentId = searchParams.get('id')
+
+    if (!commentId) {
+      return new NextResponse('Bad Request', { status: 400 })
+    }
+
+    // 获取评论信息以检查权限
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      include: { user: true },
+    })
+
+    if (!comment) {
+      return new NextResponse('Comment not found', { status: 404 })
+    }
+
+    // 只允许评论作者删除评论
+    if (comment.user.email !== session.user.email) {
+      return new NextResponse('Forbidden', { status: 403 })
+    }
+
+    // 删除评论
+    await prisma.comment.delete({
+      where: { id: commentId },
+    })
+
+    return new NextResponse(null, { status: 204 })
+  } catch (error) {
+    console.error('[COMMENTS_DELETE]', error)
+    return new NextResponse('Internal Error', { status: 500 })
+  }
+}
+
 export async function GET(req: Request) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
@@ -73,6 +114,7 @@ export async function GET(req: Request) {
           select: {
             name: true,
             image: true,
+            email: true,
           },
         },
       },
