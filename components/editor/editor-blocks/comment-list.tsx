@@ -15,6 +15,7 @@ interface Comment {
   content: string
   blockId: string
   createdAt: string
+  updatedAt?: string
   user: {
     name: string
     image: string
@@ -24,6 +25,7 @@ interface Comment {
 
 import { type BlockNoteEditor } from '@blocknote/core'
 import { type PartialBlock } from '@blocknote/core'
+import { Input } from '@/components/ui/input'
 
 interface CommentListProps {
   editor: BlockNoteEditor<any, any>
@@ -33,8 +35,58 @@ export function CommentList({ editor }: CommentListProps) {
   const params = useParams()
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editContent, setEditContent] = useState('')
 
   const { user: currentUser } = useSession()
+
+  const handleStartEdit = (comment: Comment) => {
+    setEditingId(comment.id)
+    setEditContent(comment.content)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingId(null)
+    setEditContent('')
+  }
+
+  const handleSaveEdit = async (commentId: string) => {
+    try {
+      const response = await fetch(`/api/comments?id=${commentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: editContent,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update comment')
+      }
+
+      // 更新本地评论列表
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === commentId
+            ? {
+                ...c,
+                content: editContent,
+                updatedAt: new Date().toISOString(),
+              }
+            : c
+        )
+      )
+
+      setEditingId(null)
+      setEditContent('')
+      toast.success('Comment updated')
+    } catch (error) {
+      console.error('Error updating comment:', error)
+      toast.error('Failed to update comment')
+    }
+  }
 
   const handleDeleteComment = async (commentId: string, blockId: string) => {
     try {
@@ -140,27 +192,81 @@ export function CommentList({ editor }: CommentListProps) {
                   })}
                 </span>
               </div>
-              <p className="mt-1 text-sm">{comment.content}</p>
-              <div className="mt-2 flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleScrollToComment(comment.blockId)}
-                  className="text-xs">
-                  跳转到评论位置
-                </Button>
-                {currentUser?.email === comment.user.email && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      handleDeleteComment(comment.id, comment.blockId)
-                    }
-                    className="text-xs text-red-500 hover:text-red-600">
-                    删除评论
-                  </Button>
-                )}
-              </div>
+              {editingId === comment.id ? (
+                <div className="mt-1">
+                  <Input
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="mb-2"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSaveEdit(comment.id)
+                      } else if (e.key === 'Escape') {
+                        handleCancelEdit()
+                      }
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSaveEdit(comment.id)}
+                      className="text-xs">
+                      保存
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCancelEdit}
+                      className="text-xs">
+                      取消
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="mt-1 text-sm">{comment.content}</p>
+                  {comment.updatedAt && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      (已编辑于{' '}
+                      {formatDistanceToNow(new Date(comment.updatedAt), {
+                        addSuffix: true,
+                      })}
+                      )
+                    </p>
+                  )}
+                  <div className="mt-2 flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleScrollToComment(comment.blockId)}
+                      className="text-xs">
+                      跳转到评论位置
+                    </Button>
+                    {currentUser?.email === comment.user.email && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleStartEdit(comment)}
+                          className="text-xs">
+                          编辑
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            handleDeleteComment(comment.id, comment.blockId)
+                          }
+                          className="text-xs text-red-500 hover:text-red-600">
+                          删除
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         ))}

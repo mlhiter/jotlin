@@ -91,6 +91,61 @@ export async function DELETE(req: Request) {
   }
 }
 
+export async function PATCH(req: Request) {
+  try {
+    const session = await auth.api.getSession({ headers: req.headers })
+    if (!session?.user?.email) {
+      return new NextResponse('Unauthorized', { status: 401 })
+    }
+
+    const { searchParams } = new URL(req.url)
+    const commentId = searchParams.get('id')
+    const { content } = await req.json()
+
+    if (!commentId || !content) {
+      return new NextResponse('Bad Request', { status: 400 })
+    }
+
+    // 获取评论信息以检查权限
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      include: { user: true },
+    })
+
+    if (!comment) {
+      return new NextResponse('Comment not found', { status: 404 })
+    }
+
+    // 只允许评论作者编辑评论
+    if (comment.user.email !== session.user.email) {
+      return new NextResponse('Forbidden', { status: 403 })
+    }
+
+    // 更新评论
+    const updatedComment = await prisma.comment.update({
+      where: { id: commentId },
+      data: {
+        content,
+        updatedAt: new Date(),
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            image: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json(updatedComment)
+  } catch (error) {
+    console.error('[COMMENTS_PATCH]', error)
+    return new NextResponse('Internal Error', { status: 500 })
+  }
+}
+
 export async function GET(req: Request) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
