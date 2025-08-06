@@ -27,7 +27,7 @@ interface ChatListProps {
   parentId?: string
 }
 
-export const ChatList = ({ parentId }: ChatListProps) => {
+export const ChatList = ({}: ChatListProps) => {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { setActiveChat } = useChatStore()

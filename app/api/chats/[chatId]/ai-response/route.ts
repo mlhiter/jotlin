@@ -2,21 +2,8 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/libs/auth'
 import { prisma } from '@/libs/prisma'
-
-async function getAIResponse(message: string, context: any[]): Promise<string> {
-  // TODO: 集成 OpenAI API 或其他 AI 服务
-
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-
-  const responses = [
-    `我理解你说的 "${message}"。让我来帮助你。`,
-    `关于 "${message}"，我有一些想法可以分享。`,
-    `这是一个很好的问题。让我详细解释一下...`,
-    `根据你提到的内容，我建议...`,
-  ]
-
-  return responses[Math.floor(Math.random() * responses.length)]
-}
+import { documentChatAgent } from '@/libs/ai-agent'
+import { HumanMessage, AIMessage } from '@langchain/core/messages'
 
 export async function POST(
   req: Request,
@@ -64,7 +51,21 @@ export async function POST(
       return new NextResponse('Chat not found', { status: 404 })
     }
 
-    const aiResponseContent = await getAIResponse(message, chat.messages)
+    const conversationHistory = chat.messages.map((msg) => {
+      return msg.role === 'user'
+        ? new HumanMessage(msg.content)
+        : new AIMessage(msg.content)
+    })
+
+    const documentContext = chat.documents
+      ?.map((doc) => `Title: ${doc.title}\nContent: ${doc.content}`)
+      .join('\n\n')
+
+    const aiResponseContent = await documentChatAgent.processMessage(
+      message,
+      conversationHistory,
+      documentContext
+    )
 
     const aiMessage = await prisma.message.create({
       data: {

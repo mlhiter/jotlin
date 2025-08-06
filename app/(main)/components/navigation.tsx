@@ -10,8 +10,8 @@ import {
   MessageSquare,
 } from 'lucide-react'
 import { useMediaQuery } from 'usehooks-ts'
-import { ElementRef, useRef, useState, useEffect } from 'react'
-import { useParams, usePathname, useRouter } from 'next/navigation'
+import { ElementRef, useRef, useState, useEffect, useCallback } from 'react'
+import { useParams, usePathname } from 'next/navigation'
 
 import { cn } from '@/libs/utils'
 import {
@@ -32,7 +32,6 @@ import { ChatList } from './chat-list'
 import { useDocumentActions } from '@/hooks/use-document-actions'
 
 const Navigation = () => {
-  const router = useRouter()
   const settings = useSettings()
   const search = useSearch()
   const pathname = usePathname()
@@ -90,7 +89,7 @@ const Navigation = () => {
     document.removeEventListener('mouseup', handleMouseUp)
   }
 
-  const resetWidth = () => {
+  const resetWidth = useCallback(() => {
     if (sidebarRef.current && navbarRef.current) {
       setIsCollapsed(false)
       setIsResetting(true)
@@ -106,9 +105,9 @@ const Navigation = () => {
         setIsResetting(false)
       }, 300)
     }
-  }
+  }, [isMobile])
 
-  const collapse = () => {
+  const collapse = useCallback(() => {
     if (sidebarRef.current && navbarRef.current) {
       setIsCollapsed(true)
       setIsResetting(true)
@@ -118,7 +117,7 @@ const Navigation = () => {
       navbarRef.current.style.setProperty('left', '0')
       setTimeout(() => setIsResetting(false), 300)
     }
-  }
+  }, [])
 
   const handleCreate = () => createDocument()
 

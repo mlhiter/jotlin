@@ -14,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/libs/utils'
 import { ChatDocumentList } from '@/app/(main)/components/chat-document-list'
+import { DocumentSelector } from '@/app/(main)/components/document-selector'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 
 const ChatPage = () => {
   const params = useParams()
@@ -34,6 +42,7 @@ const ChatPage = () => {
 
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [showDocumentSelector, setShowDocumentSelector] = useState(false)
 
   const { data: chat, isLoading: chatLoading } = useQuery({
     queryKey: ['chat', chatId],
@@ -95,7 +104,7 @@ const ChatPage = () => {
     sendMessageMutation.mutate(content)
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -149,7 +158,11 @@ const ChatPage = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Edit title</DropdownMenuItem>
-              <DropdownMenuItem>Manage documents</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setShowDocumentSelector(true)}
+              >
+                Manage documents
+              </DropdownMenuItem>
               <DropdownMenuItem className="text-destructive">
                 Delete chat
               </DropdownMenuItem>
@@ -206,7 +219,7 @@ const ChatPage = () => {
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder="Enter message..."
             className="max-h-[120px] min-h-[40px] resize-none"
             disabled={sendMessageMutation.isPending || isTyping}
@@ -222,6 +235,19 @@ const ChatPage = () => {
           </Button>
         </div>
       </div>
+
+      <Dialog open={showDocumentSelector} onOpenChange={setShowDocumentSelector}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Linked Documents</DialogTitle>
+          </DialogHeader>
+          <DocumentSelector
+            chatId={chatId}
+            linkedDocumentIds={chat?.documents?.map(d => d.id) || []}
+            onClose={() => setShowDocumentSelector(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

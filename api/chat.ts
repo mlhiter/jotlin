@@ -25,11 +25,11 @@ export const chatApi = {
   },
 
   archive: async (chatId: string) => {
-    return PUT<Chat>(`/api/chats/${chatId}/archive`)
+    return PUT<Chat>(`/api/chats/${chatId}`, { isArchived: true })
   },
 
   restore: async (chatId: string) => {
-    return PUT<Chat>(`/api/chats/${chatId}/restore`)
+    return PUT<Chat>(`/api/chats/${chatId}`, { isArchived: false })
   },
 
   delete: async (chatId: string) => {
