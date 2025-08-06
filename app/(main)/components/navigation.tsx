@@ -7,6 +7,7 @@ import {
   Settings,
   Trash,
   Inbox,
+  MessageSquare,
 } from 'lucide-react'
 import { useMediaQuery } from 'usehooks-ts'
 import { ElementRef, useRef, useState, useEffect } from 'react'
@@ -27,6 +28,7 @@ import TrashBox from './trash-box'
 import UserItem from './user-item'
 import DocumentList from './document-list'
 import InboxContent from './inbox-content'
+import { ChatList } from './chat-list'
 import { useDocumentActions } from '@/hooks/use-document-actions'
 
 const Navigation = () => {
@@ -157,6 +159,18 @@ const Navigation = () => {
           </Popover>
           <Item onClick={handleCreate} label="New Page" icon={PlusCircle} />
         </div>
+
+        {/* Chat section */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between px-3 py-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <MessageSquare className="h-4 w-4" />
+              <span>Chats</span>
+            </div>
+          </div>
+          <ChatList />
+        </div>
+
         {/* document list */}
         <div className="mt-4">
           {/* shared */}

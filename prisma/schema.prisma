@@ -35,6 +35,8 @@ model User {
   image               String?
   sessions            Session[]
   accounts            Account[]
+  chats               Chat[]       @relation("UserChats")
+  messages            Message[]    @relation("UserMessages")
 
   @@map("user")
 }
@@ -57,9 +59,12 @@ model Document {
   parent        Document?              @relation("DocumentHierarchy", fields: [parentId], references: [id])
   children      Document[]             @relation("DocumentHierarchy")
   collaborators DocumentCollaborator[]
+  chatId        String?
+  chat          Chat?                  @relation("ChatDocuments", fields: [chatId], references: [id])
 
   @@index([userId])
   @@index([parentId])
+  @@index([chatId])
 }
 
 model DocumentCollaborator {
@@ -135,4 +140,39 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model Chat {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  isArchived  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  userId    String
+  user      User       @relation("UserChats", fields: [userId], references: [id])
+  documents Document[] @relation("ChatDocuments")
+  messages  Message[]  @relation("ChatMessages")
+
+  @@index([userId])
+  @@map("chat")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  role      String   // 'user' or 'assistant'
+  createdAt DateTime @default(now())
+
+  // Relations
+  chatId String
+  chat   Chat   @relation("ChatMessages", fields: [chatId], references: [id])
+  userId String
+  user   User   @relation("UserMessages", fields: [userId], references: [id])
+
+  @@index([chatId])
+  @@index([userId])
+  @@map("message")
 }
