@@ -12,6 +12,8 @@ interface ChatStore {
   setActiveChat: (chat: Chat | null) => void
   setMessages: (messages: Message[]) => void
   addMessage: (message: Message) => void
+  updateMessage: (messageId: string, updates: Partial<Message>) => void
+  removeMessage: (messageId: string) => void
   updateChat: (chatId: string, updates: Partial<Chat>) => void
   removeChat: (chatId: string) => void
   setLoading: (loading: boolean) => void
@@ -31,6 +33,16 @@ export const useChatStore = create<ChatStore>((set) => ({
   
   addMessage: (message) => set((state) => ({
     messages: [...state.messages, message]
+  })),
+
+  updateMessage: (messageId, updates) => set((state) => ({
+    messages: state.messages.map(msg =>
+      msg.id === messageId ? { ...msg, ...updates } : msg
+    )
+  })),
+
+  removeMessage: (messageId) => set((state) => ({
+    messages: state.messages.filter(msg => msg.id !== messageId)
   })),
   
   updateChat: (chatId, updates) => set((state) => ({

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Send, Paperclip, MoreVertical, FileText } from 'lucide-react'
@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 
 import { chatApi } from '@/api/chat'
 import { useChatStore } from '@/stores/chat'
+import { Message } from '@/types/chat'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -38,11 +39,16 @@ const ChatPage = () => {
   const params = useParams()
   const chatId = params.chatId as string
   const queryClient = useQueryClient()
-  const { setActiveChat, setMessages, addMessage } = useChatStore()
+  const { setActiveChat, setMessages, addMessage, updateMessage, removeMessage } = useChatStore()
 
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [streamingContent, setStreamingContent] = useState('')
   const [showDocumentSelector, setShowDocumentSelector] = useState(false)
+  const [localMessages, setLocalMessages] = useState<Message[]>([])
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const [userScrolled, setUserScrolled] = useState(false)
 
   const { data: chat, isLoading: chatLoading } = useQuery({
     queryKey: ['chat', chatId],
@@ -56,29 +62,87 @@ const ChatPage = () => {
     enabled: !!chatId,
   })
 
+  const scrollToBottom = () => {
+    if (!userScrolled) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.currentTarget
+    const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 50
+    setUserScrolled(!isAtBottom)
+  }
+
   const sendMessageMutation = useMutation({
-    mutationFn: async (content: string) => {
-      const userMessage = await chatApi.sendMessage({
-        content,
-        role: 'user',
-        chatId,
-      })
+    mutationFn: async ({ content, tempMessageId }: { content: string; tempMessageId: string }) => {
+      try {
+        const userMessage = await chatApi.sendMessage({
+          content,
+          role: 'user',
+          chatId,
+        })
 
-      addMessage(userMessage)
-
-      setIsTyping(true)
-      const aiResponse = await chatApi.getAIResponse(chatId, content)
-      setIsTyping(false)
-
-      return aiResponse
-    },
-    onSuccess: (aiMessage) => {
-      addMessage(aiMessage)
-      queryClient.invalidateQueries({ queryKey: ['messages', chatId] })
-      queryClient.invalidateQueries({ queryKey: ['chats'] })
+        setLocalMessages(prev => prev.map(msg => 
+          msg.id === tempMessageId ? userMessage : msg
+        ))
+        updateMessage(tempMessageId, userMessage)
+        
+        setIsTyping(true)
+        setStreamingContent('')
+        
+        return new Promise<void>((resolve, reject) => {
+          let fullAIResponse = ''
+          
+          chatApi.streamAIResponse(
+            chatId,
+            content,
+            (chunk: string) => {
+              fullAIResponse += chunk
+              setStreamingContent(prev => prev + chunk)
+            },
+            () => {
+              // Create AI message immediately to avoid flashing
+              const aiMessage: Message = {
+                id: `ai-${Date.now()}`,
+                content: fullAIResponse,
+                role: 'assistant',
+                chatId,
+                userId: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              }
+              
+              setLocalMessages(prev => [...prev, aiMessage])
+              setIsTyping(false)
+              setStreamingContent('')
+              
+              // Invalidate queries in background without affecting UI
+              setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: ['messages', chatId] })
+                queryClient.invalidateQueries({ queryKey: ['chats'] })
+              }, 100)
+              
+              resolve()
+            },
+            (error: Error) => {
+              setIsTyping(false)
+              setStreamingContent('')
+              toast.error('Failed to get AI response')
+              console.error('Stream error:', error)
+              reject(error)
+            }
+          )
+        })
+      } catch (error) {
+        setLocalMessages(prev => prev.filter(msg => msg.id !== tempMessageId))
+        removeMessage(tempMessageId)
+        throw error
+      }
     },
     onError: (error) => {
       setIsTyping(false)
+      setStreamingContent('')
       toast.error('send message error')
       console.error('Send message error:', error)
     },
@@ -92,16 +156,67 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (messages) {
+      setLocalMessages(prevLocal => {
+        const tempMessages = prevLocal.filter(msg => 
+          msg.id.startsWith('temp-') || msg.id.startsWith('ai-')
+        )
+        
+        if (tempMessages.length > 0) {
+          // Filter out messages that already exist in server response
+          const serverMessageIds = new Set(messages.map(msg => msg.id))
+          const uniqueTempMessages = tempMessages.filter(tempMsg => {
+            // For temp messages, check if real version exists
+            if (tempMsg.id.startsWith('temp-')) {
+              return !serverMessageIds.has(tempMsg.id.replace('temp-', ''))
+            }
+            // For AI messages, keep them unless exact same content exists
+            if (tempMsg.id.startsWith('ai-')) {
+              return !messages.some(serverMsg => 
+                serverMsg.role === 'assistant' && 
+                serverMsg.content === tempMsg.content &&
+                Math.abs(new Date(serverMsg.createdAt).getTime() - new Date(tempMsg.createdAt).getTime()) < 5000
+              )
+            }
+            return true
+          })
+          
+          return [...messages, ...uniqueTempMessages]
+        }
+        return messages
+      })
       setMessages(messages)
     }
   }, [messages, setMessages])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [localMessages, streamingContent])
+
+  useEffect(() => {
+    setUserScrolled(false)
+    setLocalMessages([])
+  }, [chatId])
 
   const handleSend = () => {
     if (!input.trim() || sendMessageMutation.isPending || isTyping) return
 
     const content = input.trim()
     setInput('')
-    sendMessageMutation.mutate(content)
+    
+    // Create and display temporary message immediately
+    const tempMessage: Message = {
+      id: `temp-${Date.now()}`,
+      content,
+      role: 'user',
+      chatId,
+      userId: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    
+    setLocalMessages(prev => [...prev, tempMessage])
+    addMessage(tempMessage)
+    sendMessageMutation.mutate({ content, tempMessageId: tempMessage.id })
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -172,9 +287,13 @@ const ChatPage = () => {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea 
+        className="flex-1 p-4"
+        ref={scrollAreaRef}
+        onScrollCapture={handleScroll}
+      >
         <div className="space-y-4">
-          {messages?.map((message) => (
+          {localMessages.map((message) => (
             <div
               key={message.id}
               className={cn(
@@ -196,17 +315,29 @@ const ChatPage = () => {
             </div>
           ))}
 
-          {isTyping && (
+          {(isTyping || streamingContent) && (
             <div className="flex justify-start">
-              <div className="rounded-lg bg-muted px-4 py-2">
-                <div className="flex space-x-2">
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-gray-500" />
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-gray-500 delay-100" />
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-gray-500 delay-200" />
-                </div>
+              <div className="max-w-[70%] rounded-lg bg-muted px-4 py-2">
+                {streamingContent ? (
+                  <div>
+                    <p className="whitespace-pre-wrap">{streamingContent}</p>
+                    <div className="mt-2 flex space-x-1">
+                      <div className="h-1 w-1 animate-pulse rounded-full bg-gray-500" />
+                      <div className="h-1 w-1 animate-pulse rounded-full bg-gray-500 delay-100" />
+                      <div className="h-1 w-1 animate-pulse rounded-full bg-gray-500 delay-200" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex space-x-2">
+                    <div className="h-2 w-2 animate-bounce rounded-full bg-gray-500" />
+                    <div className="h-2 w-2 animate-bounce rounded-full bg-gray-500 delay-100" />
+                    <div className="h-2 w-2 animate-bounce rounded-full bg-gray-500 delay-200" />
+                  </div>
+                )}
               </div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 

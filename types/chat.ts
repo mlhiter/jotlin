@@ -17,7 +17,8 @@ export interface Message {
   id: string
   content: string
   role: 'user' | 'assistant'
-  createdAt: Date
+  createdAt: string | Date
+  updatedAt: string | Date
   chatId: string
   userId: string
 }
