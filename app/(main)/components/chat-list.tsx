@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Plus,
@@ -7,6 +8,9 @@ import {
   Archive,
   MoreVertical,
   Trash2,
+  ChevronDown,
+  ChevronRight,
+  FileText,
 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -31,6 +35,7 @@ export const ChatList = ({}: ChatListProps) => {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { setActiveChat } = useChatStore()
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
   const { data: chats, isLoading } = useQuery({
     queryKey: ['chats'],
@@ -71,6 +76,17 @@ export const ChatList = ({}: ChatListProps) => {
     router.push(`/chats/${chat.id}`)
   }
 
+  const handleDocumentClick = (documentId: string) => {
+    router.push(`/documents/${documentId}`)
+  }
+
+  const onExpand = (chatId: string) => {
+    setExpanded((prevExpanded) => ({
+      ...prevExpanded,
+      [chatId]: !prevExpanded[chatId],
+    }))
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-2 p-2">
@@ -98,54 +114,100 @@ export const ChatList = ({}: ChatListProps) => {
 
       <div className="space-y-1">
         {activeChats.map((chat) => (
-          <div
-            key={chat.id}
-            className={cn(
-              'group flex cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent'
-            )}
-            onClick={() => handleChatClick(chat)}>
-            <div className="flex min-w-0 flex-1 items-center">
-              <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-medium">{chat.title}</div>
-                {chat.messages?.[0] && (
-                  <div className="truncate text-xs text-muted-foreground">
-                    {chat.messages[0].content}
+          <div key={chat.id}>
+            <div
+              className={cn(
+                'group flex cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent'
+              )}
+              onClick={() => handleChatClick(chat)}>
+              <div className="flex min-w-0 flex-1 items-center">
+                {/* Expand/Collapse button for chats with documents */}
+                {chat.documents && chat.documents.length > 0 && (
+                  <div
+                    role="button"
+                    className="mr-1 h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onExpand(chat.id)
+                    }}>
+                    {expanded[chat.id] ? (
+                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                    )}
                   </div>
                 )}
+                <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-medium">
+                    {chat.title}
+                    {chat.documents && chat.documents.length > 0 && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({chat.documents.length})
+                      </span>
+                    )}
+                  </div>
+                  {chat.messages?.[0] && (
+                    <div className="truncate text-xs text-muted-foreground">
+                      {chat.messages[0].content}
+                    </div>
+                  )}
+                </div>
               </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      archiveMutation.mutate(chat.id)
+                    }}>
+                    <Archive className="mr-2 h-4 w-4" />
+                    Archive
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteMutation.mutate(chat.id)
+                    }}
+                    className="text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    archiveMutation.mutate(chat.id)
-                  }}>
-                  <Archive className="mr-2 h-4 w-4" />
-                  Archive
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    deleteMutation.mutate(chat.id)
-                  }}
-                  className="text-destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Show associated documents when expanded */}
+            {expanded[chat.id] && chat.documents && chat.documents.length > 0 && (
+              <div className="ml-8 space-y-1 border-l-2 border-muted-foreground/20 pl-2">
+                {chat.documents.map((document) => (
+                  <div
+                    key={document.id}
+                    className="flex cursor-pointer items-center rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-accent"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDocumentClick(document.id)
+                    }}>
+                    {document.icon ? (
+                      <div className="mr-2 shrink-0 text-[16px]">{document.icon}</div>
+                    ) : (
+                      <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
+                    )}
+                    <span className="truncate">{document.title}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>

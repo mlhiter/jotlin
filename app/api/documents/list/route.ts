@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
         where: {
           parentId: parentDocument || null,
           isArchived: false,
+          chatId: null, // Exclude chat-generated documents
           collaborators: {
             some: {
               userEmail: userEmail,
@@ -48,6 +49,7 @@ export async function GET(req: NextRequest) {
         where: {
           parentId: parentDocument || null,
           isArchived: false,
+          chatId: null, // Exclude chat-generated documents
           user: {
             email: userEmail,
           },
