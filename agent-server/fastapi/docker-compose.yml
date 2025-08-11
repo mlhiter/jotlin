@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  fastapi-server:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://jotlin:password@postgres:5432/jotlin
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - CORS_ORIGINS=http://localhost:3000
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key}
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=jotlin
+      - POSTGRES_USER=jotlin
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

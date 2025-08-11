@@ -65,20 +65,29 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     }
   }, [debounceOnChange])
 
-  const editorProps = useMemo(
-    () => ({
+  const editorProps = useMemo(() => {
+    // Check if content is markdown (simple heuristic: starts with # or has markdown patterns)
+    const isMarkdown = currentDocument?.content && (
+      currentDocument.content.startsWith('#') ||
+      currentDocument.content.includes('```') ||
+      currentDocument.content.includes('**') ||
+      currentDocument.content.includes('- ') ||
+      /^\d+\.\s/.test(currentDocument.content)
+    )
+
+    return {
       onChange: debounceOnChange,
       documentId: params.documentId,
-      initialContent: currentDocument?.content,
+      initialContent: isMarkdown ? undefined : currentDocument?.content,
+      initialMarkdown: isMarkdown ? currentDocument?.content : undefined,
       isShared: (currentDocument?.collaborators?.length ?? 0) > 1,
-    }),
-    [
-      debounceOnChange,
-      params.documentId,
-      currentDocument?.content,
-      currentDocument?.collaborators?.length,
-    ]
-  )
+    }
+  }, [
+    debounceOnChange,
+    params.documentId,
+    currentDocument?.content,
+    currentDocument?.collaborators?.length,
+  ])
 
   if (!document && currentDocument === undefined) {
     return (

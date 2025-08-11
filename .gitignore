@@ -40,3 +40,8 @@ next-env.d.ts
 # Editor
 .idea
 /lib/generated/prisma
+
+# Python
+__pycache__/
+examples
+venv/

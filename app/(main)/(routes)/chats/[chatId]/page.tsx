@@ -3,10 +3,12 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Send, Paperclip, MoreVertical, FileText } from 'lucide-react'
+import { Send, Paperclip, MoreVertical, FileText, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { chatApi } from '@/api/chat'
+import { createDocument } from '@/api/document'
+import { convertMarkdownToBlocks } from '@/libs/markdown-to-blocknote'
 import { useChatStore } from '@/stores/chat'
 import { Message } from '@/types/chat'
 import { Button } from '@/components/ui/button'
@@ -16,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/libs/utils'
 import { ChatDocumentList } from '@/app/(main)/components/chat-document-list'
 import { DocumentSelector } from '@/app/(main)/components/document-selector'
+import { ChatRequirementIntegration } from '@/components/chat-requirement-integration'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,14 +35,19 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 
 const ChatPage = () => {
   const params = useParams()
   const chatId = params.chatId as string
   const queryClient = useQueryClient()
-  const { setActiveChat, setMessages, addMessage, updateMessage, removeMessage } = useChatStore()
+  const {
+    setActiveChat,
+    setMessages,
+    addMessage,
+    updateMessage,
+    removeMessage,
+  } = useChatStore()
 
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -70,12 +78,19 @@ const ChatPage = () => {
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget
-    const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 50
+    const isAtBottom =
+      element.scrollHeight - element.scrollTop <= element.clientHeight + 50
     setUserScrolled(!isAtBottom)
   }
 
   const sendMessageMutation = useMutation({
-    mutationFn: async ({ content, tempMessageId }: { content: string; tempMessageId: string }) => {
+    mutationFn: async ({
+      content,
+      tempMessageId,
+    }: {
+      content: string
+      tempMessageId: string
+    }) => {
       try {
         const userMessage = await chatApi.sendMessage({
           content,
@@ -83,23 +98,46 @@ const ChatPage = () => {
           chatId,
         })
 
-        setLocalMessages(prev => prev.map(msg => 
-          msg.id === tempMessageId ? userMessage : msg
-        ))
+        setLocalMessages((prev) =>
+          prev.map((msg) => (msg.id === tempMessageId ? userMessage : msg))
+        )
         updateMessage(tempMessageId, userMessage)
-        
+
         setIsTyping(true)
         setStreamingContent('')
-        
+
         return new Promise<void>((resolve, reject) => {
           let fullAIResponse = ''
-          
+
           chatApi.streamAIResponse(
             chatId,
             content,
-            (chunk: string) => {
-              fullAIResponse += chunk
-              setStreamingContent(prev => prev + chunk)
+            async (chunk: string) => {
+              // Check for document generation signal
+              if (chunk.includes('__DOCUMENTS_GENERATED__:')) {
+                const signalStart = chunk.indexOf('__DOCUMENTS_GENERATED__:')
+                const signalEnd = chunk.indexOf('\n', signalStart)
+                const signalData = chunk.substring(signalStart + 24, signalEnd) // 24 = length of '__DOCUMENTS_GENERATED__:'
+                
+                try {
+                  const documentData = JSON.parse(signalData)
+                  await handleDocumentGeneration(documentData.documents, documentData.chatId)
+                  
+                  // Remove the signal from the displayed content
+                  const cleanChunk = chunk.replace(/__DOCUMENTS_GENERATED__:.*?\n/, '')
+                  if (cleanChunk) {
+                    fullAIResponse += cleanChunk
+                    setStreamingContent((prev) => prev + cleanChunk)
+                  }
+                } catch (error) {
+                  console.error('Failed to parse document generation signal:', error)
+                  fullAIResponse += chunk
+                  setStreamingContent((prev) => prev + chunk)
+                }
+              } else {
+                fullAIResponse += chunk
+                setStreamingContent((prev) => prev + chunk)
+              }
             },
             () => {
               // Create AI message immediately to avoid flashing
@@ -112,17 +150,19 @@ const ChatPage = () => {
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
               }
-              
-              setLocalMessages(prev => [...prev, aiMessage])
+
+              setLocalMessages((prev) => [...prev, aiMessage])
               setIsTyping(false)
               setStreamingContent('')
-              
+
               // Invalidate queries in background without affecting UI
               setTimeout(() => {
-                queryClient.invalidateQueries({ queryKey: ['messages', chatId] })
+                queryClient.invalidateQueries({
+                  queryKey: ['messages', chatId],
+                })
                 queryClient.invalidateQueries({ queryKey: ['chats'] })
               }, 100)
-              
+
               resolve()
             },
             (error: Error) => {
@@ -135,7 +175,9 @@ const ChatPage = () => {
           )
         })
       } catch (error) {
-        setLocalMessages(prev => prev.filter(msg => msg.id !== tempMessageId))
+        setLocalMessages((prev) =>
+          prev.filter((msg) => msg.id !== tempMessageId)
+        )
         removeMessage(tempMessageId)
         throw error
       }
@@ -156,30 +198,34 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (messages) {
-      setLocalMessages(prevLocal => {
-        const tempMessages = prevLocal.filter(msg => 
-          msg.id.startsWith('temp-') || msg.id.startsWith('ai-')
+      setLocalMessages((prevLocal) => {
+        const tempMessages = prevLocal.filter(
+          (msg) => msg.id.startsWith('temp-') || msg.id.startsWith('ai-')
         )
-        
+
         if (tempMessages.length > 0) {
           // Filter out messages that already exist in server response
-          const serverMessageIds = new Set(messages.map(msg => msg.id))
-          const uniqueTempMessages = tempMessages.filter(tempMsg => {
+          const serverMessageIds = new Set(messages.map((msg) => msg.id))
+          const uniqueTempMessages = tempMessages.filter((tempMsg) => {
             // For temp messages, check if real version exists
             if (tempMsg.id.startsWith('temp-')) {
               return !serverMessageIds.has(tempMsg.id.replace('temp-', ''))
             }
             // For AI messages, keep them unless exact same content exists
             if (tempMsg.id.startsWith('ai-')) {
-              return !messages.some(serverMsg => 
-                serverMsg.role === 'assistant' && 
-                serverMsg.content === tempMsg.content &&
-                Math.abs(new Date(serverMsg.createdAt).getTime() - new Date(tempMsg.createdAt).getTime()) < 5000
+              return !messages.some(
+                (serverMsg) =>
+                  serverMsg.role === 'assistant' &&
+                  serverMsg.content === tempMsg.content &&
+                  Math.abs(
+                    new Date(serverMsg.createdAt).getTime() -
+                      new Date(tempMsg.createdAt).getTime()
+                  ) < 5000
               )
             }
             return true
           })
-          
+
           return [...messages, ...uniqueTempMessages]
         }
         return messages
@@ -202,7 +248,7 @@ const ChatPage = () => {
 
     const content = input.trim()
     setInput('')
-    
+
     // Create and display temporary message immediately
     const tempMessage: Message = {
       id: `temp-${Date.now()}`,
@@ -213,8 +259,8 @@ const ChatPage = () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    
-    setLocalMessages(prev => [...prev, tempMessage])
+
+    setLocalMessages((prev) => [...prev, tempMessage])
     addMessage(tempMessage)
     sendMessageMutation.mutate({ content, tempMessageId: tempMessage.id })
   }
@@ -223,6 +269,55 @@ const ChatPage = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
+    }
+  }
+
+  const handleDocumentGeneration = async (documents: any[], chatId: string) => {
+    try {
+      let createdCount = 0
+      
+      for (const doc of documents) {
+        try {
+          // Convert markdown content to BlockNote format
+          const blocks = await convertMarkdownToBlocks(doc.content)
+          
+          // Create document with BlockNote content
+          const documentId = await createDocument({
+            title: doc.title,
+            parentDocument: null
+          })
+          
+          // Update document content after creation
+          // Send blocks directly, not as JSON string
+          await fetch(`/api/documents/${documentId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: documentId,
+              title: doc.title,
+              content: JSON.stringify(blocks), // Store as JSON string for database
+              chatId: chatId, // Link to current chat
+            })
+          })
+          
+          createdCount++
+        } catch (error) {
+          console.error(`Failed to create document "${doc.title}":`, error)
+        }
+      }
+      
+      if (createdCount > 0) {
+        toast.success(`已成功创建 ${createdCount} 个需求文档`)
+        // Refresh the chat to show linked documents
+        queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
+      } else {
+        toast.error('文档创建失败')
+      }
+    } catch (error) {
+      console.error('Failed to handle document generation:', error)
+      toast.error('文档创建过程中发生错误')
     }
   }
 
@@ -247,6 +342,15 @@ const ChatPage = () => {
       <div className="flex items-center justify-between border-b p-4">
         <h1 className="text-xl font-semibold">{chat?.title}</h1>
         <div className="flex items-center gap-2">
+          {/* Requirement Generator Button */}
+          <ChatRequirementIntegration 
+            onDocumentCreated={(docId) => {
+              toast.success('需求文档已生成')
+              // Refresh linked documents
+              queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
+            }}
+          />
+
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -273,9 +377,7 @@ const ChatPage = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Edit title</DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setShowDocumentSelector(true)}
-              >
+              <DropdownMenuItem onClick={() => setShowDocumentSelector(true)}>
                 Manage documents
               </DropdownMenuItem>
               <DropdownMenuItem className="text-destructive">
@@ -287,11 +389,10 @@ const ChatPage = () => {
       </div>
 
       {/* Messages */}
-      <ScrollArea 
+      <ScrollArea
         className="flex-1 p-4"
         ref={scrollAreaRef}
-        onScrollCapture={handleScroll}
-      >
+        onScrollCapture={handleScroll}>
         <div className="space-y-4">
           {localMessages.map((message) => (
             <div
@@ -367,14 +468,16 @@ const ChatPage = () => {
         </div>
       </div>
 
-      <Dialog open={showDocumentSelector} onOpenChange={setShowDocumentSelector}>
+      <Dialog
+        open={showDocumentSelector}
+        onOpenChange={setShowDocumentSelector}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Manage Linked Documents</DialogTitle>
           </DialogHeader>
           <DocumentSelector
             chatId={chatId}
-            linkedDocumentIds={chat?.documents?.map(d => d.id) || []}
+            linkedDocumentIds={chat?.documents?.map((d) => d.id) || []}
             onClose={() => setShowDocumentSelector(false)}
           />
         </DialogContent>

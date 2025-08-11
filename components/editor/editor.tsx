@@ -26,6 +26,7 @@ import { formattingToolbar } from './editor-toolbars'
 interface EditorProps {
   onChange: (value: string) => void
   initialContent?: string
+  initialMarkdown?: string // Add support for markdown content
   webrtcProvider?: WebrtcProvider
   ydoc?: Y.Doc
   editable?: boolean
@@ -34,6 +35,7 @@ interface EditorProps {
 const Editor = ({
   onChange,
   initialContent,
+  initialMarkdown,
   editable,
   webrtcProvider,
   ydoc,
@@ -64,6 +66,21 @@ const Editor = ({
     //       }
     //     : undefined,
   })
+
+  // Handle initial markdown content
+  useEffect(() => {
+    if (initialMarkdown && !initialContent) {
+      const loadMarkdownContent = async () => {
+        try {
+          const blocks = await editor.tryParseMarkdownToBlocks(initialMarkdown)
+          editor.replaceBlocks(editor.document, blocks)
+        } catch (error) {
+          console.error('Failed to parse initial markdown:', error)
+        }
+      }
+      loadMarkdownContent()
+    }
+  }, [editor, initialMarkdown, initialContent])
 
   // monitor clipboard,when last paste item is md-text,insert after currentBlock.
   useEffect(() => {

@@ -69,7 +69,8 @@ export async function POST(
           for await (const chunk of streamingChatAgent.streamResponse(
             message,
             conversationHistory,
-            documentContext
+            documentContext,
+            params.chatId
           )) {
             fullResponse += chunk
             const data = `data: ${JSON.stringify({ content: chunk })}\n\n`

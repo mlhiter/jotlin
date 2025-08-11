@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "prettier": "prettier --write .",
-    "shadcn-ui": "npx shadcn-ui@latest add"
+    "shadcn-ui": "npx shadcn@latest add"
   },
   "dependencies": {
     "@blocknote/core": "^0.34.0",
@@ -23,6 +23,7 @@
     "@radix-ui/react-dropdown-menu": "^2.0.6",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-popover": "^1.0.7",
+    "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-scroll-area": "^1.0.5",
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-separator": "^1.0.3",

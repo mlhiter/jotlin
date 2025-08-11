@@ -56,7 +56,7 @@ export async function PUT(
     }
 
     const { documentId } = params
-    const { ...data } = await req.json()
+    const { chatId, ...data } = await req.json()
 
     const existingDocument = await prisma.document.findUnique({
       where: {
@@ -80,11 +80,14 @@ export async function PUT(
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
+    // Update document and optionally link to chat
+    const updatedData = chatId ? { ...data, chatId } : data
+    
     const updatedDocument = await prisma.document.update({
       where: {
         id: documentId,
       },
-      data,
+      data: updatedData,
     })
 
     return NextResponse.json(updatedDocument)
