@@ -20,6 +20,7 @@ export async function GET(
       where: {
         id: params.chatId,
         userId: session.user.id,
+        isDeleted: false,
       },
       include: {
         documents: true,
@@ -62,6 +63,7 @@ export async function PATCH(
       where: {
         id: params.chatId,
         userId: session.user.id,
+        isDeleted: false,
       },
       data: {
         title,
@@ -90,25 +92,13 @@ export async function DELETE(
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    await prisma.message.deleteMany({
-      where: {
-        chatId: params.chatId,
-      },
-    })
-
-    await prisma.document.updateMany({
-      where: {
-        chatId: params.chatId,
-      },
-      data: {
-        chatId: null,
-      },
-    })
-
-    const chat = await prisma.chat.delete({
+    const chat = await prisma.chat.update({
       where: {
         id: params.chatId,
         userId: session.user.id,
+      },
+      data: {
+        isDeleted: true,
       },
     })
 

@@ -16,6 +16,7 @@ export async function GET() {
     const chats = await prisma.chat.findMany({
       where: {
         userId: session.user.id,
+        isDeleted: false,
       },
       include: {
         documents: {

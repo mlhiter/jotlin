@@ -20,6 +20,7 @@ export async function GET(
       where: {
         id: params.chatId,
         userId: session.user.id,
+        isDeleted: false,
       },
     })
 

@@ -20,6 +20,7 @@ export async function POST(
       where: {
         id: params.chatId,
         userId: session.user.id,
+        isDeleted: false,
       },
     })
 
@@ -71,6 +72,7 @@ export async function DELETE(
       where: {
         id: params.chatId,
         userId: session.user.id,
+        isDeleted: false,
       },
     })
 

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,56 +8,50 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  username      String?
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  password      String?
-  imageUrl      String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Auth fields
-  provider          String?   @default("credentials")
-  providerAccountId String?
-  refreshToken      String?   @unique
-  accessToken       String?   @unique
-  expiresAt         DateTime?
-
-  // Relations
-  documents           Document[]   @relation("UserDocuments")
-  invitationsSent     Invitation[] @relation("SentInvitations")
-  invitationsReceived Invitation[] @relation("ReceivedInvitations")
+  id                  String       @id @default(uuid())
+  email               String       @unique
+  password            String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  provider            String?      @default("credentials")
+  providerAccountId   String?
+  refreshToken        String?      @unique
+  accessToken         String?      @unique
+  expiresAt           DateTime?
   name                String
   image               String?
-  sessions            Session[]
+  emailVerified       Boolean      @default(false)
+  imageUrl            String?
+  username            String?
+  documents           Document[]   @relation("UserDocuments")
+  invitationsReceived Invitation[] @relation("ReceivedInvitations")
+  invitationsSent     Invitation[] @relation("SentInvitations")
   accounts            Account[]
   chats               Chat[]       @relation("UserChats")
   messages            Message[]    @relation("UserMessages")
+  sessions            Session[]
 
   @@map("user")
 }
 
 model Document {
-  id          String   @id @default(uuid())
-  title       String
-  content     String?  @db.Text
-  icon        String?
-  coverImage  String?
-  isArchived  Boolean  @default(false)
-  isPublished Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
+  id            String                 @id @default(uuid())
+  title         String
+  content       String?
+  icon          String?
+  coverImage    String?
+  isArchived    Boolean                @default(false)
+  isPublished   Boolean                @default(false)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
   userId        String
-  user          User                   @relation("UserDocuments", fields: [userId], references: [id])
   parentId      String?
-  parent        Document?              @relation("DocumentHierarchy", fields: [parentId], references: [id])
-  children      Document[]             @relation("DocumentHierarchy")
-  collaborators DocumentCollaborator[]
   chatId        String?
   chat          Chat?                  @relation("ChatDocuments", fields: [chatId], references: [id])
+  parent        Document?              @relation("DocumentHierarchy", fields: [parentId], references: [id])
+  children      Document[]             @relation("DocumentHierarchy")
+  user          User                   @relation("UserDocuments", fields: [userId], references: [id])
+  collaborators DocumentCollaborator[]
 
   @@index([userId])
   @@index([parentId])
@@ -70,9 +61,9 @@ model Document {
 model DocumentCollaborator {
   id         String   @id @default(uuid())
   documentId String
-  document   Document @relation(fields: [documentId], references: [id])
   userEmail  String
   createdAt  DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id])
 
   @@unique([documentId, userEmail])
   @@index([userEmail])
@@ -81,16 +72,14 @@ model DocumentCollaborator {
 model Invitation {
   id                String   @id @default(uuid())
   documentId        String
-  userEmail         String // inviter's email
-  collaboratorEmail String // invitee's email
+  userEmail         String
+  collaboratorEmail String
   isAccepted        Boolean  @default(false)
   isReplied         Boolean  @default(false)
   isValid           Boolean  @default(true)
   createdAt         DateTime @default(now())
-
-  // Relations
-  user         User @relation("SentInvitations", fields: [userEmail], references: [email])
-  collaborator User @relation("ReceivedInvitations", fields: [collaboratorEmail], references: [email])
+  collaborator      User     @relation("ReceivedInvitations", fields: [collaboratorEmail], references: [email])
+  user              User     @relation("SentInvitations", fields: [userEmail], references: [email])
 
   @@index([documentId])
   @@index([userEmail])
@@ -100,7 +89,7 @@ model Invitation {
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime
   updatedAt DateTime
   ipAddress String?
@@ -108,7 +97,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
@@ -117,7 +105,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -127,6 +114,7 @@ model Account {
   password              String?
   createdAt             DateTime
   updatedAt             DateTime
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
 }
@@ -143,18 +131,17 @@ model Verification {
 }
 
 model Chat {
-  id          String    @id @default(uuid())
+  id          String     @id @default(uuid())
   title       String
   description String?
-  isArchived  Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relations
-  userId    String
-  user      User       @relation("UserChats", fields: [userId], references: [id])
-  documents Document[] @relation("ChatDocuments")
-  messages  Message[]  @relation("ChatMessages")
+  isArchived  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  userId      String
+  isDeleted   Boolean    @default(false)
+  documents   Document[] @relation("ChatDocuments")
+  user        User       @relation("UserChats", fields: [userId], references: [id])
+  messages    Message[]  @relation("ChatMessages")
 
   @@index([userId])
   @@map("chat")
@@ -162,15 +149,13 @@ model Chat {
 
 model Message {
   id        String   @id @default(uuid())
-  content   String   @db.Text
-  role      String   // 'user' or 'assistant'
+  content   String
+  role      String
   createdAt DateTime @default(now())
-
-  // Relations
-  chatId String
-  chat   Chat   @relation("ChatMessages", fields: [chatId], references: [id])
-  userId String
-  user   User   @relation("UserMessages", fields: [userId], references: [id])
+  chatId    String
+  userId    String
+  chat      Chat     @relation("ChatMessages", fields: [chatId], references: [id])
+  user      User     @relation("UserMessages", fields: [userId], references: [id])
 
   @@index([chatId])
   @@index([userId])

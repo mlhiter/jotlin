@@ -29,6 +29,7 @@ export async function POST(
       where: {
         id: params.chatId,
         userId: session.user.id,
+        isDeleted: false,
       },
       include: {
         messages: {
