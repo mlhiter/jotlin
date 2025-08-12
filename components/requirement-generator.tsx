@@ -1,13 +1,23 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, FileText, Download, Save } from 'lucide-react'
-import { requirementApi, GeneratedDocument, RequirementGenerationStatus } from '@/api/requirements'
+import {
+  requirementApi,
+  GeneratedDocument,
+  RequirementGenerationStatus,
+} from '@/api/requirements'
 import { toast } from 'sonner'
 
 interface RequirementGeneratorProps {
@@ -15,7 +25,10 @@ interface RequirementGeneratorProps {
   className?: string
 }
 
-export function RequirementGenerator({ onDocumentCreated, className }: RequirementGeneratorProps) {
+export function RequirementGenerator({
+  onDocumentCreated,
+  className,
+}: RequirementGeneratorProps) {
   const [input, setInput] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [status, setStatus] = useState<RequirementGenerationStatus | null>(null)
@@ -35,7 +48,7 @@ export function RequirementGenerator({ onDocumentCreated, className }: Requireme
     try {
       // Start the requirement generation process
       const response = await requirementApi.generateRequirements({
-        initial_requirements: input.trim()
+        initial_requirements: input.trim(),
       })
 
       toast.success('需求分析已开始，AI agent正在工作...')
@@ -50,8 +63,9 @@ export function RequirementGenerator({ onDocumentCreated, className }: Requireme
 
       setResults(finalResults.documents)
       setShowResults(true)
-      toast.success(`需求分析完成！生成了 ${finalResults.documents.length} 个文档`)
-
+      toast.success(
+        `需求分析完成！生成了 ${finalResults.documents.length} 个文档`
+      )
     } catch (error) {
       console.error('Requirement generation failed:', error)
       toast.error('需求生成失败: ' + (error as Error).message)
@@ -62,49 +76,73 @@ export function RequirementGenerator({ onDocumentCreated, className }: Requireme
 
   const handleSaveDocument = async (doc: GeneratedDocument) => {
     try {
-      // For now, we'll use a placeholder - this should integrate with your document API
-      // You can replace this with the actual document creation API call
       console.log('Saving document:', doc.title)
-      
-      // Placeholder: Copy content to clipboard for now
-      await navigator.clipboard.writeText(doc.content)
-      toast.success(`文档 "${doc.title}" 内容已复制到剪贴板`)
-      
-      // TODO: Integrate with actual document API
-      // const response = await documentApi.create({
-      //   title: doc.title,
-      //   content: doc.content
-      // })
-      
+
+      // Create document using the markdown API
+      const { createDocumentFromMarkdown } = await import('@/api/document')
+      const response = await createDocumentFromMarkdown({
+        title: doc.title,
+        markdownContent: doc.content,
+      })
+
+      toast.success(`文档 "${doc.title}" 已成功保存`)
+
       if (onDocumentCreated) {
-        onDocumentCreated('placeholder-id')
+        onDocumentCreated(response.id)
       }
     } catch (error) {
       console.error('Failed to save document:', error)
-      toast.error('保存文档失败')
+      toast.error('保存文档失败: ' + (error as Error).message)
     }
   }
 
   const handleSaveAllDocuments = async () => {
     try {
-      // Placeholder implementation
-      const allContent = results.map(doc => `# ${doc.title}\n\n${doc.content}\n\n---\n\n`).join('')
-      await navigator.clipboard.writeText(allContent)
-      toast.success(`已将所有 ${results.length} 个文档复制到剪贴板`)
-      
-      // TODO: Integrate with actual document API for batch creation
+      toast.loading(`正在保存 ${results.length} 个文档...`)
+
+      const { createDocumentFromMarkdown } = await import('@/api/document')
+      const savedDocuments: string[] = []
+
+      for (const doc of results) {
+        try {
+          const response = await createDocumentFromMarkdown({
+            title: doc.title,
+            markdownContent: doc.content,
+          })
+          savedDocuments.push(response.id)
+        } catch (error) {
+          console.error(`Failed to save document "${doc.title}":`, error)
+        }
+      }
+
+      if (savedDocuments.length === results.length) {
+        toast.success(`已成功保存所有 ${results.length} 个文档`)
+      } else {
+        toast.success(
+          `已保存 ${savedDocuments.length} / ${results.length} 个文档`
+        )
+      }
+
+      if (onDocumentCreated && savedDocuments.length > 0) {
+        // Call with the first document ID as a representative
+        onDocumentCreated(savedDocuments[0])
+      }
     } catch (error) {
       console.error('Failed to save all documents:', error)
-      toast.error('批量保存失败')
+      toast.error('批量保存失败: ' + (error as Error).message)
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-500'
-      case 'running': return 'bg-blue-500'
-      case 'failed': return 'bg-red-500'
-      default: return 'bg-gray-500'
+      case 'completed':
+        return 'bg-green-500'
+      case 'running':
+        return 'bg-blue-500'
+      case 'failed':
+        return 'bg-red-500'
+      default:
+        return 'bg-gray-500'
     }
   }
 
@@ -134,11 +172,10 @@ export function RequirementGenerator({ onDocumentCreated, className }: Requireme
           </div>
 
           {/* Action Button */}
-          <Button 
+          <Button
             onClick={handleGenerate}
             disabled={isGenerating || !input.trim()}
-            className="w-full"
-          >
+            className="w-full">
             {isGenerating ? '生成中...' : '开始生成需求文档'}
           </Button>
 
@@ -169,12 +206,13 @@ export function RequirementGenerator({ onDocumentCreated, className }: Requireme
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">生成的文档</CardTitle>
                   <Button onClick={handleSaveAllDocuments} size="sm">
-                    <Save className="h-4 w-4 mr-2" />
+                    <Save className="mr-2 h-4 w-4" />
                     保存所有文档
                   </Button>
                 </div>
                 <CardDescription>
-                  AI已生成 {results.length} 个需求文档，你可以查看并保存到Jotlin中
+                  AI已生成 {results.length}{' '}
+                  个需求文档，你可以查看并保存到Jotlin中
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -185,22 +223,21 @@ export function RequirementGenerator({ onDocumentCreated, className }: Requireme
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <h4 className="font-medium">{doc.title}</h4>
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="mt-1 text-sm text-muted-foreground">
                               类型: {doc.type}
                             </p>
-                            <div className="mt-2 p-3 bg-muted rounded-md">
-                              <pre className="whitespace-pre-wrap text-sm max-h-32 overflow-y-auto">
+                            <div className="mt-2 rounded-md bg-muted p-3">
+                              <pre className="max-h-32 overflow-y-auto whitespace-pre-wrap text-sm">
                                 {doc.content.substring(0, 200)}
                                 {doc.content.length > 200 && '...'}
                               </pre>
                             </div>
                           </div>
-                          <div className="flex gap-2 ml-4">
+                          <div className="ml-4 flex gap-2">
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleSaveDocument(doc)}
-                            >
+                              onClick={() => handleSaveDocument(doc)}>
                               <Save className="h-4 w-4" />
                             </Button>
                           </div>
@@ -214,8 +251,8 @@ export function RequirementGenerator({ onDocumentCreated, className }: Requireme
           )}
 
           {/* Help Text */}
-          <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-md">
-            <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5" />
+          <div className="flex items-start gap-2 rounded-md bg-blue-50 p-3">
+            <AlertCircle className="mt-0.5 h-4 w-4 text-blue-600" />
             <div className="text-sm">
               <p className="font-medium text-blue-900">提示：</p>
               <p className="text-blue-700">

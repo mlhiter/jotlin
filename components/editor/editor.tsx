@@ -72,10 +72,56 @@ const Editor = ({
     if (initialMarkdown && !initialContent) {
       const loadMarkdownContent = async () => {
         try {
+          console.log(
+            'Loading initial markdown content, length:',
+            initialMarkdown.length
+          )
           const blocks = await editor.tryParseMarkdownToBlocks(initialMarkdown)
+          console.log(
+            'Successfully parsed markdown to',
+            blocks.length,
+            'blocks'
+          )
           editor.replaceBlocks(editor.document, blocks)
         } catch (error) {
-          console.error('Failed to parse initial markdown:', error)
+          console.error(
+            'Failed to parse initial markdown with BlockNote parser:',
+            error
+          )
+          console.log(
+            'Markdown preview:',
+            initialMarkdown.substring(0, 300) + '...'
+          )
+
+          // Fallback: use our enhanced markdown parser
+          try {
+            const { convertMarkdownToBlocks } = await import(
+              '@/libs/markdown-to-blocknote'
+            )
+            const fallbackBlocks = await convertMarkdownToBlocks(
+              initialMarkdown,
+              null
+            )
+            console.log(
+              'Fallback parser created',
+              fallbackBlocks.length,
+              'blocks'
+            )
+            editor.replaceBlocks(editor.document, fallbackBlocks)
+          } catch (fallbackError) {
+            console.error('Fallback parser also failed:', fallbackError)
+            // Ultimate fallback: create simple paragraph
+            const simpleBlock = [
+              {
+                id: Math.random().toString(36).substring(2, 11),
+                type: 'paragraph',
+                props: { textColor: 'default', backgroundColor: 'default' },
+                content: [{ type: 'text', text: initialMarkdown, styles: {} }],
+                children: [],
+              },
+            ]
+            editor.replaceBlocks(editor.document, simpleBlock)
+          }
         }
       }
       loadMarkdownContent()

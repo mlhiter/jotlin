@@ -11,6 +11,7 @@ import { EditorWrapper } from '@/components/editor/editor-wrapper'
 
 import { getDocumentById, updateDocument } from '@/api/document'
 import { useDocumentStore } from '@/stores/document'
+import { analyzeContent } from '@/libs/content-detector'
 
 interface DocumentIdPageProps {
   params: {
@@ -66,20 +67,54 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   }, [debounceOnChange])
 
   const editorProps = useMemo(() => {
-    // Check if content is markdown (simple heuristic: starts with # or has markdown patterns)
-    const isMarkdown = currentDocument?.content && (
-      currentDocument.content.startsWith('#') ||
-      currentDocument.content.includes('```') ||
-      currentDocument.content.includes('**') ||
-      currentDocument.content.includes('- ') ||
-      /^\d+\.\s/.test(currentDocument.content)
-    )
+    if (!currentDocument?.content) {
+      return {
+        onChange: debounceOnChange,
+        documentId: params.documentId,
+        initialContent: undefined,
+        initialMarkdown: undefined,
+        isShared: (currentDocument?.collaborators?.length ?? 0) > 1,
+      }
+    }
+
+    // Analyze content using the advanced detector
+    const analysis = analyzeContent(currentDocument.content)
+
+    console.log('Content analysis result:', {
+      type: analysis.type,
+      confidence: analysis.confidence,
+      isValid: analysis.isValid,
+      issues: analysis.issues,
+    })
+
+    let contentToUse = analysis.content
+
+    // Auto-fix recursive JSON nesting if detected
+    if (analysis.type === 'recursive-json') {
+      console.log('Auto-fixing recursive JSON nesting')
+
+      // Auto-save the fixed content
+      setTimeout(() => {
+        console.log('Auto-saving fixed content...')
+        updateDocument({
+          id: params.documentId,
+          content: contentToUse,
+        }).catch((error) => {
+          console.error('Failed to auto-save fixed content:', error)
+        })
+      }, 1000)
+    }
+
+    // Determine how to handle the content based on analysis
+    const shouldTreatAsMarkdown =
+      analysis.type === 'markdown' ||
+      (analysis.type === 'unknown' && analysis.confidence < 50)
 
     return {
       onChange: debounceOnChange,
       documentId: params.documentId,
-      initialContent: isMarkdown ? undefined : currentDocument?.content,
-      initialMarkdown: isMarkdown ? currentDocument?.content : undefined,
+      initialContent: shouldTreatAsMarkdown ? undefined : contentToUse,
+      initialMarkdown: shouldTreatAsMarkdown ? contentToUse : undefined,
       isShared: (currentDocument?.collaborators?.length ?? 0) > 1,
     }
   }, [
