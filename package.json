@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:agent": "cd agent-server/fastapi && source venv/bin/activate && python run.py",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
