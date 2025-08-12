@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Plus,
@@ -36,11 +36,32 @@ export const ChatList = ({}: ChatListProps) => {
   const queryClient = useQueryClient()
   const { setActiveChat } = useChatStore()
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [shouldAutoExpand, setShouldAutoExpand] = useState<string | null>(null)
 
   const { data: chats, isLoading } = useQuery({
     queryKey: ['chats'],
     queryFn: chatApi.getList,
   })
+
+  // Listen for chat updates to auto-expand when new documents are linked
+  useEffect(() => {
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (event?.type === 'updated' && event?.query?.queryKey?.[0] === 'chat') {
+        const chatId = event.query.queryKey[1] as string
+        if (chatId) {
+          setShouldAutoExpand(chatId)
+          // Auto-expand this chat
+          setExpanded((prev) => ({ ...prev, [chatId]: true }))
+          // Reset auto-expand after a delay
+          setTimeout(() => {
+            setShouldAutoExpand(null)
+          }, 5000)
+        }
+      }
+    })
+
+    return unsubscribe
+  }, [queryClient])
 
   const createMutation = useMutation({
     mutationFn: chatApi.create,
@@ -156,7 +177,9 @@ export const ChatList = ({}: ChatListProps) => {
               </div>
 
               <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuTrigger
+                  asChild
+                  onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -188,26 +211,30 @@ export const ChatList = ({}: ChatListProps) => {
             </div>
 
             {/* Show associated documents when expanded */}
-            {expanded[chat.id] && chat.documents && chat.documents.length > 0 && (
-              <div className="ml-8 space-y-1 border-l-2 border-muted-foreground/20 pl-2">
-                {chat.documents.map((document) => (
-                  <div
-                    key={document.id}
-                    className="flex cursor-pointer items-center rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-accent"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDocumentClick(document.id)
-                    }}>
-                    {document.icon ? (
-                      <div className="mr-2 shrink-0 text-[16px]">{document.icon}</div>
-                    ) : (
-                      <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
-                    )}
-                    <span className="truncate">{document.title}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {expanded[chat.id] &&
+              chat.documents &&
+              chat.documents.length > 0 && (
+                <div className="ml-8 space-y-1 border-l-2 border-muted-foreground/20 pl-2">
+                  {chat.documents.map((document) => (
+                    <div
+                      key={document.id}
+                      className="flex cursor-pointer items-center rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-accent"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDocumentClick(document.id)
+                      }}>
+                      {document.icon ? (
+                        <div className="mr-2 shrink-0 text-[16px]">
+                          {document.icon}
+                        </div>
+                      ) : (
+                        <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
+                      )}
+                      <span className="truncate">{document.title}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
           </div>
         ))}
       </div>

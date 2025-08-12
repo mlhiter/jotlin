@@ -65,7 +65,7 @@ export async function POST(
     const stream = new ReadableStream({
       async start(controller) {
         let fullResponse = ''
-        
+
         try {
           for await (const chunk of streamingChatAgent.streamResponse(
             message,
@@ -114,7 +114,7 @@ export async function POST(
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        Connection: 'keep-alive',
       },
     })
   } catch (error) {

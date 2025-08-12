@@ -12,6 +12,7 @@ import {
 import { useMediaQuery } from 'usehooks-ts'
 import { ElementRef, useRef, useState, useEffect, useCallback } from 'react'
 import { useParams, usePathname } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { cn } from '@/libs/utils'
 import {
@@ -36,6 +37,7 @@ const Navigation = () => {
   const search = useSearch()
   const pathname = usePathname()
   const params = useParams()
+  const queryClient = useQueryClient()
   const { createDocument } = useDocumentActions()
   const isMobile = useMediaQuery('(max-width:768px)')
 

@@ -19,6 +19,8 @@ import { cn } from '@/libs/utils'
 import { ChatDocumentList } from '@/app/(main)/components/chat-document-list'
 import { DocumentSelector } from '@/app/(main)/components/document-selector'
 import { ChatRequirementIntegration } from '@/components/chat-requirement-integration'
+import DocumentGenerationProgress from '@/components/document-generation-progress'
+import { useDocumentGeneration } from '@/hooks/use-document-generation'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +59,15 @@ const ChatPage = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const [userScrolled, setUserScrolled] = useState(false)
+  const {
+    state: documentGenerationState,
+    startGeneration,
+    updateProgress,
+    nextDocument,
+    completeGeneration,
+    setError: setGenerationError,
+    reset: resetGeneration,
+  } = useDocumentGeneration()
 
   const { data: chat, isLoading: chatLoading } = useQuery({
     queryKey: ['chat', chatId],
@@ -115,89 +126,79 @@ const ChatPage = () => {
             content,
             async (chunk: string) => {
               // Add current chunk to any pending signal buffer
-              const combinedChunk = pendingSignalBuffer + chunk
-              pendingSignalBuffer = ''
+              pendingSignalBuffer += chunk
 
-              // Debug: Log chunk content when it contains the signal
-              if (combinedChunk.includes('__DOCUMENTS_GENERATED__:')) {
-                console.log(
-                  'Detected __DOCUMENTS_GENERATED__ signal in chunk:',
-                  combinedChunk
-                )
-              }
-
-              // Check for document generation signal in the combined chunk
-              if (combinedChunk.includes('__DOCUMENTS_GENERATED__:')) {
-                const signalStart = combinedChunk.indexOf(
-                  '__DOCUMENTS_GENERATED__:'
-                )
-                const signalEnd = combinedChunk.indexOf('\n', signalStart)
-
-                if (signalEnd !== -1) {
-                  // Complete signal found
-                  const signalData = combinedChunk.substring(
-                    signalStart + 24,
-                    signalEnd
-                  ) // 24 = length of '__DOCUMENTS_GENERATED__:'
-
+              // Process complete lines only (ending with \n)
+              let lines = pendingSignalBuffer.split('\n')
+              // Keep the last incomplete line in buffer
+              pendingSignalBuffer = lines.pop() || ''
+              
+              // Process each complete line
+              for (const line of lines) {
+                let displayLine = true
+                
+                // Check for generation progress signal
+                if (line.includes('__GENERATION_PROGRESS__:')) {
+                  const signalStart = line.indexOf('__GENERATION_PROGRESS__:')
+                  const signalData = line.substring(signalStart + '__GENERATION_PROGRESS__:'.length).trim()
+                  
+                  try {
+                    const progressData = JSON.parse(signalData)
+                    console.log('Generation progress update:', progressData)
+                    updateProgress(progressData)
+                    displayLine = false // Don't display this line
+                  } catch (error) {
+                    console.error('Failed to parse generation progress signal:', error, 'Full line:', line, 'Extracted data:', signalData)
+                  }
+                }
+                
+                // Check for document generation start signal
+                if (line.includes('__DOCUMENT_GENERATION_START__:')) {
+                  const signalStart = line.indexOf('__DOCUMENT_GENERATION_START__:')
+                  const signalData = line.substring(signalStart + '__DOCUMENT_GENERATION_START__:'.length).trim()
+                  
+                  try {
+                    const data = JSON.parse(signalData)
+                    console.log('Document generation started:', data)
+                    // Initialize with analyzing state
+                    startGeneration([
+                      { title: '正在分析需求...', content: '' },
+                      { title: '生成需求文档...', content: '' },
+                      { title: '创建文档结构...', content: '' }
+                    ])
+                    displayLine = false // Don't display this line
+                  } catch (error) {
+                    console.error('Failed to parse generation start signal:', error, 'Full line:', line, 'Extracted data:', signalData)
+                  }
+                }
+                
+                // Check for documents generated signal
+                if (line.includes('__DOCUMENTS_GENERATED__:')) {
+                  const signalStart = line.indexOf('__DOCUMENTS_GENERATED__:')
+                  const signalData = line.substring(signalStart + '__DOCUMENTS_GENERATED__:'.length).trim()
+                  
                   try {
                     const documentData = JSON.parse(signalData)
-                    console.log(
-                      'Successfully parsed document generation signal:',
-                      documentData
-                    )
+                    console.log('Successfully parsed document generation signal:', documentData)
+                    
+                    // Replace placeholder with real documents
+                    startGeneration(documentData.documents)
+                    
                     await handleDocumentGeneration(
                       documentData.documents,
                       documentData.chatId
                     )
-
-                    // Remove the entire signal line from the chunk
-                    const beforeSignal = combinedChunk.substring(0, signalStart)
-                    const afterSignal = combinedChunk.substring(signalEnd + 1)
-                    const cleanChunk = beforeSignal + afterSignal
-                    console.log('Cleaned chunk (removed signal):', cleanChunk)
-
-                    if (cleanChunk.trim()) {
-                      fullAIResponse += cleanChunk
-                      setStreamingContent((prev) => prev + cleanChunk)
-                    }
+                    displayLine = false // Don't display this line
                   } catch (error) {
-                    console.error(
-                      'Failed to parse document generation signal:',
-                      error
-                    )
-                    // If parsing fails, treat it as regular content
-                    fullAIResponse += combinedChunk
-                    setStreamingContent((prev) => prev + combinedChunk)
-                  }
-                } else {
-                  // Signal is incomplete, buffer the part that contains the signal
-                  const possibleSignalStart = combinedChunk.lastIndexOf(
-                    '__DOCUMENTS_GENERATED__:'
-                  )
-                  if (possibleSignalStart !== -1) {
-                    // Keep the signal part in buffer, display the rest
-                    const beforeSignal = combinedChunk.substring(
-                      0,
-                      possibleSignalStart
-                    )
-                    pendingSignalBuffer =
-                      combinedChunk.substring(possibleSignalStart)
-
-                    if (beforeSignal.trim()) {
-                      fullAIResponse += beforeSignal
-                      setStreamingContent((prev) => prev + beforeSignal)
-                    }
-                  } else {
-                    // No signal start found, display everything
-                    fullAIResponse += combinedChunk
-                    setStreamingContent((prev) => prev + combinedChunk)
+                    console.error('Failed to parse document generation signal:', error, 'Full line:', line, 'Extracted data:', signalData)
                   }
                 }
-              } else {
-                // No signal in this chunk, display it normally
-                fullAIResponse += combinedChunk
-                setStreamingContent((prev) => prev + combinedChunk)
+                
+                // Display the line if it doesn't contain signals or if signal parsing failed
+                if (displayLine && line.trim()) {
+                  fullAIResponse += line + '\n'
+                  setStreamingContent((prev) => prev + line + '\n')
+                }
               }
             },
             () => {
@@ -302,7 +303,8 @@ const ChatPage = () => {
   useEffect(() => {
     setUserScrolled(false)
     setLocalMessages([])
-  }, [chatId])
+    resetGeneration() // Reset document generation state when switching chats
+  }, [chatId, resetGeneration])
 
   const handleSend = () => {
     if (!input.trim() || sendMessageMutation.isPending || isTyping) return
@@ -337,7 +339,8 @@ const ChatPage = () => {
     try {
       let createdCount = 0
 
-      for (const doc of documents) {
+      for (let i = 0; i < documents.length; i++) {
+        const doc = documents[i]
         try {
           // Convert markdown content to BlockNote format
           const blocks = await convertMarkdownToBlocks(doc.content)
@@ -364,20 +367,26 @@ const ChatPage = () => {
           })
 
           createdCount++
+          nextDocument() // Update progress
         } catch (error) {
           console.error(`Failed to create document "${doc.title}":`, error)
         }
       }
 
       if (createdCount > 0) {
+        completeGeneration()
         toast.success(`已成功创建 ${createdCount} 个需求文档`)
         // Refresh the chat to show linked documents
         queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
+        // Refresh documents list in navigation
+        queryClient.invalidateQueries({ queryKey: ['documents'] })
       } else {
+        setGenerationError('文档创建失败')
         toast.error('文档创建失败')
       }
     } catch (error) {
       console.error('Failed to handle document generation:', error)
+      setGenerationError('文档创建过程中发生错误')
       toast.error('文档创建过程中发生错误')
     }
   }
@@ -405,7 +414,7 @@ const ChatPage = () => {
         <div className="flex items-center gap-2">
           {/* Requirement Generator Button */}
           <ChatRequirementIntegration
-            onDocumentCreated={(docId) => {
+            onDocumentCreated={() => {
               toast.success('需求文档已生成')
               // Refresh linked documents
               queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
@@ -470,10 +479,11 @@ const ChatPage = () => {
                     : 'bg-muted'
                 )}>
                 <p className="whitespace-pre-wrap">
-                  {message.content?.replace(
-                    /__DOCUMENTS_GENERATED__:.*?\n/g,
-                    ''
-                  )}
+                  {message.content
+                    ?.replace(/__DOCUMENTS_GENERATED__:.*?\n/g, '')
+                    ?.replace(/__DOCUMENT_GENERATION_START__:.*?\n/g, '')
+                    ?.replace(/__GENERATION_PROGRESS__:.*?\n/g, '')
+                  }
                 </p>
                 <p className="mt-1 text-xs opacity-70">
                   {new Date(message.createdAt).toLocaleTimeString()}
@@ -488,10 +498,11 @@ const ChatPage = () => {
                 {streamingContent ? (
                   <div>
                     <p className="whitespace-pre-wrap">
-                      {streamingContent?.replace(
-                        /__DOCUMENTS_GENERATED__:.*?\n/g,
-                        ''
-                      )}
+                      {streamingContent
+                        ?.replace(/__DOCUMENTS_GENERATED__:.*?\n/g, '')
+                        ?.replace(/__DOCUMENT_GENERATION_START__:.*?\n/g, '')
+                        ?.replace(/__GENERATION_PROGRESS__:.*?\n/g, '')
+                      }
                     </p>
                     <div className="mt-2 flex space-x-1">
                       <div className="h-1 w-1 animate-pulse rounded-full bg-gray-500" />
@@ -506,6 +517,23 @@ const ChatPage = () => {
                     <div className="h-2 w-2 animate-bounce rounded-full bg-gray-500 delay-200" />
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Document Generation Progress */}
+          {documentGenerationState.documents.length > 0 && (
+            <div className="flex justify-start">
+              <div className="max-w-[85%]">
+                <DocumentGenerationProgress
+                  documents={documentGenerationState.documents}
+                  currentDocumentIndex={
+                    documentGenerationState.currentDocumentIndex
+                  }
+                  isGenerating={documentGenerationState.isGenerating}
+                  error={documentGenerationState.error}
+                  overallProgress={documentGenerationState.overallProgress}
+                />
               </div>
             </div>
           )}

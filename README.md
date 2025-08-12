@@ -5,7 +5,6 @@
 ### 👀Key Features：
 
 - Jotlin is an open-source version of Notion, but it incorporates the capabilities of LLM throughout the writing process.
-
   - Notion-like editor experience.
   - Before writing, AI automatically assists in retrieving information.
   - During writing, it generates content.

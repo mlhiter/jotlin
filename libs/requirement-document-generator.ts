@@ -36,7 +36,7 @@ export async function createDocumentsFromRequirements(
   options: DocumentCreationOptions = {}
 ): Promise<string[]> {
   const documentIds: string[] = []
-  
+
   for (const doc of documents) {
     try {
       const documentId = await createDocumentFromRequirement(doc, options)
@@ -45,6 +45,6 @@ export async function createDocumentsFromRequirements(
       console.error(`Failed to create document for "${doc.title}":`, error)
     }
   }
-  
+
   return documentIds
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FileIcon } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 
@@ -16,17 +16,34 @@ interface DocumentListProps {
   level?: number
   data?: Doc[]
   type: 'private' | 'share'
+  forceExpanded?: boolean
 }
 
 const DocumentList = ({
   parentDocumentId,
   level = 0,
   type,
+  forceExpanded = false,
 }: DocumentListProps) => {
   const params = useParams()
   const router = useRouter()
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const { setDocuments, getDocuments } = useDocumentStore()
+
+  // Handle force expansion when new documents are created
+  useEffect(() => {
+    if (forceExpanded && level === 0) {
+      // Expand root level documents when forceExpanded is true
+      const currentDocs = getDocuments(parentDocumentId, type)
+      if (currentDocs && currentDocs.length > 0) {
+        const newExpanded: Record<string, boolean> = {}
+        currentDocs.forEach((doc) => {
+          newExpanded[doc.id] = true
+        })
+        setExpanded(newExpanded)
+      }
+    }
+  }, [forceExpanded, level, parentDocumentId, type, getDocuments])
 
   const onExpand = (documentId: string) => {
     setExpanded((prevExpanded) => ({
@@ -92,6 +109,7 @@ const DocumentList = ({
               parentDocumentId={document.id}
               level={level + 1}
               type={type}
+              forceExpanded={forceExpanded}
             />
           )}
         </div>

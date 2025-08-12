@@ -26,9 +26,15 @@ export class StreamingChatAgent {
   ): AsyncGenerator<string, void, unknown> {
     try {
       // Check if this is a requirement generation trigger
-      const shouldGenerateRequirements = this.isRequirementGenerationTrigger(userMessage, conversationHistory)
-      
-      const systemPrompt = this.buildSystemPrompt(documentContext, shouldGenerateRequirements)
+      const shouldGenerateRequirements = this.isRequirementGenerationTrigger(
+        userMessage,
+        conversationHistory
+      )
+
+      const systemPrompt = this.buildSystemPrompt(
+        documentContext,
+        shouldGenerateRequirements
+      )
       const messages = [
         { role: 'system', content: systemPrompt },
         ...conversationHistory.slice(-8).map((msg) => ({
@@ -52,30 +58,68 @@ export class StreamingChatAgent {
       // After streaming the response, check if we should generate requirements
       if (shouldGenerateRequirements && chatId) {
         yield '\n\n🤖 正在为您生成需求文档...\n\n'
-        
+
         try {
           // Generate requirements only, don't create documents on server side
           const response = await requirementApi.generateRequirements({
-            initial_requirements: userMessage
+            initial_requirements: userMessage,
           })
 
-          // Poll for completion with progress updates
-          const results = await requirementApi.pollForCompletion(
-            response.task_id,
-            (progress) => {
-              console.log(`Progress: ${progress.progress}% - ${progress.message}`)
-            },
-            1000
-          )
-          
+          // Signal the frontend to start showing progress
+          yield `__DOCUMENT_GENERATION_START__:${JSON.stringify({
+            chatId,
+            taskId: response.task_id,
+          })}\n`
+
+          // Poll for completion with progress updates by manually polling
+          let isCompleted = false
+          let lastProgress = 0
+          let results: any = null
+
+          while (!isCompleted) {
+            try {
+              const status = await requirementApi.getGenerationStatus(
+                response.task_id
+              )
+
+              // Send progress update if changed
+              if (status.progress > lastProgress) {
+                lastProgress = status.progress
+                yield `__GENERATION_PROGRESS__:${JSON.stringify({
+                  progress: status.progress,
+                  message: status.message,
+                  status: status.status,
+                })}\n`
+              }
+
+              if (status.status === 'completed') {
+                isCompleted = true
+                results = await requirementApi.getFormattedResults(
+                  response.task_id
+                )
+              } else if (status.status === 'failed') {
+                throw new Error(
+                  status.message || 'Requirement generation failed'
+                )
+              }
+
+              // Wait before next poll if not completed
+              if (!isCompleted) {
+                await new Promise((resolve) => setTimeout(resolve, 1000))
+              }
+            } catch (error) {
+              console.error('Error polling status:', error)
+              throw error
+            }
+          }
+
           if (results.documents && results.documents.length > 0) {
-            yield `✅ 已成功生成 ${results.documents.length} 个需求文档。正在创建文档...\n\n`
-            
-            // Signal the frontend to create documents
-            // We'll emit a special message that the frontend can catch
+            yield `✅ 已成功分析并生成 ${results.documents.length} 个需求文档。正在为您创建文档...\n\n`
+
+            // Signal the frontend to create documents with full data
             yield `__DOCUMENTS_GENERATED__:${JSON.stringify({
               chatId,
-              documents: results.documents
+              documents: results.documents,
             })}\n`
           } else {
             yield '❌ 需求文档生成失败，请稍后重试。\n'
@@ -102,69 +146,55 @@ export class StreamingChatAgent {
     const hasAssistantResponse = conversationHistory.some(
       (msg) => msg.constructor.name === 'AIMessage'
     )
-    
+
     if (hasAssistantResponse) {
       return false
     }
 
     const lowerMessage = userMessage.toLowerCase()
-    
+
     // Keywords that indicate project creation intent
     const projectKeywords = [
-      '我想做', '我要做', '我想开发', '我要开发', '我想创建', '我要创建',
-      '我想建立', '我要建立', '我想实现', '我要实现', '我想写',
-      '我需要', '帮我做', '帮我开发', '帮我创建', '帮我建立',
-      '一个网站', '一个系统', '一个应用', '一个平台', '一个项目',
-      '博客', '商城', '管理系统', '后台', '前端', '网页',
-      '小程序', 'app', '应用程序', '软件'
+      '我想做',
+      '我要做',
+      '我想开发',
+      '我要开发',
+      '我想创建',
+      '我要创建',
+      '我想建立',
+      '我要建立',
+      '我想实现',
+      '我要实现',
+      '我想写',
+      '我需要',
+      '帮我做',
+      '帮我开发',
+      '帮我创建',
+      '帮我建立',
+      '一个网站',
+      '一个系统',
+      '一个应用',
+      '一个平台',
+      '一个项目',
+      '博客',
+      '商城',
+      '管理系统',
+      '后台',
+      '前端',
+      '网页',
+      '小程序',
+      'app',
+      '应用程序',
+      '软件',
     ]
 
-    return projectKeywords.some(keyword => lowerMessage.includes(keyword))
+    return projectKeywords.some((keyword) => lowerMessage.includes(keyword))
   }
 
-  /**
-   * Generate requirements with progress updates and create documents
-   */
-  private async generateRequirementsWithProgress(
-    userMessage: string,
-    chatId: string,
-    onProgress?: (progress: any) => void
-  ): Promise<string[]> {
-    try {
-      // Start requirement generation
-      const response = await requirementApi.generateRequirements({
-        initial_requirements: userMessage
-      })
-
-      // Poll for completion with progress updates
-      const results = await requirementApi.pollForCompletion(
-        response.task_id,
-        onProgress,
-        1000 // Poll every 1 second for more responsive updates
-      )
-      
-      // Create documents from the generated requirements
-      const documentIds = await createDocumentsFromRequirements(results.documents, { chatId })
-      
-      console.log(`Generated ${documentIds.length} requirement documents for chat ${chatId}`)
-      return documentIds
-    } catch (error) {
-      console.error('Requirement generation and document creation failed:', error)
-      throw error
-    }
-  }
-
-  /**
-   * Generate requirements and create documents (legacy method for compatibility)
-   */
-  private async generateRequirementsAndCreateDocuments(
-    userMessage: string,
-    chatId: string
-  ): Promise<string[]> {
-    return this.generateRequirementsWithProgress(userMessage, chatId)
-  }
-
-  private buildSystemPrompt(documentContext?: string, shouldGenerateRequirements?: boolean): string {
+  private buildSystemPrompt(
+    documentContext?: string,
+    shouldGenerateRequirements?: boolean
+  ): string {
     let prompt = `You are an AI assistant integrated into Jotlin, a Notion-like document editor.
 Help users with their documents and provide intelligent assistance.
 

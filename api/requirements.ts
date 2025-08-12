@@ -33,7 +33,8 @@ export interface FormattedRequirementResults {
 }
 
 // Python FastAPI backend configuration
-const PYTHON_BACKEND_URL = process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || 'http://localhost:8000'
+const PYTHON_BACKEND_URL =
+  process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || 'http://localhost:8000'
 
 // Create a separate axios instance for Python backend
 import axios from 'axios'
@@ -50,23 +51,33 @@ pythonRequest.interceptors.response.use((response) => {
 
 export const requirementApi = {
   // Generate requirements using the Python backend for chat integration
-  generateRequirements: async (data: RequirementGenerationRequest): Promise<RequirementGenerationResponse> => {
+  generateRequirements: async (
+    data: RequirementGenerationRequest
+  ): Promise<RequirementGenerationResponse> => {
     return pythonRequest.post('/api/requirements/generate-from-chat', data)
   },
 
   // Get the status of requirement generation
-  getGenerationStatus: async (taskId: string): Promise<RequirementGenerationStatus> => {
+  getGenerationStatus: async (
+    taskId: string
+  ): Promise<RequirementGenerationStatus> => {
     return pythonRequest.get(`/api/requirements/status/${taskId}`)
   },
 
   // Get formatted results for frontend
-  getFormattedResults: async (taskId: string): Promise<FormattedRequirementResults> => {
-    return pythonRequest.get(`/api/requirements/result/${taskId}?formatted=true`)
+  getFormattedResults: async (
+    taskId: string
+  ): Promise<FormattedRequirementResults> => {
+    return pythonRequest.get(
+      `/api/requirements/result/${taskId}?formatted=true`
+    )
   },
 
   // Get raw results
   getRawResults: async (taskId: string): Promise<any> => {
-    return pythonRequest.get(`/api/requirements/result/${taskId}?formatted=false`)
+    return pythonRequest.get(
+      `/api/requirements/result/${taskId}?formatted=false`
+    )
   },
 
   // Poll for completion (utility function)
@@ -79,7 +90,7 @@ export const requirementApi = {
       const poll = async () => {
         try {
           const status = await requirementApi.getGenerationStatus(taskId)
-          
+
           if (onProgress) {
             onProgress(status)
           }
@@ -100,7 +111,7 @@ export const requirementApi = {
 
       poll()
     })
-  }
+  },
 }
 
 // Also update the chat API to potentially use Python backend for AI responses
@@ -119,13 +130,16 @@ export const pythonChatApi = {
     onError: (error: Error) => void
   ) => {
     try {
-      const response = await fetch(`${PYTHON_BACKEND_URL}/api/chats/${chatId}/stream`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message }),
-      })
+      const response = await fetch(
+        `${PYTHON_BACKEND_URL}/api/chats/${chatId}/stream`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message }),
+        }
+      )
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -140,21 +154,21 @@ export const pythonChatApi = {
 
       while (true) {
         const { done, value } = await reader.read()
-        
+
         if (done) break
 
         const chunk = decoder.decode(value)
         const lines = chunk.split('\n')
-        
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const data = line.slice(6)
-            
+
             if (data === '[DONE]') {
               onComplete()
               return
             }
-            
+
             try {
               const parsed = JSON.parse(data)
               if (parsed.content) {
@@ -172,5 +186,5 @@ export const pythonChatApi = {
     } catch (error) {
       onError(error as Error)
     }
-  }
+  },
 }

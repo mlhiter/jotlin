@@ -57,8 +57,8 @@ export const chatApi = {
   },
 
   streamAIResponse: async (
-    chatId: string, 
-    message: string, 
+    chatId: string,
+    message: string,
     onChunk: (chunk: string) => void,
     onComplete: () => void,
     onError: (error: Error) => void
@@ -82,28 +82,48 @@ export const chatApi = {
       }
 
       const decoder = new TextDecoder()
+      let pendingContent = '' // Buffer for incomplete content
 
       while (true) {
         const { done, value } = await reader.read()
-        
+
         if (done) break
 
         const chunk = decoder.decode(value)
         const lines = chunk.split('\n')
-        
+
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const data = line.slice(6)
-            
+
             if (data === '[DONE]') {
+              // Process any remaining content before completing
+              if (pendingContent.trim()) {
+                onChunk(pendingContent)
+              }
               onComplete()
               return
             }
-            
+
             try {
               const parsed = JSON.parse(data)
               if (parsed.content) {
-                onChunk(parsed.content)
+                // Add content to pending buffer instead of immediately calling onChunk
+                pendingContent += parsed.content
+                
+                // Check if we have complete lines to process
+                if (pendingContent.includes('\n')) {
+                  const contentLines = pendingContent.split('\n')
+                  // Keep the last incomplete line
+                  pendingContent = contentLines.pop() || ''
+                  
+                  // Process complete lines
+                  for (const completeLine of contentLines) {
+                    if (completeLine.trim()) {
+                      onChunk(completeLine + '\n')
+                    }
+                  }
+                }
               } else if (parsed.error) {
                 onError(new Error(parsed.error))
                 return

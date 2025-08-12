@@ -27,7 +27,11 @@ export const createDocumentFromMarkdown = (data: {
   markdownContent: string
   parentDocument?: string | null
   chatId?: string
-}) => POST<{ id: string; title: string; markdownContent: string }>('/api/documents/create-from-markdown', data)
+}) =>
+  POST<{ id: string; title: string; markdownContent: string }>(
+    '/api/documents/create-from-markdown',
+    data
+  )
 
 export const archiveDocument = (id: string) =>
   PUT(`/api/documents/${id}/archive`)

@@ -14,24 +14,30 @@ interface EditorWrapperProps {
 }
 
 const EditorWrapper = memo(
-  ({ onChange, initialContent, initialMarkdown, documentId, isShared }: EditorWrapperProps) => {
+  ({
+    onChange,
+    initialContent,
+    initialMarkdown,
+    documentId,
+    isShared,
+  }: EditorWrapperProps) => {
     const Editor = dynamic(() => import('@/components/editor/editor'), {
       ssr: false,
     })
 
     if (!isShared) {
       return (
-        <Editor 
-          onChange={onChange} 
-          initialContent={initialContent} 
+        <Editor
+          onChange={onChange}
+          initialContent={initialContent}
           initialMarkdown={initialMarkdown}
         />
       )
     }
     return (
-      <Editor 
-        onChange={onChange} 
-        initialContent={initialContent} 
+      <Editor
+        onChange={onChange}
+        initialContent={initialContent}
         initialMarkdown={initialMarkdown}
       />
     )

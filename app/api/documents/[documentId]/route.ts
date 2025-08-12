@@ -82,7 +82,7 @@ export async function PUT(
 
     // Update document and optionally link to chat
     const updatedData = chatId ? { ...data, chatId } : data
-    
+
     const updatedDocument = await prisma.document.update({
       where: {
         id: documentId,

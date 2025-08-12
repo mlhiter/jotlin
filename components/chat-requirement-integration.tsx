@@ -1,8 +1,15 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { RequirementGenerator } from '@/components/requirement-generator'
 import { FileText, Sparkles } from 'lucide-react'
 
@@ -11,9 +18,9 @@ interface ChatRequirementIntegrationProps {
   onDocumentCreated?: (documentId: string) => void
 }
 
-export function ChatRequirementIntegration({ 
-  chatMessage, 
-  onDocumentCreated 
+export function ChatRequirementIntegration({
+  chatMessage,
+  onDocumentCreated,
 }: ChatRequirementIntegrationProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -25,7 +32,7 @@ export function ChatRequirementIntegration({
           生成需求文档
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
@@ -35,7 +42,7 @@ export function ChatRequirementIntegration({
             使用AI多agent系统分析需求并生成专业的需求文档
           </DialogDescription>
         </DialogHeader>
-        <RequirementGenerator 
+        <RequirementGenerator
           onDocumentCreated={(docId) => {
             onDocumentCreated?.(docId)
             setIsOpen(false)
@@ -47,12 +54,10 @@ export function ChatRequirementIntegration({
 }
 
 // Simple button component for quick access
-export function RequirementGeneratorButton({ 
-  onDocumentCreated 
-}: { 
-  onDocumentCreated?: (documentId: string) => void 
+export function RequirementGeneratorButton({
+  onDocumentCreated,
+}: {
+  onDocumentCreated?: (documentId: string) => void
 }) {
-  return (
-    <ChatRequirementIntegration onDocumentCreated={onDocumentCreated} />
-  )
+  return <ChatRequirementIntegration onDocumentCreated={onDocumentCreated} />
 }
