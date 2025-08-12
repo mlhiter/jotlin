@@ -108,35 +108,96 @@ const ChatPage = () => {
 
         return new Promise<void>((resolve, reject) => {
           let fullAIResponse = ''
+          let pendingSignalBuffer = ''
 
           chatApi.streamAIResponse(
             chatId,
             content,
             async (chunk: string) => {
-              // Check for document generation signal
-              if (chunk.includes('__DOCUMENTS_GENERATED__:')) {
-                const signalStart = chunk.indexOf('__DOCUMENTS_GENERATED__:')
-                const signalEnd = chunk.indexOf('\n', signalStart)
-                const signalData = chunk.substring(signalStart + 24, signalEnd) // 24 = length of '__DOCUMENTS_GENERATED__:'
-                
-                try {
-                  const documentData = JSON.parse(signalData)
-                  await handleDocumentGeneration(documentData.documents, documentData.chatId)
-                  
-                  // Remove the signal from the displayed content
-                  const cleanChunk = chunk.replace(/__DOCUMENTS_GENERATED__:.*?\n/, '')
-                  if (cleanChunk) {
-                    fullAIResponse += cleanChunk
-                    setStreamingContent((prev) => prev + cleanChunk)
+              // Add current chunk to any pending signal buffer
+              const combinedChunk = pendingSignalBuffer + chunk
+              pendingSignalBuffer = ''
+
+              // Debug: Log chunk content when it contains the signal
+              if (combinedChunk.includes('__DOCUMENTS_GENERATED__:')) {
+                console.log(
+                  'Detected __DOCUMENTS_GENERATED__ signal in chunk:',
+                  combinedChunk
+                )
+              }
+
+              // Check for document generation signal in the combined chunk
+              if (combinedChunk.includes('__DOCUMENTS_GENERATED__:')) {
+                const signalStart = combinedChunk.indexOf(
+                  '__DOCUMENTS_GENERATED__:'
+                )
+                const signalEnd = combinedChunk.indexOf('\n', signalStart)
+
+                if (signalEnd !== -1) {
+                  // Complete signal found
+                  const signalData = combinedChunk.substring(
+                    signalStart + 24,
+                    signalEnd
+                  ) // 24 = length of '__DOCUMENTS_GENERATED__:'
+
+                  try {
+                    const documentData = JSON.parse(signalData)
+                    console.log(
+                      'Successfully parsed document generation signal:',
+                      documentData
+                    )
+                    await handleDocumentGeneration(
+                      documentData.documents,
+                      documentData.chatId
+                    )
+
+                    // Remove the entire signal line from the chunk
+                    const beforeSignal = combinedChunk.substring(0, signalStart)
+                    const afterSignal = combinedChunk.substring(signalEnd + 1)
+                    const cleanChunk = beforeSignal + afterSignal
+                    console.log('Cleaned chunk (removed signal):', cleanChunk)
+
+                    if (cleanChunk.trim()) {
+                      fullAIResponse += cleanChunk
+                      setStreamingContent((prev) => prev + cleanChunk)
+                    }
+                  } catch (error) {
+                    console.error(
+                      'Failed to parse document generation signal:',
+                      error
+                    )
+                    // If parsing fails, treat it as regular content
+                    fullAIResponse += combinedChunk
+                    setStreamingContent((prev) => prev + combinedChunk)
                   }
-                } catch (error) {
-                  console.error('Failed to parse document generation signal:', error)
-                  fullAIResponse += chunk
-                  setStreamingContent((prev) => prev + chunk)
+                } else {
+                  // Signal is incomplete, buffer the part that contains the signal
+                  const possibleSignalStart = combinedChunk.lastIndexOf(
+                    '__DOCUMENTS_GENERATED__:'
+                  )
+                  if (possibleSignalStart !== -1) {
+                    // Keep the signal part in buffer, display the rest
+                    const beforeSignal = combinedChunk.substring(
+                      0,
+                      possibleSignalStart
+                    )
+                    pendingSignalBuffer =
+                      combinedChunk.substring(possibleSignalStart)
+
+                    if (beforeSignal.trim()) {
+                      fullAIResponse += beforeSignal
+                      setStreamingContent((prev) => prev + beforeSignal)
+                    }
+                  } else {
+                    // No signal start found, display everything
+                    fullAIResponse += combinedChunk
+                    setStreamingContent((prev) => prev + combinedChunk)
+                  }
                 }
               } else {
-                fullAIResponse += chunk
-                setStreamingContent((prev) => prev + chunk)
+                // No signal in this chunk, display it normally
+                fullAIResponse += combinedChunk
+                setStreamingContent((prev) => prev + combinedChunk)
               }
             },
             () => {
@@ -275,18 +336,18 @@ const ChatPage = () => {
   const handleDocumentGeneration = async (documents: any[], chatId: string) => {
     try {
       let createdCount = 0
-      
+
       for (const doc of documents) {
         try {
           // Convert markdown content to BlockNote format
           const blocks = await convertMarkdownToBlocks(doc.content)
-          
+
           // Create document with BlockNote content
           const documentId = await createDocument({
             title: doc.title,
-            parentDocument: null
+            parentDocument: null,
           })
-          
+
           // Update document content after creation
           // Send blocks directly, not as JSON string
           await fetch(`/api/documents/${documentId}`, {
@@ -299,15 +360,15 @@ const ChatPage = () => {
               title: doc.title,
               content: JSON.stringify(blocks), // Store as JSON string for database
               chatId: chatId, // Link to current chat
-            })
+            }),
           })
-          
+
           createdCount++
         } catch (error) {
           console.error(`Failed to create document "${doc.title}":`, error)
         }
       }
-      
+
       if (createdCount > 0) {
         toast.success(`已成功创建 ${createdCount} 个需求文档`)
         // Refresh the chat to show linked documents
@@ -343,7 +404,7 @@ const ChatPage = () => {
         <h1 className="text-xl font-semibold">{chat?.title}</h1>
         <div className="flex items-center gap-2">
           {/* Requirement Generator Button */}
-          <ChatRequirementIntegration 
+          <ChatRequirementIntegration
             onDocumentCreated={(docId) => {
               toast.success('需求文档已生成')
               // Refresh linked documents
@@ -408,7 +469,12 @@ const ChatPage = () => {
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted'
                 )}>
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <p className="whitespace-pre-wrap">
+                  {message.content?.replace(
+                    /__DOCUMENTS_GENERATED__:.*?\n/g,
+                    ''
+                  )}
+                </p>
                 <p className="mt-1 text-xs opacity-70">
                   {new Date(message.createdAt).toLocaleTimeString()}
                 </p>
@@ -421,7 +487,12 @@ const ChatPage = () => {
               <div className="max-w-[70%] rounded-lg bg-muted px-4 py-2">
                 {streamingContent ? (
                   <div>
-                    <p className="whitespace-pre-wrap">{streamingContent}</p>
+                    <p className="whitespace-pre-wrap">
+                      {streamingContent?.replace(
+                        /__DOCUMENTS_GENERATED__:.*?\n/g,
+                        ''
+                      )}
+                    </p>
                     <div className="mt-2 flex space-x-1">
                       <div className="h-1 w-1 animate-pulse rounded-full bg-gray-500" />
                       <div className="h-1 w-1 animate-pulse rounded-full bg-gray-500 delay-100" />
