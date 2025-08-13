@@ -51,22 +51,41 @@ export const ChatList = ({}: ChatListProps) => {
   // Listen for chat updates to auto-expand when new documents are linked
   useEffect(() => {
     const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-      if (event?.type === 'updated' && event?.query?.queryKey?.[0] === 'chat') {
-        const chatId = event.query.queryKey[1] as string
-        if (chatId) {
-          setShouldAutoExpand(chatId)
-          // Auto-expand this chat
-          setExpanded((prev) => ({ ...prev, [chatId]: true }))
-          // Reset auto-expand after a delay
-          setTimeout(() => {
-            setShouldAutoExpand(null)
-          }, 5000)
+      if (event?.type === 'updated') {
+        // Listen for both 'chat' and 'chats' query updates
+        if (event?.query?.queryKey?.[0] === 'chat') {
+          const chatId = event.query.queryKey[1] as string
+          if (chatId) {
+            setShouldAutoExpand(chatId)
+            // Auto-expand this chat
+            setExpanded((prev) => ({ ...prev, [chatId]: true }))
+            // Reset auto-expand after a delay
+            setTimeout(() => {
+              setShouldAutoExpand(null)
+            }, 5000)
+          }
+        } else if (event?.query?.queryKey?.[0] === 'chats') {
+          // When chats list is updated, check if we need to auto-expand any chat
+          // This handles the case where documents were added to a chat
+          const newData = event.query.state.data as any[]
+          if (newData && shouldAutoExpand) {
+            const targetChat = newData.find(
+              (chat) => chat.id === shouldAutoExpand
+            )
+            if (
+              targetChat &&
+              targetChat.documents &&
+              targetChat.documents.length > 0
+            ) {
+              setExpanded((prev) => ({ ...prev, [shouldAutoExpand]: true }))
+            }
+          }
         }
       }
     })
 
     return unsubscribe
-  }, [queryClient])
+  }, [queryClient, shouldAutoExpand])
 
   // Remove the old createMutation since it's now handled in the modal
 

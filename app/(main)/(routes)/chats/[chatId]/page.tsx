@@ -447,6 +447,8 @@ const ChatPage = () => {
         queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
         // Refresh documents list in navigation
         queryClient.invalidateQueries({ queryKey: ['documents'] })
+        // Refresh chats list to show updated document count and trigger auto-expand
+        queryClient.invalidateQueries({ queryKey: ['chats'] })
       } else {
         setGenerationError('Create documents failed')
         toast.error('Create documents failed')
