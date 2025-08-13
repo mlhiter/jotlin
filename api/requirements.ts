@@ -114,7 +114,7 @@ export const requirementApi = {
   },
 }
 
-// Also update the chat API to potentially use Python backend for AI responses
+// Python Chat API for alternative AI responses
 export const pythonChatApi = {
   // Get AI response from Python backend (alternative to Node.js backend)
   getAIResponse: async (chatId: string, message: string) => {

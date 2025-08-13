@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import { cn } from '@/libs/utils'
-import { deleteImage } from '@/api/image'
+import { imageApi } from '@/api/image'
 import { useCoverImage } from '@/stores/cover-image'
 import { useDocumentActions } from '@/hooks/use-document-actions'
 
@@ -23,7 +23,7 @@ const Cover = ({ url, preview }: CoverImageProps) => {
 
   const onRemove = async () => {
     if (url) {
-      await deleteImage(url)
+      await imageApi.delete(url)
     }
     await removeCoverImage(params.documentId as string)
   }

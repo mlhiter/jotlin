@@ -17,7 +17,7 @@ import {
 import { Doc } from '@/types/document'
 import { useSearch } from '@/stores/search'
 import { useSession } from '@/hooks/use-session'
-import { getSearchDocuments } from '@/api/document'
+import { documentApi } from '@/api/document'
 
 export const SearchCommand = () => {
   const router = useRouter()
@@ -25,7 +25,7 @@ export const SearchCommand = () => {
 
   const { data: documents } = useQuery({
     queryKey: ['search-documents'],
-    queryFn: () => getSearchDocuments(),
+    queryFn: () => documentApi.getSearchDocuments(),
   })
 
   const [isMounted, setIsMounted] = useState(false)

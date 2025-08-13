@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-import { createInvitation } from '@/api/invitation'
+import { invitationApi } from '@/api/invitation'
 import { useSession } from '@/hooks/use-session'
 
 import { UserBoard } from './user-board'
@@ -30,11 +30,13 @@ const Invite = ({ documentId }: InviteProps) => {
     setIsSubmitting(true)
     try {
       toast.loading('Inviting...')
-      await createInvitation({
-        documentId,
-        collaboratorEmail,
-        userEmail: user!.email,
-      }).finally(() => setIsSubmitting(false))
+      await invitationApi
+        .create({
+          documentId,
+          collaboratorEmail,
+          userEmail: user!.email,
+        })
+        .finally(() => setIsSubmitting(false))
       toast.success('Invitation has been sent')
     } catch (error) {
       toast.error('Failed to invite him.')

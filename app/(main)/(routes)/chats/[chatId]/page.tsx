@@ -7,7 +7,7 @@ import { Send, Paperclip } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { chatApi } from '@/api/chat'
-import { createDocument } from '@/api/document'
+import { documentApi } from '@/api/document'
 import { convertMarkdownToBlocks } from '@/libs/markdown-to-blocknote'
 import { useChatStore } from '@/stores/chat'
 import { Message } from '@/types/chat'
@@ -389,7 +389,7 @@ const ChatPage = () => {
           const blocks = await convertMarkdownToBlocks(doc.content)
 
           // Create document with BlockNote content
-          const documentId = await createDocument({
+          const documentId = await documentApi.create({
             title: doc.title,
             parentDocument: null,
           })
@@ -418,19 +418,19 @@ const ChatPage = () => {
 
       if (createdCount > 0) {
         completeGeneration()
-        toast.success(`已成功创建 ${createdCount} 个需求文档`)
+        toast.success(`Success to create ${createdCount} documents`)
         // Refresh the chat to show linked documents
         queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
         // Refresh documents list in navigation
         queryClient.invalidateQueries({ queryKey: ['documents'] })
       } else {
-        setGenerationError('文档创建失败')
-        toast.error('文档创建失败')
+        setGenerationError('Create documents failed')
+        toast.error('Create documents failed')
       }
     } catch (error) {
       console.error('Failed to handle document generation:', error)
-      setGenerationError('文档创建过程中发生错误')
-      toast.error('文档创建过程中发生错误')
+      setGenerationError('Create documents failed')
+      toast.error('Create documents failed')
     }
   }
 
@@ -467,11 +467,11 @@ const ChatPage = () => {
                 reqGenerator?.scrollIntoView({ behavior: 'smooth' })
               }}
               className="text-sm text-muted-foreground hover:text-foreground">
-              开始输入需求 →
+              Start inputting requirement →
             </Button>
           ) : (
             <div className="text-sm text-muted-foreground">
-              ✅ 需求已提交，可以开始对话
+              ✅ Requirement submitted, you can start chatting
             </div>
           )}
         </div>
@@ -483,7 +483,7 @@ const ChatPage = () => {
               isEmbedded={true}
               onRequirementSubmitted={handleRequirementSubmitted}
               onDocumentCreated={() => {
-                toast.success('需求文档已生成')
+                toast.success('Documents created')
                 // Refresh linked documents
                 queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
               }}
@@ -587,7 +587,7 @@ const ChatPage = () => {
             placeholder={
               requirementSubmitted
                 ? 'Enter message...'
-                : '请先在上方输入项目需求...'
+                : 'Please input the requirement first...'
             }
             className="max-h-[120px] min-h-[40px] resize-none"
             disabled={

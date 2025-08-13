@@ -8,7 +8,7 @@ import Cover from '@/components/cover'
 import Toolbar from '@/components/toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { getDocumentById } from '@/api/document'
+import { documentApi } from '@/api/document'
 import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface DocumentIdPageProps {
@@ -26,7 +26,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
 
   const { data: document } = useQuery({
     queryKey: ['document', params.documentId],
-    queryFn: () => getDocumentById(params.documentId),
+    queryFn: () => documentApi.getById(params.documentId),
   })
 
   const onChange = async (content: string) => {

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
 import { Doc } from '@/types/document'
-import { getDocumentList } from '@/api/document'
+import { documentApi } from '@/api/document'
 
 type DocumentStore = {
   // Current document state
@@ -38,7 +38,7 @@ export const useDocumentStore = create(
 
     documentsMap: {},
     setDocuments: async (parentDocumentId, type) => {
-      const res = await getDocumentList({ parentDocumentId, type })
+      const res = await documentApi.getList({ parentDocumentId, type })
       set((state) => {
         const key = `${type}-${parentDocumentId}`
         state.documentsMap[key] = res

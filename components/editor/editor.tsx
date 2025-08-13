@@ -18,7 +18,7 @@ import { en } from '@blocknote/core/locales'
 import '@blocknote/core/fonts/inter.css'
 import '@blocknote/mantine/style.css'
 
-import { uploadImage } from '@/api/image'
+import { imageApi } from '@/api/image'
 import { useSession } from '@/hooks/use-session'
 import { blockSchema, getCustomSlashMenuItems } from './editor-blocks'
 import { formattingToolbar } from './editor-toolbars'
@@ -44,7 +44,7 @@ const Editor = ({
   const { user } = useSession()
 
   const handleUpload = useCallback(async (file: File) => {
-    const res = await uploadImage({
+    const res = await imageApi.upload({
       file,
     })
     return res

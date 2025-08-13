@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-import { getInvitationsByEmail } from '@/api/invitation'
+import { invitationApi } from '@/api/invitation'
 import { useSession } from '@/hooks/use-session'
 import { Spinner } from '@/components/spinner'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -13,7 +13,7 @@ const InboxContent = () => {
   const { user } = useSession()
   const { data: invitations } = useQuery({
     queryKey: ['invitations', user?.email],
-    queryFn: () => getInvitationsByEmail(user?.email as string),
+    queryFn: () => invitationApi.getByEmail(user?.email as string),
   })
 
   if (invitations === undefined) {

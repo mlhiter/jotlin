@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { PlusCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-import { createDocument } from '@/api/document'
+import { documentApi } from '@/api/document'
 import { Button } from '@/components/ui/button'
 import { useSession } from '@/hooks/use-session'
 
@@ -16,7 +16,7 @@ const DocumentsPage = () => {
   const onCreate = async () => {
     try {
       toast.loading('Creating a new note.....')
-      const documentId = await createDocument({
+      const documentId = await documentApi.create({
         title: 'Untitled',
         parentDocument: null,
       })

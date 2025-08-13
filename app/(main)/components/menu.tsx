@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCreateBlockNote } from '@blocknote/react'
 
-import { getDocumentById } from '@/api/document'
+import { documentApi } from '@/api/document'
 import { useSession } from '@/hooks/use-session'
 import { useQuery } from '@tanstack/react-query'
 import { useDocumentActions } from '@/hooks/use-document-actions'
@@ -28,7 +28,7 @@ const Menu = ({ documentId }: MenuProps) => {
   const editor = useCreateBlockNote()
   const { data: currentDocument } = useQuery({
     queryKey: ['document', documentId],
-    queryFn: () => getDocumentById(documentId),
+    queryFn: () => documentApi.getById(documentId),
   })
   const { archiveDocument, updateDocument } = useDocumentActions()
 

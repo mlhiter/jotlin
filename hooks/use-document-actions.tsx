@@ -2,15 +2,7 @@ import { toast } from 'sonner'
 import { useParams, useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 
-import {
-  archiveDocument as archiveDocumentApi,
-  createDocument as createDocumentApi,
-  restoreDocument as restoreDocumentApi,
-  removeDocument as removeDocumentApi,
-  updateDocument as updateDocumentApi,
-  removeDocumentIcon as removeDocumentIconApi,
-  removeCoverImage as removeCoverImageApi,
-} from '@/api/document'
+import { documentApi } from '@/api/document'
 import { Doc } from '@/types/document'
 import { useDocumentStore } from '@/stores/document'
 
@@ -37,7 +29,7 @@ export const useDocumentActions = () => {
   const archiveDocument = async (id: string) => {
     try {
       toast.loading('Moving to trash...')
-      await archiveDocumentApi(id)
+      await documentApi.archive(id)
       router.push('/documents')
       invalidateDocumentQueries()
       toast.success('Note moved to trash!')
@@ -48,7 +40,7 @@ export const useDocumentActions = () => {
 
   const createDocument = async (parentDocumentId?: string) => {
     try {
-      const documentId = await createDocumentApi({
+      const documentId = await documentApi.create({
         title: 'Untitled',
         parentDocument: parentDocumentId ?? null,
       })
@@ -62,7 +54,7 @@ export const useDocumentActions = () => {
   const restoreDocument = async (id: string) => {
     try {
       toast.loading('Restoring note...')
-      await restoreDocumentApi(id)
+      await documentApi.restore(id)
       invalidateDocumentQueries()
       toast.success('Note restored!')
     } catch {
@@ -73,7 +65,7 @@ export const useDocumentActions = () => {
   const removeDocument = async (id: string) => {
     try {
       toast.loading('Deleting note...')
-      await removeDocumentApi(id)
+      await documentApi.remove(id)
       invalidateTrashDocumentQueries()
       toast.success('Note deleted!')
     } catch {
@@ -87,7 +79,7 @@ export const useDocumentActions = () => {
 
   const updateDocument = async (doc: Doc) => {
     try {
-      const newDocument = await updateDocumentApi(doc)
+      const newDocument = await documentApi.update(doc)
       setCurrentDocument(newDocument)
       invalidateDocumentQueries()
     } catch {
@@ -97,7 +89,7 @@ export const useDocumentActions = () => {
 
   const removeDocumentIcon = async (id: string) => {
     try {
-      const newDocument = await removeDocumentIconApi(id)
+      const newDocument = await documentApi.removeIcon(id)
       setCurrentDocument(newDocument)
       invalidateDocumentQueries()
     } catch {
@@ -107,7 +99,7 @@ export const useDocumentActions = () => {
 
   const removeCoverImage = async (id: string) => {
     try {
-      const newDocument = await removeCoverImageApi(id)
+      const newDocument = await documentApi.removeCoverImage(id)
       setCurrentDocument(newDocument)
     } catch {
       toast.error('Failed to remove cover image.')

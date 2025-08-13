@@ -10,11 +10,11 @@ import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 
 import { User } from '@/types/user'
-import { getUserInfoByEmail } from '@/api/user'
+import { userApi } from '@/api/user'
 import { Invitation } from '@/types/invitation'
 import { useSession } from '@/hooks/use-session'
-import { getBasicInfoById } from '@/api/document'
-import { updateInvitation as update } from '@/api/invitation'
+import { documentApi } from '@/api/document'
+import { invitationApi } from '@/api/invitation'
 
 type UserInfo = Pick<User, 'username' | 'imageUrl'>
 
@@ -35,7 +35,7 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
   } = invitation
   const { data: documentInfo } = useQuery({
     queryKey: ['documentInfo', documentId],
-    queryFn: () => getBasicInfoById(documentId),
+    queryFn: () => documentApi.getBasicInfoById(documentId),
   })
   const [userInfo, setUserInfo] = useState<UserInfo | undefined>(undefined)
 
@@ -43,7 +43,7 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
     if (collaboratorEmail === user?.email) {
       const fetchUserInfo = async () => {
         try {
-          const response = await getUserInfoByEmail({ email: userEmail })
+          const response = await userApi.getInfoByEmail({ email: userEmail })
           setUserInfo(response)
         } catch (error) {
           console.error('Error fetching userInfo:', error)
@@ -55,14 +55,14 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
 
   const accept = async () => {
     try {
-      await update({ id, isAccepted: true })
+      await invitationApi.update({ id, isAccepted: true })
     } catch (error) {
       console.log(error)
     }
   }
   const reject = async () => {
     try {
-      await update({ id, isAccepted: false })
+      await invitationApi.update({ id, isAccepted: false })
     } catch (error) {
       console.log(error)
     }

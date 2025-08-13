@@ -1,11 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
-import {
-  createInvitation,
-  getInvitationsByEmail,
-  updateInvitation,
-} from '@/api/invitation'
+import { invitationApi } from '@/api/invitation'
 import { Invitation } from '@/types/invitation'
 
 type InvitationStore = {
@@ -30,14 +26,14 @@ export const useInvitationStore = create(
     invitations: [],
 
     fetchInvitations: async (email) => {
-      const invitations = await getInvitationsByEmail(email)
+      const invitations = await invitationApi.getByEmail(email)
       set((state) => {
         state.invitations = invitations
       })
     },
 
     createInvitation: async (params) => {
-      const invitation = await createInvitation(params)
+      const invitation = await invitationApi.create(params)
       set((state) => {
         state.invitations.push(invitation)
       })
@@ -45,7 +41,7 @@ export const useInvitationStore = create(
     },
 
     updateInvitation: async (params) => {
-      await updateInvitation(params)
+      await invitationApi.update(params)
       set((state) => {
         const index = state.invitations.findIndex(
           (inv: Invitation) => inv.id === params.id

@@ -22,7 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 import { cn } from '@/libs/utils'
 import { useSession } from '@/hooks/use-session'
-import { removeDocumentAccess } from '@/api/document'
+import { documentApi } from '@/api/document'
 import { useDocumentActions } from '@/hooks/use-document-actions'
 
 interface ItemProps {
@@ -66,12 +66,14 @@ const Item = ({
 
   const onQuitDocument = () => {
     if (!id) return
-    const promise = removeDocumentAccess({
-      documentId: id,
-      collaboratorEmail: user!.email,
-    }).then(() => {
-      router.push('/documents')
-    })
+    const promise = documentApi
+      .removeAccess({
+        documentId: id,
+        collaboratorEmail: user!.email,
+      })
+      .then(() => {
+        router.push('/documents')
+      })
 
     toast.promise(promise, {
       loading: 'quit...',

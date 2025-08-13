@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 
 import { Doc } from '@/types/document'
-import { removeDocumentAccess } from '@/api/document'
+import { documentApi } from '@/api/document'
 import { useSession } from '@/hooks/use-session'
-import { getUserInfoByEmail } from '@/api/user'
+import { userApi } from '@/api/user'
 
 interface InviteUserProps {
   collaborator: string
@@ -28,7 +28,7 @@ export const InviteUser = ({
   const { user } = useSession()
   const { data: collaboratorInfo } = useQuery({
     queryKey: ['collaborator-info', collaborator],
-    queryFn: () => getUserInfoByEmail({ email: collaborator }),
+    queryFn: () => userApi.getInfoByEmail({ email: collaborator }),
   })
 
   const isOwner = document.userId === user?.id
@@ -36,10 +36,12 @@ export const InviteUser = ({
   const onRemovePrivilege = () => {
     setIsSubmitting(true)
 
-    const promise = removeDocumentAccess({
-      documentId: document.id,
-      collaboratorEmail: collaborator,
-    }).finally(() => setIsSubmitting(false))
+    const promise = documentApi
+      .removeAccess({
+        documentId: document.id,
+        collaboratorEmail: collaborator,
+      })
+      .finally(() => setIsSubmitting(false))
 
     toast.promise(promise, {
       loading: 'removing...',

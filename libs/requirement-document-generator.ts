@@ -1,5 +1,5 @@
 import { GeneratedDocument } from '@/api/requirements'
-import { createDocumentFromMarkdown } from '@/api/document'
+import { documentApi } from '@/api/document'
 
 export interface DocumentCreationOptions {
   parentDocumentId?: string | null
@@ -14,7 +14,7 @@ export async function createDocumentFromRequirement(
   options: DocumentCreationOptions = {}
 ): Promise<string> {
   try {
-    const result = await createDocumentFromMarkdown({
+    const result = await documentApi.createFromMarkdown({
       title: doc.title,
       markdownContent: doc.content,
       parentDocument: options.parentDocumentId || null,

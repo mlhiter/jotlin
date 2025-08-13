@@ -91,8 +91,8 @@ export function RequirementGenerator({
       console.log('Saving document:', doc.title)
 
       // Create document using the markdown API
-      const { createDocumentFromMarkdown } = await import('@/api/document')
-      const response = await createDocumentFromMarkdown({
+      const { documentApi } = await import('@/api/document')
+      const response = await documentApi.createFromMarkdown({
         title: doc.title,
         markdownContent: doc.content,
       })
@@ -112,12 +112,12 @@ export function RequirementGenerator({
     try {
       toast.loading(`正在保存 ${results.length} 个文档...`)
 
-      const { createDocumentFromMarkdown } = await import('@/api/document')
+      const { documentApi } = await import('@/api/document')
       const savedDocuments: string[] = []
 
       for (const doc of results) {
         try {
-          const response = await createDocumentFromMarkdown({
+          const response = await documentApi.createFromMarkdown({
             title: doc.title,
             markdownContent: doc.content,
           })

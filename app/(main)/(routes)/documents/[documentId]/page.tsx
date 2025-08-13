@@ -9,7 +9,7 @@ import Toolbar from '@/components/toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EditorWrapper } from '@/components/editor/editor-wrapper'
 
-import { getDocumentById, updateDocument } from '@/api/document'
+import { documentApi } from '@/api/document'
 import { useDocumentStore } from '@/stores/document'
 import { analyzeContent } from '@/libs/content-detector'
 
@@ -32,7 +32,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const { data: document } = useQuery({
     queryKey: ['document', params.documentId],
     queryFn: async () => {
-      const document = await getDocumentById(params.documentId)
+      const document = await documentApi.getById(params.documentId)
       return document
     },
     staleTime: 0,
@@ -50,7 +50,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
 
   const onChange = useCallback(
     async (content: string) => {
-      await updateDocument({
+      await documentApi.update({
         id: params.documentId,
         content,
       })
@@ -96,12 +96,14 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
       // Auto-save the fixed content
       setTimeout(() => {
         console.log('Auto-saving fixed content...')
-        updateDocument({
-          id: params.documentId,
-          content: contentToUse,
-        }).catch((error) => {
-          console.error('Failed to auto-save fixed content:', error)
-        })
+        documentApi
+          .update({
+            id: params.documentId,
+            content: contentToUse,
+          })
+          .catch((error) => {
+            console.error('Failed to auto-save fixed content:', error)
+          })
       }, 1000)
     }
 

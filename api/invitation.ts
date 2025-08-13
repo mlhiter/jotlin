@@ -6,13 +6,18 @@ type CreateParams = Pick<
   'documentId' | 'collaboratorEmail' | 'userEmail'
 >
 
-export const createInvitation = (invitation: CreateParams) =>
-  POST<Invitation>('/api/invitations/create', invitation)
-
-export const getInvitationsByEmail = (email: string) =>
-  GET<Invitation[]>('/api/invitations/get-by-email', { email })
-
 type UpdateParams = Pick<Invitation, 'isAccepted' | 'id'>
 
-export const updateInvitation = (invitation: UpdateParams) =>
-  PUT<Invitation>(`/api/invitations/${invitation.id}`, invitation)
+export const invitationApi = {
+  create: async (invitation: CreateParams) => {
+    return POST<Invitation>('/api/invitations/create', invitation)
+  },
+
+  getByEmail: async (email: string) => {
+    return GET<Invitation[]>('/api/invitations/get-by-email', { email })
+  },
+
+  update: async (invitation: UpdateParams) => {
+    return PUT<Invitation>(`/api/invitations/${invitation.id}`, invitation)
+  },
+}

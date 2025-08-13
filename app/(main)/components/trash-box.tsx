@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/spinner'
 import ConfirmModal from '@/components/modals/confirm-modal'
 
-import { getTrashDocuments } from '@/api/document'
+import { documentApi } from '@/api/document'
 import { useDocumentActions } from '@/hooks/use-document-actions'
 
 const TrashBox = () => {
@@ -18,7 +18,7 @@ const TrashBox = () => {
 
   const { data: documents } = useQuery({
     queryKey: ['trash-documents'],
-    queryFn: () => getTrashDocuments(),
+    queryFn: () => documentApi.getTrashDocuments(),
   })
 
   const [search, setSearch] = useState('')

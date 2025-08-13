@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-import { getDocumentById } from '@/api/document'
+import { documentApi } from '@/api/document'
 import { InviteUser } from './invite-user'
 
 interface UserBoardProps {
@@ -12,7 +12,7 @@ interface UserBoardProps {
 export const UserBoard = ({ documentId }: UserBoardProps) => {
   const { data: document } = useQuery({
     queryKey: ['document', documentId],
-    queryFn: () => getDocumentById(documentId),
+    queryFn: () => documentApi.getById(documentId),
   })
 
   return (

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation'
 import { SingleImageDropzone } from '../single-image-dropzone'
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 
-import { uploadImage } from '@/api/image'
+import { imageApi } from '@/api/image'
 import { useCoverImage } from '@/stores/cover-image'
 import { useDocumentActions } from '@/hooks/use-document-actions'
 
@@ -28,7 +28,7 @@ const CoverImageModal = () => {
       setIsSubmitting(true)
       setFile(file)
 
-      const res = await uploadImage({
+      const res = await imageApi.upload({
         file,
         replaceTargetUrl: coverImage.url,
       })
