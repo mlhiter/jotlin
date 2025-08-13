@@ -3,7 +3,7 @@
 import * as Y from 'yjs'
 import dynamic from 'next/dynamic'
 import { WebrtcProvider } from 'y-webrtc'
-import { memo, useEffect, useState, useRef } from 'react'
+import { memo, useEffect, useState } from 'react'
 
 interface EditorWrapperProps {
   onChange: (value: string) => void
@@ -174,7 +174,6 @@ const EditorWrapper = memo(
         webrtcProvider={webrtcProvider}
         onChange={onChange}
         initialContent={initialContent}
-      prevProps.initialMarkdown === nextProps.initialMarkdown &&
       />
     )
   }

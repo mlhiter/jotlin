@@ -87,8 +87,8 @@ export function NewChatModal({ isOpen, onClose }: NewChatModalProps) {
         <DialogHeader>
           <DialogTitle>Start a New Chat</DialogTitle>
           <DialogDescription>
-            Describe what you'd like to work on or discuss. We'll automatically
-            generate a title based on your needs.
+            Describe what you&apos;d like to work on or discuss. We&apos;ll
+            automatically generate a title based on your needs.
           </DialogDescription>
         </DialogHeader>
 
