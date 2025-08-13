@@ -21,8 +21,8 @@ export async function GET(req: Request) {
         select: {
           id: true,
           email: true,
-          username: true,
-          imageUrl: true,
+          name: true,
+          image: true,
           createdAt: true,
         },
       })
@@ -42,8 +42,8 @@ export async function GET(req: Request) {
       select: {
         id: true,
         email: true,
-        username: true,
-        imageUrl: true,
+        name: true,
+        image: true,
         createdAt: true,
       },
     })

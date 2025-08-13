@@ -62,8 +62,8 @@ export const InviteUser = ({
       <div className="flex items-center justify-between gap-x-2">
         <Avatar className="h-7 w-7">
           <AvatarImage
-            src={collaboratorInfo?.imageUrl}
-            alt={collaboratorInfo?.username}></AvatarImage>
+            src={collaboratorInfo?.image || ''}
+            alt={collaboratorInfo?.name}></AvatarImage>
         </Avatar>
         <div>
           {collaboratorInfo && first ? (
@@ -72,9 +72,7 @@ export const InviteUser = ({
             <div>协作人</div>
           ) : null}
         </div>
-        <div className="text-base font-light">
-          {collaboratorInfo?.emailAddress}
-        </div>
+        <div className="text-base font-light">{collaboratorInfo?.email}</div>
       </div>
       {first || !isOwner ? (
         <Button className="hidden h-8 w-16"></Button>

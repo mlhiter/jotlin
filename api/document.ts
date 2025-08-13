@@ -17,7 +17,7 @@ export const documentApi = {
   },
 
   getBasicInfoById: async (id: string) => {
-    return GET<DocumentInfo>(`/api/documents/get-basic-info-by-id?id=${id}`)
+    return GET<DocumentInfo>(`/api/documents/${id}/get-basic-info`)
   },
 
   getTrashDocuments: async () => {

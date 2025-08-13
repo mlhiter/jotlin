@@ -21,14 +21,8 @@ model User {
   name                String
   image               String?
   emailVerified       Boolean      @default(false)
-  imageUrl            String?
-  username            String?
   documents           Document[]   @relation("UserDocuments")
   invitationsReceived Invitation[] @relation("ReceivedInvitations")
-  invitationsSent     Invitation[] @relation("SentInvitations")
-  accounts            Account[]
-  chats               Chat[]       @relation("UserChats")
-  messages            Message[]    @relation("UserMessages")
   sessions            Session[]
 
   @@map("user")
@@ -52,6 +46,7 @@ model Document {
   children      Document[]             @relation("DocumentHierarchy")
   user          User                   @relation("UserDocuments", fields: [userId], references: [id])
   collaborators DocumentCollaborator[]
+  comments      Comment[]
 
   @@index([userId])
   @@index([parentId])
@@ -128,6 +123,23 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  blockId   String   // 评论所在块的ID
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([userId])
 }
 
 model Chat {

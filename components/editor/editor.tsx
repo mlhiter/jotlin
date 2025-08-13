@@ -4,24 +4,27 @@ import * as Y from 'yjs'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { useTheme } from 'next-themes'
+import { BlockNoteEditor } from '@blocknote/core'
+import { en } from '@blocknote/core/locales'
 import { WebrtcProvider } from 'y-webrtc'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
 import { BlockNoteView } from '@blocknote/mantine'
 import { filterSuggestionItems, PartialBlock } from '@blocknote/core'
 import {
   SuggestionMenuController,
   FormattingToolbarController,
-  useCreateBlockNote,
 } from '@blocknote/react'
-import { en } from '@blocknote/core/locales'
 
-import '@blocknote/core/fonts/inter.css'
 import '@blocknote/mantine/style.css'
+import '@blocknote/core/fonts/inter.css'
 
 import { imageApi } from '@/api/image'
 import { useSession } from '@/hooks/use-session'
+import { getRandomLightColor } from '@/libs/utils'
 import { blockSchema, getCustomSlashMenuItems } from './editor-blocks'
 import { formattingToolbar } from './editor-toolbars'
+import { CommentList } from './editor-blocks/comment-list'
 
 interface EditorProps {
   onChange: (value: string) => void
@@ -42,6 +45,7 @@ const Editor = ({
 }: EditorProps) => {
   const { resolvedTheme } = useTheme()
   const { user } = useSession()
+  const params = useParams()
 
   const handleUpload = useCallback(async (file: File) => {
     const res = await imageApi.upload({
@@ -49,22 +53,22 @@ const Editor = ({
     })
     return res
   }, [])
-  const editor = useCreateBlockNote({
+  const editor = BlockNoteEditor.create({
     schema: blockSchema,
     initialContent: initialContent ? JSON.parse(initialContent) : undefined,
     uploadFile: handleUpload,
     dictionary: en,
-    // collaboration:
-    //   webrtcProvider && ydoc
-    //     ? {
-    //         provider: webrtcProvider,
-    //         fragment: ydoc.getXmlFragment('document-store'),
-    //         user: {
-    //           name: user?.username as string,
-    //           color: getRandomLightColor(),
-    //         },
-    //       }
-    //     : undefined,
+    collaboration:
+      webrtcProvider && ydoc
+        ? {
+            provider: webrtcProvider,
+            fragment: ydoc.getXmlFragment('document-store'),
+            user: {
+              name: user?.name as string,
+              color: getRandomLightColor(),
+            },
+          }
+        : undefined,
   })
 
   // Handle initial markdown content
@@ -133,6 +137,38 @@ const Editor = ({
   }, [editor, initialMarkdown, initialContent])
 
   // monitor clipboard,when last paste item is md-text,insert after currentBlock.
+  // Load commented blocks
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        const response = await fetch(
+          `/api/comments?documentId=${params.documentId}`
+        )
+        if (!response.ok) {
+          throw new Error('Failed to fetch comments')
+        }
+        const comments = await response.json()
+        comments.forEach((comment: any) => {
+          const block = editor.getBlock(comment.blockId)
+          if (block) {
+            editor.updateBlock(block, {
+              props: {
+                ...block.props,
+                backgroundColor: 'commented',
+              },
+            })
+          }
+        })
+      } catch (error) {
+        console.error('Error loading comments:', error)
+      }
+    }
+
+    if (params.documentId) {
+      loadComments()
+    }
+  }, [params.documentId])
+
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
       const items = event.clipboardData ? event.clipboardData.items : []
@@ -161,7 +197,7 @@ const Editor = ({
   }, [editor, handleUpload])
 
   return (
-    <div>
+    <div className="grid grid-cols-[1fr,300px] gap-4">
       <BlockNoteView
         editor={editor}
         editable={editable}
@@ -179,6 +215,12 @@ const Editor = ({
         />
         <FormattingToolbarController formattingToolbar={formattingToolbar} />
       </BlockNoteView>
+      <div className="border-l">
+        <div className="border-b p-4">
+          <h2 className="font-semibold">Comments</h2>
+        </div>
+        <CommentList editor={editor} />
+      </div>
     </div>
   )
 }
