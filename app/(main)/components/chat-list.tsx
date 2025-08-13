@@ -28,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { NewChatModal } from '@/components/modals/new-chat-modal'
 import Item from './item'
 
 interface ChatListProps {
@@ -40,6 +41,7 @@ export const ChatList = ({}: ChatListProps) => {
   const { setActiveChat } = useChatStore()
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [shouldAutoExpand, setShouldAutoExpand] = useState<string | null>(null)
+  const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
 
   const { data: chats, isLoading } = useQuery({
     queryKey: ['chats'],
@@ -66,13 +68,7 @@ export const ChatList = ({}: ChatListProps) => {
     return unsubscribe
   }, [queryClient])
 
-  const createMutation = useMutation({
-    mutationFn: chatApi.create,
-    onSuccess: (newChat) => {
-      queryClient.invalidateQueries({ queryKey: ['chats'] })
-      router.push(`/chats/${newChat.id}`)
-    },
-  })
+  // Remove the old createMutation since it's now handled in the modal
 
   const archiveMutation = useMutation({
     mutationFn: chatApi.archive,
@@ -108,10 +104,7 @@ export const ChatList = ({}: ChatListProps) => {
   })
 
   const handleCreate = () => {
-    createMutation.mutate({
-      title: 'New chat',
-      description: '',
-    })
+    setIsNewChatModalOpen(true)
   }
 
   const handleCreateDocument = (chatId: string) => {
@@ -153,8 +146,7 @@ export const ChatList = ({}: ChatListProps) => {
         onClick={handleCreate}
         className="w-full justify-start"
         variant="ghost"
-        size="sm"
-        disabled={createMutation.isPending}>
+        size="sm">
         <Plus className="mr-2 h-4 w-4" />
         New chat
       </Button>
@@ -290,6 +282,11 @@ export const ChatList = ({}: ChatListProps) => {
           </div>
         </>
       )}
+
+      <NewChatModal
+        isOpen={isNewChatModalOpen}
+        onClose={() => setIsNewChatModalOpen(false)}
+      />
     </div>
   )
 }

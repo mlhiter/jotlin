@@ -20,6 +20,12 @@ export const chatApi = {
     return POST<Chat>('/api/chats/create', data)
   },
 
+  generateTitle: async (userRequirement: string) => {
+    return POST<{ title: string }>('/api/chats/generate-title', {
+      userRequirement,
+    })
+  },
+
   update: async (chatId: string, data: UpdateChatRequest) => {
     return PUT<Chat>(`/api/chats/${chatId}`, data)
   },
@@ -110,13 +116,13 @@ export const chatApi = {
               if (parsed.content) {
                 // Add content to pending buffer instead of immediately calling onChunk
                 pendingContent += parsed.content
-                
+
                 // Check if we have complete lines to process
                 if (pendingContent.includes('\n')) {
                   const contentLines = pendingContent.split('\n')
                   // Keep the last incomplete line
                   pendingContent = contentLines.pop() || ''
-                  
+
                   // Process complete lines
                   for (const completeLine of contentLines) {
                     if (completeLine.trim()) {

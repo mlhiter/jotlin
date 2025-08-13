@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Send, Paperclip } from 'lucide-react'
@@ -356,27 +356,51 @@ const ChatPage = () => {
     }
   }
 
-  const handleRequirementSubmitted = (requirement: string) => {
-    setRequirementSubmitted(true)
+  const handleRequirementSubmitted = useCallback(
+    (requirement: string) => {
+      setRequirementSubmitted(true)
 
-    // Create and display temporary message immediately
-    const tempMessage: Message = {
-      id: `temp-${Date.now()}`,
-      content: requirement,
-      role: 'user',
-      chatId,
-      userId: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      // Create and display temporary message immediately
+      const tempMessage: Message = {
+        id: `temp-${Date.now()}`,
+        content: requirement,
+        role: 'user',
+        chatId,
+        userId: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      setLocalMessages((prev) => [...prev, tempMessage])
+      addMessage(tempMessage)
+      sendMessageMutation.mutate({
+        content: requirement,
+        tempMessageId: tempMessage.id,
+      })
+    },
+    [chatId, addMessage, sendMessageMutation.mutate, setLocalMessages]
+  )
+
+  // Auto-send initial requirement as first message if chat has description but no messages
+  useEffect(() => {
+    if (
+      chat?.description &&
+      chat.description.trim() &&
+      messages &&
+      messages.length === 0 &&
+      !requirementSubmitted &&
+      !sendMessageMutation.isPending
+    ) {
+      // Automatically submit the initial requirement
+      handleRequirementSubmitted(chat.description)
     }
-
-    setLocalMessages((prev) => [...prev, tempMessage])
-    addMessage(tempMessage)
-    sendMessageMutation.mutate({
-      content: requirement,
-      tempMessageId: tempMessage.id,
-    })
-  }
+  }, [
+    chat,
+    messages,
+    requirementSubmitted,
+    sendMessageMutation.isPending,
+    handleRequirementSubmitted,
+  ])
 
   const handleDocumentGeneration = async (documents: any[], chatId: string) => {
     try {
