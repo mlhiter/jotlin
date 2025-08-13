@@ -11,7 +11,7 @@ import {
   Trash2,
   ChevronDown,
   ChevronRight,
-  FileText,
+  FileIcon,
 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -247,7 +247,7 @@ export const ChatList = ({}: ChatListProps) => {
                       id={document.id}
                       documentIcon={document.icon}
                       label={document.title || 'Untitled'}
-                      icon={FileText}
+                      icon={FileIcon}
                       level={2}
                       onClick={() => handleDocumentClick(document.id)}
                       type="private"
