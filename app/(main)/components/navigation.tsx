@@ -161,19 +161,16 @@ const Navigation = () => {
           <Item onClick={handleCreate} label="New Page" icon={PlusCircle} />
         </div>
 
-        {/* Chat section */}
+        {/* document list and chat list */}
         <div className="mt-4">
-          <div className="flex items-center justify-between px-3 py-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          {/* chat */}
+          <div>
+            <div className="ml-4 flex items-center gap-2 text-base font-medium text-muted-foreground">
               <MessageSquare className="h-4 w-4" />
               <span>Chats</span>
             </div>
+            <ChatList />
           </div>
-          <ChatList />
-        </div>
-
-        {/* document list */}
-        <div className="mt-4">
           {/* shared */}
           <div>
             <div className="ml-4 text-base font-medium text-muted-foreground">

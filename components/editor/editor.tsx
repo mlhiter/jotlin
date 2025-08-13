@@ -7,7 +7,7 @@ import { useTheme } from 'next-themes'
 import { WebrtcProvider } from 'y-webrtc'
 import { useCallback, useEffect } from 'react'
 import { BlockNoteView } from '@blocknote/mantine'
-import { filterSuggestionItems } from '@blocknote/core'
+import { filterSuggestionItems, PartialBlock } from '@blocknote/core'
 import {
   SuggestionMenuController,
   FormattingToolbarController,
@@ -115,11 +115,15 @@ const Editor = ({
               {
                 id: Math.random().toString(36).substring(2, 11),
                 type: 'paragraph',
-                props: { textColor: 'default', backgroundColor: 'default' },
+                props: {
+                  textColor: 'default',
+                  backgroundColor: 'default',
+                  textAlignment: 'left',
+                },
                 content: [{ type: 'text', text: initialMarkdown, styles: {} }],
                 children: [],
               },
-            ]
+            ] as PartialBlock[]
             editor.replaceBlocks(editor.document, simpleBlock)
           }
         }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   Plus,
   MessageSquare,
@@ -16,6 +17,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { cn } from '@/libs/utils'
 import { chatApi } from '@/api/chat'
+import { documentApi } from '@/api/document'
 import { useChatStore } from '@/stores/chat'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -26,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import Item from './item'
 
 interface ChatListProps {
   parentId?: string
@@ -85,11 +88,34 @@ export const ChatList = ({}: ChatListProps) => {
     },
   })
 
+  const createDocumentMutation = useMutation({
+    mutationFn: async ({ chatId }: { chatId: string }) => {
+      return documentApi.createFromMarkdown({
+        title: 'Untitled',
+        markdownContent: 'Start writing here...',
+        parentDocument: null,
+        chatId,
+      })
+    },
+    onSuccess: (document) => {
+      queryClient.invalidateQueries({ queryKey: ['chats'] })
+      router.push(`/documents/${document.id}`)
+      toast.success('Document created successfully')
+    },
+    onError: () => {
+      toast.error('Failed to create document')
+    },
+  })
+
   const handleCreate = () => {
     createMutation.mutate({
       title: 'New chat',
       description: '',
     })
+  }
+
+  const handleCreateDocument = (chatId: string) => {
+    createDocumentMutation.mutate({ chatId })
   }
 
   const handleChatClick = (chat: any) => {
@@ -211,30 +237,33 @@ export const ChatList = ({}: ChatListProps) => {
             </div>
 
             {/* Show associated documents when expanded */}
-            {expanded[chat.id] &&
-              chat.documents &&
-              chat.documents.length > 0 && (
-                <div className="ml-8 space-y-1 border-l-2 border-muted-foreground/20 pl-2">
-                  {chat.documents.map((document) => (
-                    <div
+            {expanded[chat.id] && (
+              <>
+                {chat.documents &&
+                  chat.documents.length > 0 &&
+                  chat.documents.map((document) => (
+                    <Item
                       key={document.id}
-                      className="flex cursor-pointer items-center rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-accent"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDocumentClick(document.id)
-                      }}>
-                      {document.icon ? (
-                        <div className="mr-2 shrink-0 text-[16px]">
-                          {document.icon}
-                        </div>
-                      ) : (
-                        <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
-                      )}
-                      <span className="truncate">{document.title}</span>
-                    </div>
+                      id={document.id}
+                      documentIcon={document.icon}
+                      label={document.title || 'Untitled'}
+                      icon={FileText}
+                      level={2}
+                      onClick={() => handleDocumentClick(document.id)}
+                      type="private"
+                      hideActions={true}
+                    />
                   ))}
-                </div>
-              )}
+                {/* Add new document button */}
+                <Item
+                  onClick={() => handleCreateDocument(chat.id)}
+                  icon={Plus}
+                  level={2}
+                  label="Add a page"
+                  hideActions={true}
+                />
+              </>
+            )}
           </div>
         ))}
       </div>

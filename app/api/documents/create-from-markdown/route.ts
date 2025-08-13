@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { useCreateBlockNote } from '@blocknote/react'
 
 import { auth } from '@/libs/auth'
 import { prisma } from '@/libs/prisma'

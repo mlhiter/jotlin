@@ -37,6 +37,7 @@ interface ItemProps {
   onClick?: () => void
   icon: LucideIcon
   type?: 'private' | 'share'
+  hideActions?: boolean
 }
 
 const Item = ({
@@ -51,6 +52,7 @@ const Item = ({
   onClick,
   icon: Icon,
   type,
+  hideActions = false,
 }: ItemProps) => {
   const router = useRouter()
   const { user } = useSession()
@@ -113,7 +115,7 @@ const Item = ({
         'group flex min-h-[27px] w-full items-center py-1 pr-3 text-sm font-medium text-muted-foreground hover:bg-primary/5',
         active && 'bg-primary/5 text-primary'
       )}>
-      {!!id && (
+      {!!id && !hideActions && (
         <div
           role="button"
           className="mr-1 h-full rounded-sm  hover:bg-neutral-300
@@ -159,12 +161,14 @@ const Item = ({
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
-          <div
-            role="button"
-            onClick={onCreate}
-            className="ml-auto h-full rounded-sm opacity-0 hover:bg-neutral-300 group-hover:opacity-100 dark:hover:bg-neutral-600">
-            <Plus className="h-4 w-4 text-muted-foreground" />
-          </div>
+          {!hideActions && (
+            <div
+              role="button"
+              onClick={onCreate}
+              className="ml-auto h-full rounded-sm opacity-0 hover:bg-neutral-300 group-hover:opacity-100 dark:hover:bg-neutral-600">
+              <Plus className="h-4 w-4 text-muted-foreground" />
+            </div>
+          )}
         </div>
       )}
     </div>
