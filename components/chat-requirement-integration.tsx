@@ -52,12 +52,3 @@ export function ChatRequirementIntegration({
     </Dialog>
   )
 }
-
-// Simple button component for quick access
-export function RequirementGeneratorButton({
-  onDocumentCreated,
-}: {
-  onDocumentCreated?: (documentId: string) => void
-}) {
-  return <ChatRequirementIntegration onDocumentCreated={onDocumentCreated} />
-}

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Send, Paperclip, MoreVertical, FileText, Sparkles } from 'lucide-react'
+import { Send, Paperclip } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { chatApi } from '@/api/chat'
@@ -16,28 +16,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/libs/utils'
-import { ChatDocumentList } from '@/app/(main)/components/chat-document-list'
-import { DocumentSelector } from '@/app/(main)/components/document-selector'
-import { ChatRequirementIntegration } from '@/components/chat-requirement-integration'
+import { RequirementGenerator } from '@/components/requirement-generator'
 import DocumentGenerationProgress from '@/components/document-generation-progress'
 import { useDocumentGeneration } from '@/hooks/use-document-generation'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 
 const ChatPage = () => {
   const params = useParams()
@@ -54,8 +35,8 @@ const ChatPage = () => {
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [streamingContent, setStreamingContent] = useState('')
-  const [showDocumentSelector, setShowDocumentSelector] = useState(false)
   const [localMessages, setLocalMessages] = useState<Message[]>([])
+  const [requirementSubmitted, setRequirementSubmitted] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const [userScrolled, setUserScrolled] = useState(false)
@@ -132,31 +113,46 @@ const ChatPage = () => {
               let lines = pendingSignalBuffer.split('\n')
               // Keep the last incomplete line in buffer
               pendingSignalBuffer = lines.pop() || ''
-              
+
               // Process each complete line
               for (const line of lines) {
                 let displayLine = true
-                
+
                 // Check for generation progress signal
                 if (line.includes('__GENERATION_PROGRESS__:')) {
                   const signalStart = line.indexOf('__GENERATION_PROGRESS__:')
-                  const signalData = line.substring(signalStart + '__GENERATION_PROGRESS__:'.length).trim()
-                  
+                  const signalData = line
+                    .substring(signalStart + '__GENERATION_PROGRESS__:'.length)
+                    .trim()
+
                   try {
                     const progressData = JSON.parse(signalData)
                     console.log('Generation progress update:', progressData)
                     updateProgress(progressData)
                     displayLine = false // Don't display this line
                   } catch (error) {
-                    console.error('Failed to parse generation progress signal:', error, 'Full line:', line, 'Extracted data:', signalData)
+                    console.error(
+                      'Failed to parse generation progress signal:',
+                      error,
+                      'Full line:',
+                      line,
+                      'Extracted data:',
+                      signalData
+                    )
                   }
                 }
-                
+
                 // Check for document generation start signal
                 if (line.includes('__DOCUMENT_GENERATION_START__:')) {
-                  const signalStart = line.indexOf('__DOCUMENT_GENERATION_START__:')
-                  const signalData = line.substring(signalStart + '__DOCUMENT_GENERATION_START__:'.length).trim()
-                  
+                  const signalStart = line.indexOf(
+                    '__DOCUMENT_GENERATION_START__:'
+                  )
+                  const signalData = line
+                    .substring(
+                      signalStart + '__DOCUMENT_GENERATION_START__:'.length
+                    )
+                    .trim()
+
                   try {
                     const data = JSON.parse(signalData)
                     console.log('Document generation started:', data)
@@ -164,36 +160,55 @@ const ChatPage = () => {
                     startGeneration([
                       { title: '正在分析需求...', content: '' },
                       { title: '生成需求文档...', content: '' },
-                      { title: '创建文档结构...', content: '' }
+                      { title: '创建文档结构...', content: '' },
                     ])
                     displayLine = false // Don't display this line
                   } catch (error) {
-                    console.error('Failed to parse generation start signal:', error, 'Full line:', line, 'Extracted data:', signalData)
+                    console.error(
+                      'Failed to parse generation start signal:',
+                      error,
+                      'Full line:',
+                      line,
+                      'Extracted data:',
+                      signalData
+                    )
                   }
                 }
-                
+
                 // Check for documents generated signal
                 if (line.includes('__DOCUMENTS_GENERATED__:')) {
                   const signalStart = line.indexOf('__DOCUMENTS_GENERATED__:')
-                  const signalData = line.substring(signalStart + '__DOCUMENTS_GENERATED__:'.length).trim()
-                  
+                  const signalData = line
+                    .substring(signalStart + '__DOCUMENTS_GENERATED__:'.length)
+                    .trim()
+
                   try {
                     const documentData = JSON.parse(signalData)
-                    console.log('Successfully parsed document generation signal:', documentData)
-                    
+                    console.log(
+                      'Successfully parsed document generation signal:',
+                      documentData
+                    )
+
                     // Replace placeholder with real documents
                     startGeneration(documentData.documents)
-                    
+
                     await handleDocumentGeneration(
                       documentData.documents,
                       documentData.chatId
                     )
                     displayLine = false // Don't display this line
                   } catch (error) {
-                    console.error('Failed to parse document generation signal:', error, 'Full line:', line, 'Extracted data:', signalData)
+                    console.error(
+                      'Failed to parse document generation signal:',
+                      error,
+                      'Full line:',
+                      line,
+                      'Extracted data:',
+                      signalData
+                    )
                   }
                 }
-                
+
                 // Display the line if it doesn't contain signals or if signal parsing failed
                 if (displayLine && line.trim()) {
                   fullAIResponse += line + '\n'
@@ -260,6 +275,11 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (messages) {
+      // Check if there are existing messages to determine if requirement was already submitted
+      if (messages.length > 0 && !requirementSubmitted) {
+        setRequirementSubmitted(true)
+      }
+
       setLocalMessages((prevLocal) => {
         const tempMessages = prevLocal.filter(
           (msg) => msg.id.startsWith('temp-') || msg.id.startsWith('ai-')
@@ -294,7 +314,7 @@ const ChatPage = () => {
       })
       setMessages(messages)
     }
-  }, [messages, setMessages])
+  }, [messages, setMessages, requirementSubmitted])
 
   useEffect(() => {
     scrollToBottom()
@@ -303,6 +323,7 @@ const ChatPage = () => {
   useEffect(() => {
     setUserScrolled(false)
     setLocalMessages([])
+    setRequirementSubmitted(false) // Reset requirement submission state when switching chats
     resetGeneration() // Reset document generation state when switching chats
   }, [chatId, resetGeneration])
 
@@ -333,6 +354,28 @@ const ChatPage = () => {
       e.preventDefault()
       handleSend()
     }
+  }
+
+  const handleRequirementSubmitted = (requirement: string) => {
+    setRequirementSubmitted(true)
+
+    // Create and display temporary message immediately
+    const tempMessage: Message = {
+      id: `temp-${Date.now()}`,
+      content: requirement,
+      role: 'user',
+      chatId,
+      userId: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    setLocalMessages((prev) => [...prev, tempMessage])
+    addMessage(tempMessage)
+    sendMessageMutation.mutate({
+      content: requirement,
+      tempMessageId: tempMessage.id,
+    })
   }
 
   const handleDocumentGeneration = async (documents: any[], chatId: string) => {
@@ -408,54 +451,46 @@ const ChatPage = () => {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b p-4">
-        <h1 className="text-xl font-semibold">{chat?.title}</h1>
-        <div className="flex items-center gap-2">
-          {/* Requirement Generator Button */}
-          <ChatRequirementIntegration
-            onDocumentCreated={() => {
-              toast.success('需求文档已生成')
-              // Refresh linked documents
-              queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
-            }}
-          />
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <FileText className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Linked documents</h3>
-                <ChatDocumentList
-                  chatId={chatId}
-                  documents={chat?.documents || []}
-                  editable={true}
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Edit title</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowDocumentSelector(true)}>
-                Manage documents
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">
-                Delete chat
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+      {/* Header with embedded requirement generator */}
+      <div className="border-b">
+        <div className="flex items-center justify-between p-4 pb-2">
+          <h1 className="text-xl font-semibold">{chat?.title}</h1>
+          {!requirementSubmitted ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                // Scroll to requirement generator
+                const reqGenerator = document.getElementById(
+                  'requirement-generator'
+                )
+                reqGenerator?.scrollIntoView({ behavior: 'smooth' })
+              }}
+              className="text-sm text-muted-foreground hover:text-foreground">
+              开始输入需求 →
+            </Button>
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              ✅ 需求已提交，可以开始对话
+            </div>
+          )}
         </div>
+
+        {/* Requirement Generator - Always visible in header area */}
+        {!requirementSubmitted && (
+          <div className="px-4 pb-4" id="requirement-generator">
+            <RequirementGenerator
+              isEmbedded={true}
+              onRequirementSubmitted={handleRequirementSubmitted}
+              onDocumentCreated={() => {
+                toast.success('需求文档已生成')
+                // Refresh linked documents
+                queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
+              }}
+              className="rounded-lg bg-muted/50 p-4"
+            />
+          </div>
+        )}
       </div>
 
       {/* Messages */}
@@ -482,8 +517,7 @@ const ChatPage = () => {
                   {message.content
                     ?.replace(/__DOCUMENTS_GENERATED__:.*?\n/g, '')
                     ?.replace(/__DOCUMENT_GENERATION_START__:.*?\n/g, '')
-                    ?.replace(/__GENERATION_PROGRESS__:.*?\n/g, '')
-                  }
+                    ?.replace(/__GENERATION_PROGRESS__:.*?\n/g, '')}
                 </p>
                 <p className="mt-1 text-xs opacity-70">
                   {new Date(message.createdAt).toLocaleTimeString()}
@@ -501,8 +535,7 @@ const ChatPage = () => {
                       {streamingContent
                         ?.replace(/__DOCUMENTS_GENERATED__:.*?\n/g, '')
                         ?.replace(/__DOCUMENT_GENERATION_START__:.*?\n/g, '')
-                        ?.replace(/__GENERATION_PROGRESS__:.*?\n/g, '')
-                      }
+                        ?.replace(/__GENERATION_PROGRESS__:.*?\n/g, '')}
                     </p>
                     <div className="mt-2 flex space-x-1">
                       <div className="h-1 w-1 animate-pulse rounded-full bg-gray-500" />
@@ -551,36 +584,30 @@ const ChatPage = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Enter message..."
+            placeholder={
+              requirementSubmitted
+                ? 'Enter message...'
+                : '请先在上方输入项目需求...'
+            }
             className="max-h-[120px] min-h-[40px] resize-none"
-            disabled={sendMessageMutation.isPending || isTyping}
+            disabled={
+              !requirementSubmitted || sendMessageMutation.isPending || isTyping
+            }
           />
           <Button
             onClick={handleSend}
             size="icon"
             className="mb-1"
             disabled={
-              !input.trim() || sendMessageMutation.isPending || isTyping
+              !requirementSubmitted ||
+              !input.trim() ||
+              sendMessageMutation.isPending ||
+              isTyping
             }>
             <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
-
-      <Dialog
-        open={showDocumentSelector}
-        onOpenChange={setShowDocumentSelector}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Manage Linked Documents</DialogTitle>
-          </DialogHeader>
-          <DocumentSelector
-            chatId={chatId}
-            linkedDocumentIds={chat?.documents?.map((d) => d.id) || []}
-            onClose={() => setShowDocumentSelector(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
