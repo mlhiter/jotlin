@@ -208,14 +208,14 @@ export function CommentList({ editor, refreshTrigger }: CommentListProps) {
                       size="sm"
                       onClick={() => handleSaveEdit(comment.id)}
                       className="text-xs">
-                      保存
+                      Save
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={handleCancelEdit}
                       className="text-xs">
-                      取消
+                      Cancel
                     </Button>
                   </div>
                 </div>
@@ -232,7 +232,7 @@ export function CommentList({ editor, refreshTrigger }: CommentListProps) {
                   />
                   {comment.updatedAt && (
                     <p className="mt-1 text-xs text-muted-foreground">
-                      (已编辑于{' '}
+                      (Edited at{' '}
                       {formatDistanceToNow(new Date(comment.updatedAt), {
                         addSuffix: true,
                       })}
@@ -245,7 +245,7 @@ export function CommentList({ editor, refreshTrigger }: CommentListProps) {
                       size="sm"
                       onClick={() => handleScrollToComment(comment.blockId)}
                       className="text-xs">
-                      跳转到评论位置
+                      Jump to comment position
                     </Button>
                     {currentUser?.email === comment.user.email && (
                       <>
@@ -254,7 +254,7 @@ export function CommentList({ editor, refreshTrigger }: CommentListProps) {
                           size="sm"
                           onClick={() => handleStartEdit(comment)}
                           className="text-xs">
-                          编辑
+                          Edit
                         </Button>
                         <Button
                           variant="ghost"
@@ -263,7 +263,7 @@ export function CommentList({ editor, refreshTrigger }: CommentListProps) {
                             handleDeleteComment(comment.id, comment.blockId)
                           }
                           className="text-xs text-red-500 hover:text-red-600">
-                          删除
+                          Delete
                         </Button>
                       </>
                     )}
