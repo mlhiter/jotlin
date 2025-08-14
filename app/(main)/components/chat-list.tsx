@@ -160,15 +160,8 @@ export const ChatList = ({}: ChatListProps) => {
   const archivedChats = chats?.filter((chat) => chat.isArchived) || []
 
   return (
-    <div className="flex flex-col space-y-2 p-2">
-      <Button
-        onClick={handleCreate}
-        className="w-full justify-start"
-        variant="ghost"
-        size="sm">
-        <Plus className="mr-2 h-4 w-4" />
-        New chat
-      </Button>
+    <div className="flex flex-col space-y-2">
+      <Item onClick={handleCreate} icon={Plus} label="New chat" />
 
       <div className="space-y-1">
         {activeChats.map((chat) => (
