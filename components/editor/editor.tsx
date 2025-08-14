@@ -152,7 +152,7 @@ const Editor = ({
   }, [editor, initialMarkdown, initialContent])
 
   // monitor clipboard,when last paste item is md-text,insert after currentBlock.
-  // Load commented blocks
+  // Load commented blocks and set up block deletion listener
   useEffect(() => {
     const loadComments = async () => {
       try {
@@ -179,10 +179,54 @@ const Editor = ({
       }
     }
 
+    // Set up listener for block deletion to clean up orphaned comments
+    const handleDocumentChange = async () => {
+      try {
+        const allBlocks = editor.document
+        const currentBlockIds = new Set(allBlocks.map((block) => block.id))
+
+        // Fetch all comments for this document
+        const response = await fetch(
+          `/api/comments?documentId=${params.documentId}`
+        )
+        if (response.ok) {
+          const comments = await response.json()
+
+          // Find comments with blocks that no longer exist
+          const orphanedComments = comments.filter(
+            (comment: any) => !currentBlockIds.has(comment.blockId)
+          )
+
+          // Delete orphaned comments
+          for (const comment of orphanedComments) {
+            try {
+              await fetch(`/api/comments?id=${comment.id}`, {
+                method: 'DELETE',
+              })
+            } catch (error) {
+              console.error('Error deleting orphaned comment:', error)
+            }
+          }
+
+          // Refresh comment list if any comments were deleted
+          if (orphanedComments.length > 0) {
+            setCommentRefreshTrigger((prev) => prev + 1)
+          }
+        }
+      } catch (error) {
+        console.error('Error cleaning up orphaned comments:', error)
+      }
+    }
+
     if (params.documentId) {
       loadComments()
+
+      // Add document change listener using onChange
+      const unsubscribe = editor.onChange(handleDocumentChange)
+
+      return unsubscribe
     }
-  }, [params.documentId])
+  }, [params.documentId, editor])
 
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {

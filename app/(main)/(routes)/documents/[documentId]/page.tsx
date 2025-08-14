@@ -34,8 +34,8 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   useEffect(() => {
     const reloadDocument = () => {
       // 无效化当前文档的查询缓存，触发重新获取
-      queryClient.invalidateQueries({ 
-        queryKey: ['document', params.documentId] 
+      queryClient.invalidateQueries({
+        queryKey: ['document', params.documentId],
       })
     }
 

@@ -187,7 +187,7 @@ ${documentContent}
 \`\`\`json
 {
   "type": "modify_content" | "add_content" | "suggest_edit" | "no_action",
-  "content": "修改后的内容（如果适用）",
+  "content": "要添加或修改的内容（如果适用）",
   "blockId": "要修改的块ID（如果适用）",
   "suggestion": "修改建议（如果type是suggest_edit）",
   "reasoning": "执行此操作的原因说明"
@@ -197,8 +197,10 @@ ${documentContent}
 注意事项：
 1. 如果用户指令不够明确，返回type为"suggest_edit"并提供建议
 2. 如果指令无法执行，返回type为"no_action"并说明原因
-3. 修改内容时保持文档的原有格式和结构
-4. 确保修改符合用户的意图和上下文
+3. 优先使用"add_content"在评论块下方添加新内容，而不是直接修改现有内容
+4. 只有当用户明确要求修改现有内容时，才使用"modify_content"
+5. 确保修改符合用户的意图和上下文
+6. 生成的内容应该简洁明了，直接回答用户的问题或执行用户的指令
 `
 }
 
@@ -246,7 +248,8 @@ async function callAIService(
  */
 export async function applyAIModification(
   documentId: string,
-  modification: AIAction
+  modification: AIAction,
+  commentBlockId?: string
 ): Promise<{ success: boolean; message: string }> {
   try {
     if (modification.type === 'no_action') {
@@ -260,6 +263,84 @@ export async function applyAIModification(
       return {
         success: true,
         message: `AI建议：${modification.suggestion}`,
+      }
+    }
+
+    if (
+      modification.type === 'add_content' &&
+      modification.content &&
+      commentBlockId
+    ) {
+      // Get current document to insert new content after the commented block
+      const document = await prisma.document.findUnique({
+        where: { id: documentId },
+        select: { content: true },
+      })
+
+      if (!document) {
+        throw new Error('Document not found')
+      }
+
+      let currentContent: any[] = []
+      if (document.content) {
+        try {
+          currentContent = JSON.parse(document.content)
+        } catch (error) {
+          console.error('Error parsing document content:', error)
+          currentContent = []
+        }
+      }
+
+      // Find the index of the commented block
+      const commentBlockIndex = currentContent.findIndex(
+        (block) => block.id === commentBlockId
+      )
+
+      // Create new AI response block
+      const newAIBlock = {
+        id: Math.random().toString(36).substring(2, 11),
+        type: 'paragraph',
+        props: {
+          textColor: 'default',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: '🤖 AI回复: ',
+            styles: { bold: true, textColor: '#8B5CF6' },
+          },
+          {
+            type: 'text',
+            text:
+              typeof modification.content === 'string'
+                ? modification.content
+                : JSON.stringify(modification.content),
+            styles: {},
+          },
+        ],
+        children: [],
+      }
+
+      // Insert the new block after the commented block
+      if (commentBlockIndex !== -1) {
+        currentContent.splice(commentBlockIndex + 1, 0, newAIBlock)
+      } else {
+        // If block not found, append at the end
+        currentContent.push(newAIBlock)
+      }
+
+      // Update document with new content
+      const updatedContent = JSON.stringify(currentContent)
+      await prisma.document.update({
+        where: { id: documentId },
+        data: { content: updatedContent },
+      })
+
+      return {
+        success: true,
+        message: `AI已在评论块下方添加了回复内容。原因：${modification.reasoning}`,
       }
     }
 
@@ -284,13 +365,6 @@ export async function applyAIModification(
         where: { id: documentId },
         data: { content: contentToSave },
       })
-
-      // 通知前端重新加载文档
-      if (typeof window !== 'undefined' && (window as any).reloadDocument) {
-        setTimeout(() => {
-          ;(window as any).reloadDocument()
-        }, 500)
-      }
 
       return {
         success: true,

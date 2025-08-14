@@ -122,13 +122,13 @@ export function CommentButton() {
         ;(window as any).refreshComments()
       }
 
-      // 如果有AI修改，延迟重新加载文档
-      if (result.aiResults && result.aiResults.length > 0) {
+      // 如果文档被修改，立即重新加载文档
+      if (result.documentModified) {
         setTimeout(() => {
           if (typeof window !== 'undefined' && (window as any).reloadDocument) {
             ;(window as any).reloadDocument()
           }
-        }, 2000) // 等待AI处理完成后重新加载
+        }, 1000) // 给AI处理一些时间
       }
     } catch (error) {
       console.error(error)

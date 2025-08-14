@@ -79,6 +79,7 @@ export async function POST(req: Request) {
 
     // 处理@提及
     let aiProcessingResults: string[] = []
+    let documentModified = false
 
     if (validMentions.length > 0) {
       try {
@@ -120,8 +121,19 @@ export async function POST(req: Request) {
             })
 
             if (aiAction.type !== 'no_action') {
-              const result = await applyAIModification(documentId, aiAction)
+              const result = await applyAIModification(
+                documentId,
+                aiAction,
+                blockId
+              )
               aiProcessingResults.push(result.message)
+              if (
+                result.success &&
+                (aiAction.type === 'modify_content' ||
+                  aiAction.type === 'add_content')
+              ) {
+                documentModified = true
+              }
               console.log('AI处理结果:', result.message)
             } else {
               aiProcessingResults.push(aiAction.reasoning || 'AI无法处理此请求')
@@ -141,6 +153,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       comment,
       aiResults: aiProcessingResults,
+      documentModified, // 告诉前端文档是否被修改
     })
   } catch (error) {
     console.error('[COMMENTS_POST]', error)
