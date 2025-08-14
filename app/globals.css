@@ -2,44 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-[data-background-color='commented'] {
-  @apply bg-blue-50/70 dark:bg-blue-900/10;
-  @apply border-l-4 border-blue-400 dark:border-blue-500;
-  @apply py-1 pl-3 pr-2;
-  @apply rounded-r-md;
-  @apply transition-all duration-200;
-  position: relative;
-}
-
-[data-background-color='commented']:hover {
-  @apply bg-blue-100/80 dark:bg-blue-900/20;
-  @apply shadow-sm;
-}
-
-[data-background-color='commented']::before {
-  content: '💬';
-  position: absolute;
-  right: 8px;
-  top: 4px;
-  font-size: 12px;
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.highlight-block {
-  animation: highlight-pulse 2s ease-in-out;
-}
-
-@keyframes highlight-pulse {
-  0%,
-  100% {
-    @apply bg-yellow-50 dark:bg-yellow-900/20;
-  }
-  50% {
-    @apply bg-yellow-100 dark:bg-yellow-900/40;
-  }
-}
-
 html,
 body,
 :root {
@@ -143,6 +105,45 @@ body,
   background-color: rgba(27, 31, 35, 0.05);
   border-radius: 3px;
   border: #e2e4e7 1px solid;
+}
+
+/* comment block style */
+[data-background-color='commented'].bn-block-outer {
+  @apply bg-blue-50/70 dark:bg-blue-900/10;
+  @apply border-l-4 border-blue-400 dark:border-blue-500;
+  @apply py-1 pl-3 pr-2;
+  @apply rounded-r-md;
+  @apply transition-all duration-200;
+  position: relative;
+}
+
+[data-background-color='commented'].bn-block-outer:hover {
+  @apply bg-blue-100/80 dark:bg-blue-900/20;
+  @apply shadow-sm;
+}
+
+[data-background-color='commented'].bn-block-outer::before {
+  content: '💬';
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 12px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.highlight-block {
+  animation: highlight-pulse 2s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+  0%,
+  100% {
+    @apply bg-yellow-50 dark:bg-yellow-900/20;
+  }
+  50% {
+    @apply bg-yellow-100 dark:bg-yellow-900/40;
+  }
 }
 
 /* Mention styles */

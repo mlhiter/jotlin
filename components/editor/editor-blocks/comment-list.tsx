@@ -1,13 +1,16 @@
 'use client'
 
+import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { useBlockNoteEditor } from '@blocknote/react'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { formatDistanceToNow } from 'date-fns'
+import { type BlockNoteEditor } from '@blocknote/core'
+
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Avatar, AvatarImage } from '@/components/ui/avatar'
+
 import { useSession } from '@/hooks/use-session'
 import { parseMentions, formatMentionsInText } from '@/libs/mention-parser'
 
@@ -24,13 +27,9 @@ interface Comment {
   }
 }
 
-import { type BlockNoteEditor } from '@blocknote/core'
-import { type PartialBlock } from '@blocknote/core'
-import { Input } from '@/components/ui/input'
-
 interface CommentListProps {
   editor: BlockNoteEditor<any, any>
-  refreshTrigger?: number // 用于触发刷新的prop
+  refreshTrigger?: number
 }
 
 export function CommentList({ editor, refreshTrigger }: CommentListProps) {
@@ -68,7 +67,6 @@ export function CommentList({ editor, refreshTrigger }: CommentListProps) {
         throw new Error('Failed to update comment')
       }
 
-      // 更新本地评论列表
       setComments((prev) =>
         prev.map((c) =>
           c.id === commentId
@@ -100,10 +98,8 @@ export function CommentList({ editor, refreshTrigger }: CommentListProps) {
         throw new Error('Failed to delete comment')
       }
 
-      // 从列表中移除评论
       setComments((prev) => prev.filter((c) => c.id !== commentId))
 
-      // 如果这是块的最后一个评论，移除块的背景色
       const remainingComments = comments.filter(
         (c) => c.blockId === blockId && c.id !== commentId
       )
@@ -130,13 +126,10 @@ export function CommentList({ editor, refreshTrigger }: CommentListProps) {
     const block = editor.getBlock(blockId)
     if (block) {
       editor.setTextCursorPosition(block, 'start')
-      // 确保块在视图中
-      // 找到包含这个块的元素
       const element = document.querySelector(`[data-id="${blockId}"]`)
       if (element) {
         setTimeout(() => {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          // 添加临时高亮效果
           element.classList.add('highlight-block')
           setTimeout(() => {
             element.classList.remove('highlight-block')
