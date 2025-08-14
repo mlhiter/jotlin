@@ -2,7 +2,14 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage
 from app.core.config import settings
 import json
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any, Union
+from pydantic import BaseModel
+
+class AIResponse(BaseModel):
+    type: str  # "modify_content", "add_content", "suggest_edit", "no_action"
+    content: Optional[Union[str, List[Dict[str, Any]], Dict[str, Any]]] = None
+    suggestion: Optional[str] = None
+    reasoning: str
 
 
 class DocumentChatAgent:
@@ -133,12 +140,12 @@ Guidelines:
 
             # Build message history
             messages = [{"role": "system", "content": system_prompt}]
-            
+
             # Add last 8 messages from conversation history
             for msg in conversation_history[-8:]:
                 role = "user" if msg["role"] == "user" else "assistant"
                 messages.append({"role": role, "content": msg["content"]})
-            
+
             # Add current user message
             messages.append({"role": "user", "content": user_message})
 
@@ -165,3 +172,112 @@ class AIService:
         return await self.chat_agent.process_message(
             user_message, conversation_history, document_context
         )
+
+    async def process_mention_request(
+        self,
+        instruction: str,
+        action_type: str,
+        document_content: str = "",
+        document_title: str = "",
+        block_id: str = ""
+    ) -> AIResponse:
+        """
+        处理评论中的AI提及请求
+        """
+        if not settings.openai_api_key:
+            return AIResponse(
+                type="no_action",
+                reasoning="AI服务未配置，无法处理请求"
+            )
+
+        try:
+            # 构造处理提示词
+            prompt = self._build_mention_prompt(
+                instruction, action_type, document_content, document_title, block_id
+            )
+
+            # 调用AI模型
+            response = await self.chat_agent.llm.ainvoke([HumanMessage(content=prompt)])
+
+            # 解析AI响应
+            result = self._parse_ai_response(response.content, instruction)
+
+            return result
+
+        except Exception as e:
+            return AIResponse(
+                type="no_action",
+                reasoning=f"AI处理时出错: {str(e)}"
+            )
+
+    def _build_mention_prompt(
+        self,
+        instruction: str,
+        action_type: str,
+        document_content: str,
+        document_title: str,
+        block_id: str
+    ) -> str:
+        """构造AI处理提示词"""
+
+        prompt = f"""你是一个文档编辑助手。用户在文档《{document_title}》的评论中@了你，需要你根据指令来修改文档内容。
+
+当前文档内容：
+```
+{document_content}
+```
+
+用户指令类型：{action_type}
+用户具体指令：{instruction}
+评论所在的块ID：{block_id}
+
+请根据用户的指令，返回以下格式的JSON响应：
+
+```json
+{{
+  "type": "modify_content" | "add_content" | "suggest_edit" | "no_action",
+  "content": "修改后的完整文档内容（如果type是modify_content）",
+  "suggestion": "修改建议（如果type是suggest_edit）",
+  "reasoning": "执行此操作的原因说明"
+}}
+```
+
+注意事项：
+1. 如果用户指令不够明确，返回type为"suggest_edit"并提供建议
+2. 如果指令无法执行，返回type为"no_action"并说明原因
+3. 如果可以修改，返回type为"modify_content"并提供修改后的完整文档内容
+4. 修改时保持文档的原有格式和结构
+5. 确保修改符合用户的意图和上下文
+6. 只返回JSON，不要包含其他文字
+"""
+
+        return prompt
+
+    def _parse_ai_response(self, ai_response: str, original_instruction: str) -> AIResponse:
+        """解析AI响应"""
+        try:
+            # 尝试解析JSON
+            if ai_response.strip().startswith('```json'):
+                # 提取JSON内容
+                json_start = ai_response.find('{')
+                json_end = ai_response.rfind('}') + 1
+                json_content = ai_response[json_start:json_end]
+            else:
+                json_content = ai_response.strip()
+
+            parsed = json.loads(json_content)
+
+            return AIResponse(
+                type=parsed.get('type', 'no_action'),
+                content=parsed.get('content'),
+                suggestion=parsed.get('suggestion'),
+                reasoning=parsed.get('reasoning', '已根据指令处理')
+            )
+
+        except Exception as e:
+            # 如果解析失败，返回建议
+            return AIResponse(
+                type="suggest_edit",
+                suggestion=f"AI响应解析失败，原始指令：{original_instruction}",
+                reasoning=f"响应格式有误：{str(e)}"
+            )

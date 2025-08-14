@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api import chats, requirements, chat_title
+from app.api import chats, requirements, chat_title, process_mention
 
 app = FastAPI(
     title="Jotlin AI Agent Server",
@@ -20,6 +20,7 @@ app.add_middleware(
 app.include_router(chats.router, prefix="/api/chats", tags=["chats"])
 app.include_router(requirements.router, prefix="/api/requirements", tags=["requirements"])
 app.include_router(chat_title.router, prefix="/api", tags=["chat-title"])
+app.include_router(process_mention.router, prefix="/api", tags=["mention"])
 
 
 @app.get("/")

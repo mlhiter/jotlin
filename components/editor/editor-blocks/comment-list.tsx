@@ -9,6 +9,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useSession } from '@/hooks/use-session'
+import { parseMentions, formatMentionsInText } from '@/libs/mention-parser'
 
 interface Comment {
   id: string
@@ -29,9 +30,10 @@ import { Input } from '@/components/ui/input'
 
 interface CommentListProps {
   editor: BlockNoteEditor<any, any>
+  refreshTrigger?: number // 用于触发刷新的prop
 }
 
-export function CommentList({ editor }: CommentListProps) {
+export function CommentList({ editor, refreshTrigger }: CommentListProps) {
   const params = useParams()
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -165,7 +167,7 @@ export function CommentList({ editor }: CommentListProps) {
     if (params.documentId) {
       fetchComments()
     }
-  }, [params.documentId])
+  }, [params.documentId, refreshTrigger])
 
   if (isLoading) {
     return <div className="p-4">Loading comments...</div>
@@ -226,7 +228,15 @@ export function CommentList({ editor }: CommentListProps) {
                 </div>
               ) : (
                 <>
-                  <p className="mt-1 text-sm">{comment.content}</p>
+                  <div
+                    className="mt-1 text-sm"
+                    dangerouslySetInnerHTML={{
+                      __html: formatMentionsInText(
+                        comment.content,
+                        parseMentions(comment.content)
+                      ),
+                    }}
+                  />
                   {comment.updatedAt && (
                     <p className="mt-1 text-xs text-muted-foreground">
                       (已编辑于{' '}

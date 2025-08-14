@@ -7,6 +7,7 @@ import Title from './title'
 import Banner from './banner'
 import Invite from './invite'
 import Publish from './publish'
+import { NotificationBell } from '@/components/notification-bell'
 import { useDocumentStore } from '@/stores/document'
 
 interface NavbarProps {
@@ -43,6 +44,7 @@ const Navbar = ({ isCollapsed, onResetWidth }: NavbarProps) => {
         <div className="flex w-full items-center justify-between">
           <Title initialData={currentDocument} />
           <div className="flex items-center gap-x-2">
+            <NotificationBell />
             <Invite documentId={currentDocument.id} />
             <Publish initialData={currentDocument} />
             <Menu documentId={currentDocument.id} />

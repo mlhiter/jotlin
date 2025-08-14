@@ -46,6 +46,21 @@ const Editor = ({
   const { resolvedTheme } = useTheme()
   const { user } = useSession()
   const params = useParams()
+  const [commentRefreshTrigger, setCommentRefreshTrigger] = useState(0)
+
+  // 暴露刷新评论的函数到全局
+  useEffect(() => {
+    const refreshComments = () => {
+      setCommentRefreshTrigger((prev) => prev + 1)
+    }
+
+    // 将函数绑定到window对象
+    ;(window as any).refreshComments = refreshComments
+
+    return () => {
+      delete (window as any).refreshComments
+    }
+  }, [])
 
   const handleUpload = useCallback(async (file: File) => {
     const res = await imageApi.upload({
@@ -219,7 +234,7 @@ const Editor = ({
         <div className="border-b p-4">
           <h2 className="font-semibold">Comments</h2>
         </div>
-        <CommentList editor={editor} />
+        <CommentList editor={editor} refreshTrigger={commentRefreshTrigger} />
       </div>
     </div>
   )

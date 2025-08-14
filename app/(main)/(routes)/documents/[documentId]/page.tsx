@@ -1,7 +1,7 @@
 'use client'
 
 import { debounce } from 'lodash'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useCallback } from 'react'
 
 import Cover from '@/components/cover'
@@ -22,12 +22,30 @@ interface DocumentIdPageProps {
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const { setCurrentDocument, currentDocument, clearCurrentDocument } =
     useDocumentStore()
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     return () => {
       clearCurrentDocument()
     }
   }, [clearCurrentDocument])
+
+  // 暴露重新加载文档的函数到全局
+  useEffect(() => {
+    const reloadDocument = () => {
+      // 无效化当前文档的查询缓存，触发重新获取
+      queryClient.invalidateQueries({ 
+        queryKey: ['document', params.documentId] 
+      })
+    }
+
+    // 将函数绑定到window对象
+    ;(window as any).reloadDocument = reloadDocument
+
+    return () => {
+      delete (window as any).reloadDocument
+    }
+  }, [queryClient, params.documentId])
 
   const { data: document } = useQuery({
     queryKey: ['document', params.documentId],
