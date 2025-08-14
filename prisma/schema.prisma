@@ -179,15 +179,24 @@ model Comment {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   mentions   Mention[]
 
+  // Reply relations
+  parentId   String?
+  parent     Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    Comment[] @relation("CommentReplies")
+
+  // AI reply flag
+  isAIReply  Boolean  @default(false)
+
   @@index([documentId])
   @@index([userId])
+  @@index([parentId])
 }
 
 model Mention {
   id           String   @id @default(uuid())
   type         String   // "user" or "ai"
-  targetUserId String?  // 如果是@用户，存储用户ID
-  targetEmail  String?  // 如果是@用户，存储用户邮箱
+  targetUserId String?  // if @user, store user ID
+  targetEmail  String?  // if @user, store user email
   createdAt    DateTime @default(now())
 
   // Relations

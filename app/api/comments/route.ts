@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    const { documentId, content, blockId } = await req.json()
+    const { documentId, content, blockId, parentId } = await req.json()
 
     if (!documentId || !content || !blockId) {
       return new NextResponse('Bad Request', { status: 400 })
@@ -65,6 +65,7 @@ export async function POST(req: Request) {
         blockId,
         documentId,
         userId: user.id,
+        parentId: parentId || undefined,
       },
       include: {
         user: {
@@ -72,6 +73,17 @@ export async function POST(req: Request) {
             name: true,
             image: true,
             email: true,
+          },
+        },
+        replies: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                image: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -135,6 +147,52 @@ export async function POST(req: Request) {
                 documentModified = true
               }
               console.log('AI处理结果:', result.message)
+
+              // AI创建回复评论
+              try {
+                const aiUser = await prisma.user.findFirst({
+                  where: {
+                    email: 'ai@jotlin.com',
+                  },
+                })
+
+                if (!aiUser) {
+                  // 创建AI用户
+                  const newAiUser = await prisma.user.create({
+                    data: {
+                      email: 'ai@jotlin.com',
+                      name: 'AI Assistant',
+                      password: '', // AI用户不需要密码
+                      emailVerified: true,
+                      imageUrl: '/logo.svg',
+                    },
+                  })
+
+                  await prisma.comment.create({
+                    data: {
+                      content: result.message,
+                      blockId,
+                      documentId,
+                      userId: newAiUser.id,
+                      parentId: comment.id,
+                      isAIReply: true,
+                    },
+                  })
+                } else {
+                  await prisma.comment.create({
+                    data: {
+                      content: result.message,
+                      blockId,
+                      documentId,
+                      userId: aiUser.id,
+                      parentId: comment.id,
+                      isAIReply: true,
+                    },
+                  })
+                }
+              } catch (aiReplyError) {
+                console.error('Error creating AI reply:', aiReplyError)
+              }
             } else {
               aiProcessingResults.push(aiAction.reasoning || 'AI无法处理此请求')
             }
@@ -274,6 +332,7 @@ export async function GET(req: Request) {
     const comments = await prisma.comment.findMany({
       where: {
         documentId,
+        parentId: null, // 只获取顶级评论
       },
       include: {
         user: {
@@ -281,6 +340,21 @@ export async function GET(req: Request) {
             name: true,
             image: true,
             email: true,
+          },
+        },
+        replies: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                image: true,
+                email: true,
+              },
+            },
+            replies: true, // 支持多层嵌套
+          },
+          orderBy: {
+            createdAt: 'asc',
           },
         },
       },
