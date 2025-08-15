@@ -512,9 +512,6 @@ export function PositionedCommentList({
 
     // 获取每个评论组的实际高度
     Object.entries(commentsByBlock).forEach(([blockId, blockComments]) => {
-      const mainComment = blockComments[0]
-      if (!mainComment) return
-
       // 尝试获取实际渲染的评论元素高度
       const existingCommentElement = document.querySelector(
         `[data-comment-block="${blockId}"]`
@@ -525,47 +522,56 @@ export function PositionedCommentList({
         // 使用实际DOM元素的高度
         actualHeight = existingCommentElement.offsetHeight + 20 // 加一些缓冲空间
       } else {
-        // 回退到改进的估算方法
-        let estimatedHeight = 0
+        // 处理新评论块（没有评论的情况）
+        if (blockId === newCommentBlockId && blockComments.length === 0) {
+          // 新评论创建界面的估算高度
+          actualHeight = 200 // 原文预览 + 输入框 + 按钮 + padding
+        } else if (blockComments.length > 0) {
+          // 回退到改进的估算方法
+          let estimatedHeight = 0
 
-        // 按replyOrder排序评论
-        const sortedComments = blockComments.sort(
-          (a, b) => a.replyOrder - b.replyOrder
-        )
+          // 按replyOrder排序评论
+          const sortedComments = blockComments.sort(
+            (a, b) => a.replyOrder - b.replyOrder
+          )
 
-        sortedComments.forEach((comment, index) => {
-          // 安全检查评论数据
-          if (!comment || !comment.content) {
-            console.warn('Invalid comment data:', comment)
-            return
-          }
+          sortedComments.forEach((comment, index) => {
+            // 安全检查评论数据
+            if (!comment || !comment.content) {
+              console.warn('Invalid comment data:', comment)
+              return
+            }
 
-          // 基础高度估算
-          let singleCommentHeight = 140 // 包含卡片边框、padding等的基础高度
+            // 基础高度估算
+            let singleCommentHeight = 140 // 包含卡片边框、padding等的基础高度
 
-          // 只有第一个评论（根评论）显示原文预览
-          if (index === 0 && comment.replyOrder === 0) {
-            singleCommentHeight += 60 // 原文预览区域高度
-          }
+            // 只有第一个评论（根评论）显示原文预览
+            if (index === 0 && comment.replyOrder === 0) {
+              singleCommentHeight += 60 // 原文预览区域高度
+            }
 
-          // 基于内容长度的更准确估算
-          const contentLines = Math.ceil(comment.content.length / 40)
-          const contentHeight = Math.max(1, contentLines) * 22
+            // 基于内容长度的更准确估算
+            const contentLines = Math.ceil(comment.content.length / 40)
+            const contentHeight = Math.max(1, contentLines) * 22
 
-          singleCommentHeight += contentHeight
+            singleCommentHeight += contentHeight
 
-          // 状态相关的高度
-          if (editingId === comment.id) {
-            singleCommentHeight += 90
-          }
-          if (replyingTo === comment.id) {
-            singleCommentHeight += 110
-          }
+            // 状态相关的高度
+            if (editingId === comment.id) {
+              singleCommentHeight += 90
+            }
+            if (replyingTo === comment.id) {
+              singleCommentHeight += 110
+            }
 
-          estimatedHeight += singleCommentHeight + 8 // 8px间距
-        })
+            estimatedHeight += singleCommentHeight + 8 // 8px间距
+          })
 
-        actualHeight = estimatedHeight + 50 // 更大的缓冲空间
+          actualHeight = estimatedHeight + 50 // 更大的缓冲空间
+        } else {
+          // 如果既不是新评论块，也没有评论，跳过
+          return
+        }
       }
 
       const position = calculateCommentPosition(
@@ -606,6 +612,9 @@ export function PositionedCommentList({
       const blockComments = commentsByBlock[blockId]
       if (blockComments && blockComments.length > 0) {
         newPositions[blockComments[0].id] = position
+      } else if (blockId === newCommentBlockId) {
+        // 为新评论块设置位置
+        newPositions[`new-comment-${blockId}`] = position
       }
     })
 
@@ -626,7 +635,7 @@ export function PositionedCommentList({
 
       return newPositions
     })
-  }, [commentsByBlock, editingId, replyingTo])
+  }, [commentsByBlock, editingId, replyingTo, newCommentBlockId])
 
   const handleStartEdit = (comment: Comment) => {
     setEditingId(comment.id)
@@ -896,14 +905,20 @@ export function PositionedCommentList({
 
   // 监听评论内容、编辑和回复状态变化，立即更新位置
   useEffect(() => {
-    if (comments.length > 0) {
+    if (comments.length > 0 || newCommentBlockId) {
       updateCommentPositions()
     }
-  }, [comments, editingId, replyingTo, updateCommentPositions])
+  }, [
+    comments,
+    editingId,
+    replyingTo,
+    newCommentBlockId,
+    updateCommentPositions,
+  ])
 
   // 监听滚动和窗口变化，更新评论位置
   useEffect(() => {
-    if (comments.length === 0) return
+    if (comments.length === 0 && !newCommentBlockId) return
 
     let timeoutId: NodeJS.Timeout
 
@@ -945,7 +960,7 @@ export function PositionedCommentList({
         observer.disconnect()
       }
     }
-  }, [comments.length, updateCommentPositions])
+  }, [comments.length, newCommentBlockId, updateCommentPositions])
 
   if (isLoading) {
     return <div className="p-4">Loading comments...</div>
@@ -962,11 +977,14 @@ export function PositionedCommentList({
 
         // 如果是新评论块且没有评论，显示创建评论的界面
         if (blockId === newCommentBlockId && blockComments.length === 0) {
-          const position = calculateCommentPosition(
-            blockId,
-            sidebarRef.current!,
-            document.querySelector('.bn-editor') as HTMLElement
-          )
+          // 使用统一的位置管理系统
+          const position =
+            commentPositions[`new-comment-${blockId}`] ||
+            calculateCommentPosition(
+              blockId,
+              sidebarRef.current!,
+              document.querySelector('.bn-editor') as HTMLElement
+            )
 
           return (
             <div
