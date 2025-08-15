@@ -52,6 +52,9 @@ const Editor = ({
   const [hasComments, setHasComments] = useState(false)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
   const [hasInitializedSidebar, setHasInitializedSidebar] = useState(false)
+  const [newCommentBlockId, setNewCommentBlockId] = useState<string | null>(
+    null
+  )
 
   // 当有评论时，确保侧边栏是展开的（首次有评论时强制展开）
   useEffect(() => {
@@ -109,17 +112,31 @@ const Editor = ({
       setIsSidebarExpanded(true)
     }
 
+    const createNewComment = (blockId: string) => {
+      setNewCommentBlockId(blockId)
+      setIsSidebarExpanded(true)
+      setHasComments(true) // 强制显示侧边栏，即使当前没有评论
+    }
+
+    const clearNewComment = () => {
+      setNewCommentBlockId(null)
+    }
+
     // 将函数绑定到window对象
     ;(window as any).refreshComments = refreshComments
     ;(window as any).setCommentCreationFlag = setCommentCreationFlag
     ;(window as any).getCurrentEditorContent = getCurrentEditorContent
     ;(window as any).expandCommentSidebar = expandCommentSidebar
+    ;(window as any).createNewComment = createNewComment
+    ;(window as any).clearNewComment = clearNewComment
 
     return () => {
       delete (window as any).refreshComments
       delete (window as any).setCommentCreationFlag
       delete (window as any).getCurrentEditorContent
       delete (window as any).expandCommentSidebar
+      delete (window as any).createNewComment
+      delete (window as any).clearNewComment
     }
   }, []) // editor在这个useEffect中被定义，不需要作为依赖
 
@@ -338,7 +355,7 @@ const Editor = ({
       {/* 主编辑器区域 */}
       <div
         className={`flex-1 transition-all duration-300 ${
-          hasComments && isSidebarExpanded ? 'pr-80' : ''
+          (hasComments || newCommentBlockId) && isSidebarExpanded ? 'pr-80' : ''
         }`}>
         <BlockNoteView
           editor={editor}
@@ -360,7 +377,7 @@ const Editor = ({
       </div>
 
       {/* 隐藏的评论检测器 - 总是渲染来检测评论状态 */}
-      {!hasComments && (
+      {!hasComments && !newCommentBlockId && (
         <div className="hidden">
           <PositionedCommentList
             editor={editor}
@@ -371,7 +388,7 @@ const Editor = ({
       )}
 
       {/* 收缩按钮 - 位于侧边栏外部左侧 */}
-      {hasComments && isSidebarExpanded && (
+      {(hasComments || newCommentBlockId) && isSidebarExpanded && (
         <div className="absolute right-80  z-40 -translate-x-2">
           <button
             onClick={() => setIsSidebarExpanded(false)}
@@ -382,8 +399,8 @@ const Editor = ({
         </div>
       )}
 
-      {/* 侧边栏：只有在有评论时才显示 */}
-      {hasComments && (
+      {/* 侧边栏：只有在有评论或新评论正在创建时才显示 */}
+      {(hasComments || newCommentBlockId) && (
         <div
           className={`absolute bottom-0 right-0 top-0 z-30 flex w-80 flex-col border-l bg-background  transition-transform duration-300 ease-in-out ${
             isSidebarExpanded ? 'translate-x-0' : 'translate-x-full'
@@ -393,13 +410,15 @@ const Editor = ({
               editor={editor}
               refreshTrigger={commentRefreshTrigger}
               onCommentsChange={setHasComments}
+              newCommentBlockId={newCommentBlockId}
+              onNewCommentCreated={() => setNewCommentBlockId(null)}
             />
           </div>
         </div>
       )}
 
       {/* 收缩状态下的切换按钮 */}
-      {hasComments && !isSidebarExpanded && (
+      {(hasComments || newCommentBlockId) && !isSidebarExpanded && (
         <div className="absolute right-4  z-40">
           <button
             onClick={() => setIsSidebarExpanded(true)}

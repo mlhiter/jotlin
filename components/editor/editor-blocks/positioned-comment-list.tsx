@@ -48,6 +48,8 @@ interface PositionedCommentListProps {
   editor: BlockNoteEditor<any, any>
   refreshTrigger?: number
   onCommentsChange?: (hasComments: boolean) => void
+  newCommentBlockId?: string | null
+  onNewCommentCreated?: () => void
 }
 
 interface CommentItemProps {
@@ -454,6 +456,8 @@ export function PositionedCommentList({
   editor,
   refreshTrigger,
   onCommentsChange,
+  newCommentBlockId,
+  onNewCommentCreated,
 }: PositionedCommentListProps) {
   const params = useParams()
   const [comments, setComments] = useState<Comment[]>([])
@@ -465,13 +469,15 @@ export function PositionedCommentList({
   const [commentPositions, setCommentPositions] = useState<{
     [commentId: string]: number
   }>({})
+  const [newCommentContent, setNewCommentContent] = useState('')
+  const [isCreatingComment, setIsCreatingComment] = useState(false)
 
   const sidebarRef = useRef<HTMLDivElement>(null)
   const { user: currentUser } = useSession()
 
   // 按blockId分组评论，但保持平级结构 - 使用useMemo避免每次渲染都重新创建
   const commentsByBlock = useMemo(() => {
-    return comments.reduce(
+    const grouped = comments.reduce(
       (acc, comment) => {
         if (!acc[comment.blockId]) {
           acc[comment.blockId] = []
@@ -481,7 +487,14 @@ export function PositionedCommentList({
       },
       {} as { [blockId: string]: Comment[] }
     )
-  }, [comments])
+
+    // 如果有新评论块ID，添加一个空数组
+    if (newCommentBlockId && !grouped[newCommentBlockId]) {
+      grouped[newCommentBlockId] = []
+    }
+
+    return grouped
+  }, [comments, newCommentBlockId])
 
   // 计算评论位置 - 使用useCallback避免每次渲染都重新创建
   const updateCommentPositions = useCallback(() => {
@@ -794,6 +807,65 @@ export function PositionedCommentList({
     }
   }
 
+  const handleCreateNewComment = async () => {
+    if (!newCommentContent.trim() || !newCommentBlockId) return
+
+    try {
+      setIsCreatingComment(true)
+
+      const response = await fetch('/api/comments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentId: params.documentId,
+          content: newCommentContent,
+          blockId: newCommentBlockId,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create comment')
+      }
+
+      const newComment = await response.json()
+
+      // 立即添加评论到本地状态
+      setComments((prev) => [...prev, newComment])
+
+      // 设置块的背景色
+      const block = editor.getBlock(newCommentBlockId)
+      if (block) {
+        editor.updateBlock(block, {
+          props: {
+            ...block.props,
+            backgroundColor: 'commented',
+          },
+        })
+      }
+
+      // 清理状态
+      setNewCommentContent('')
+      onNewCommentCreated?.()
+
+      // 通知父组件评论状态变化
+      onCommentsChange?.(true)
+
+      toast.success('Comment created successfully')
+    } catch (error) {
+      console.error('Error creating comment:', error)
+      toast.error('Failed to create comment')
+    } finally {
+      setIsCreatingComment(false)
+    }
+  }
+
+  const handleCancelNewComment = () => {
+    setNewCommentContent('')
+    onNewCommentCreated?.()
+  }
+
   // 提取fetchComments函数使其可重用
   const fetchComments = useCallback(async () => {
     try {
@@ -879,13 +951,76 @@ export function PositionedCommentList({
     return <div className="p-4">Loading comments...</div>
   }
 
-  if (comments.length === 0) {
+  if (comments.length === 0 && !newCommentBlockId) {
     return null
   }
 
   return (
     <div ref={sidebarRef} className="absolute inset-0 p-4">
       {Object.entries(commentsByBlock).map(([blockId, blockComments]) => {
+        const blockContent = getBlockContent(editor, blockId)
+
+        // 如果是新评论块且没有评论，显示创建评论的界面
+        if (blockId === newCommentBlockId && blockComments.length === 0) {
+          const position = calculateCommentPosition(
+            blockId,
+            sidebarRef.current!,
+            document.querySelector('.bn-editor') as HTMLElement
+          )
+
+          return (
+            <div
+              key={blockId}
+              data-comment-block={blockId}
+              className="absolute left-4 right-4"
+              style={{ top: `${position}px` }}>
+              <div className="rounded-lg border bg-background p-4 shadow-sm">
+                {/* 原文预览 */}
+                <div className="mb-3 rounded bg-muted p-2 text-sm text-muted-foreground">
+                  <strong>原文:</strong> {blockContent || '选中的文本块'}
+                </div>
+
+                {/* 新评论输入 */}
+                <div className="space-y-3">
+                  <Input
+                    value={newCommentContent}
+                    onChange={(e) => setNewCommentContent(e.target.value)}
+                    placeholder="写下你的评论..."
+                    className="w-full"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleCreateNewComment()
+                      } else if (e.key === 'Escape') {
+                        handleCancelNewComment()
+                      }
+                    }}
+                    disabled={isCreatingComment}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleCreateNewComment}
+                      disabled={isCreatingComment || !newCommentContent.trim()}
+                      className="text-xs">
+                      {isCreatingComment ? '创建中...' : '发布评论'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCancelNewComment}
+                      disabled={isCreatingComment}
+                      className="text-xs">
+                      取消
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
         // 安全检查：确保有有效的评论
         if (!blockComments || blockComments.length === 0) {
           return null
@@ -906,7 +1041,6 @@ export function PositionedCommentList({
         }
 
         const position = commentPositions[rootComment.id] || 0
-        const blockContent = getBlockContent(editor, blockId)
 
         return (
           <div
