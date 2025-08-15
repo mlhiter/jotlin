@@ -50,6 +50,7 @@ interface PositionedCommentListProps {
   onCommentsChange?: (hasComments: boolean) => void
   newCommentBlockId?: string | null
   onNewCommentCreated?: () => void
+  onHeightChange?: (height: number) => void
 }
 
 interface CommentItemProps {
@@ -115,7 +116,7 @@ const calculateCommentPosition = (
   // 计算块相对于编辑器顶部的位置
   const blockRelativeTop = blockRect.top - editorRect.top
 
-  // 由于侧边栏现在没有滚动，直接返回相对位置
+  // 由于侧边栏现在支持滚动，直接返回相对位置
   return Math.max(0, blockRelativeTop)
 }
 
@@ -458,6 +459,7 @@ export function PositionedCommentList({
   onCommentsChange,
   newCommentBlockId,
   onNewCommentCreated,
+  onHeightChange,
 }: PositionedCommentListProps) {
   const params = useParams()
   const [comments, setComments] = useState<Comment[]>([])
@@ -475,7 +477,7 @@ export function PositionedCommentList({
   const sidebarRef = useRef<HTMLDivElement>(null)
   const { user: currentUser } = useSession()
 
-  // 按blockId分组评论，但保持平级结构 - 使用useMemo避免每次渲染都重新创建
+  // 按blockId分组评论，然后按照在编辑器中的出现顺序排序 - 使用useMemo避免每次渲染都重新创建
   const commentsByBlock = useMemo(() => {
     const grouped = comments.reduce(
       (acc, comment) => {
@@ -493,7 +495,22 @@ export function PositionedCommentList({
       grouped[newCommentBlockId] = []
     }
 
-    return grouped
+    // 按照块在编辑器中的出现顺序对分组进行排序
+    const sortedEntries = Object.entries(grouped).sort(
+      ([blockIdA], [blockIdB]) => {
+        const blockA = document.querySelector(`[data-id="${blockIdA}"]`)
+        const blockB = document.querySelector(`[data-id="${blockIdB}"]`)
+
+        if (!blockA || !blockB) return 0
+
+        const rectA = blockA.getBoundingClientRect()
+        const rectB = blockB.getBoundingClientRect()
+
+        return rectA.top - rectB.top
+      }
+    )
+
+    return Object.fromEntries(sortedEntries)
   }, [comments, newCommentBlockId])
 
   // 计算评论位置 - 使用useCallback避免每次渲染都重新创建
@@ -584,28 +601,10 @@ export function PositionedCommentList({
         position,
         height: actualHeight,
       })
-
-      // 调试信息
-      if (process.env.NODE_ENV === 'development') {
-        const firstComment = blockComments[0]
-        const previewContent =
-          firstComment?.content?.substring(0, 30) || 'No content'
-        console.log(
-          `Comment block ${blockId}: position=${position}, height=${actualHeight}, content="${previewContent}..."`
-        )
-      }
     })
 
     // 调整位置避免重叠
     const adjustedPositions = adjustCommentsPosition(commentHeights)
-
-    // 调试信息 - 显示位置调整结果
-    if (process.env.NODE_ENV === 'development') {
-      console.log(
-        'Position adjustments:',
-        adjustedPositions.map((p) => `${p.blockId}: ${p.position}`).join(', ')
-      )
-    }
 
     // 更新位置映射
     adjustedPositions.forEach(({ blockId, position }) => {
@@ -617,6 +616,22 @@ export function PositionedCommentList({
         newPositions[`new-comment-${blockId}`] = position
       }
     })
+
+    // 计算所需的总高度
+    const maxBottomPosition = commentHeights.reduce((max, comment) => {
+      const adjustedComment = adjustedPositions.find(
+        (p) => p.blockId === comment.blockId
+      )
+      const finalPosition = adjustedComment
+        ? adjustedComment.position
+        : comment.position
+      return Math.max(max, finalPosition + comment.height)
+    }, 0)
+
+    // 通知父组件所需的高度
+    if (onHeightChange && maxBottomPosition > 0) {
+      onHeightChange(maxBottomPosition)
+    }
 
     // 只有当位置发生实际变化时才更新状态
     setCommentPositions((prevPositions) => {
@@ -971,7 +986,10 @@ export function PositionedCommentList({
   }
 
   return (
-    <div ref={sidebarRef} className="absolute inset-0 p-4">
+    <div
+      ref={sidebarRef}
+      className="relative w-full p-4"
+      style={{ minHeight: 'calc(100vh - 2rem)' }}>
       {Object.entries(commentsByBlock).map(([blockId, blockComments]) => {
         const blockContent = getBlockContent(editor, blockId)
 
@@ -990,7 +1008,7 @@ export function PositionedCommentList({
             <div
               key={blockId}
               data-comment-block={blockId}
-              className="absolute left-4 right-4"
+              className="absolute left-4 right-4 z-50"
               style={{ top: `${position}px` }}>
               <div className="rounded-lg border bg-background p-4 shadow-sm">
                 {/* 原文预览 */}
@@ -1064,7 +1082,7 @@ export function PositionedCommentList({
           <div
             key={blockId}
             data-comment-block={blockId}
-            className="absolute left-4 right-4"
+            className="absolute left-4 right-4 z-50"
             style={{ top: `${position}px` }}>
             {/* 使用新的CommentBlock组件渲染整个评论块 */}
             <CommentBlock

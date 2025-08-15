@@ -55,6 +55,7 @@ const Editor = ({
   const [newCommentBlockId, setNewCommentBlockId] = useState<string | null>(
     null
   )
+  const [requiredHeight, setRequiredHeight] = useState<number>(0)
 
   // 当有评论时，确保侧边栏是展开的（首次有评论时强制展开）
   useEffect(() => {
@@ -350,8 +351,16 @@ const Editor = ({
     }
   }, [editor, handleUpload])
 
+  // 计算容器所需的最小高度
+  const containerMinHeight = Math.max(
+    window?.innerHeight ? window.innerHeight - 200 : 600, // 默认最小高度
+    requiredHeight + 100 // 评论所需高度 + 额外缓冲
+  )
+
   return (
-    <div className="relative flex min-h-[calc(100vh-200px)] overflow-hidden">
+    <div
+      className="relative flex overflow-hidden"
+      style={{ minHeight: `${containerMinHeight}px` }}>
       {/* 主编辑器区域 */}
       <div
         className={`flex-1 transition-all duration-300 ${
@@ -383,6 +392,7 @@ const Editor = ({
             editor={editor}
             refreshTrigger={commentRefreshTrigger}
             onCommentsChange={setHasComments}
+            onHeightChange={setRequiredHeight}
           />
         </div>
       )}
@@ -402,16 +412,18 @@ const Editor = ({
       {/* 侧边栏：只有在有评论或新评论正在创建时才显示 */}
       {(hasComments || newCommentBlockId) && (
         <div
-          className={`absolute bottom-0 right-0 top-0 z-30 flex w-80 flex-col border-l bg-background  transition-transform duration-300 ease-in-out ${
+          className={`absolute right-0 top-0 z-50 w-80 border-l bg-background transition-transform duration-300 ease-in-out ${
             isSidebarExpanded ? 'translate-x-0' : 'translate-x-full'
-          }`}>
-          <div className="relative flex-1">
+          }`}
+          style={{ minHeight: '100vh' }}>
+          <div className="relative">
             <PositionedCommentList
               editor={editor}
               refreshTrigger={commentRefreshTrigger}
               onCommentsChange={setHasComments}
               newCommentBlockId={newCommentBlockId}
               onNewCommentCreated={() => setNewCommentBlockId(null)}
+              onHeightChange={setRequiredHeight}
             />
           </div>
         </div>
