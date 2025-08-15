@@ -15,6 +15,7 @@ import {
   SuggestionMenuController,
   FormattingToolbarController,
 } from '@blocknote/react'
+import { ChevronRight, MessageCircle } from 'lucide-react'
 
 import '@blocknote/mantine/style.css'
 import '@blocknote/core/fonts/inter.css'
@@ -48,6 +49,38 @@ const Editor = ({
   const params = useParams()
   const [commentRefreshTrigger, setCommentRefreshTrigger] = useState(0)
   const [isCommentBeingCreated, setIsCommentBeingCreated] = useState(false)
+  const [hasComments, setHasComments] = useState(false)
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+  const [hasInitializedSidebar, setHasInitializedSidebar] = useState(false)
+
+  // 当有评论时，确保侧边栏是展开的（首次有评论时强制展开）
+  useEffect(() => {
+    if (hasComments && !hasInitializedSidebar) {
+      // 首次检测到有评论时，确保侧边栏展开
+      setIsSidebarExpanded(true)
+      setHasInitializedSidebar(true)
+
+      // 然后读取用户的历史偏好（但延迟应用，确保用户先看到评论）
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem('comment-sidebar-expanded')
+          if (saved !== null) {
+            setIsSidebarExpanded(JSON.parse(saved))
+          }
+        }
+      }, 1000) // 1秒后应用用户偏好
+    }
+  }, [hasComments, hasInitializedSidebar])
+
+  // 保存侧边栏状态到localStorage（仅当有评论时）
+  useEffect(() => {
+    if (hasComments && typeof window !== 'undefined') {
+      localStorage.setItem(
+        'comment-sidebar-expanded',
+        JSON.stringify(isSidebarExpanded)
+      )
+    }
+  }, [isSidebarExpanded, hasComments])
 
   // 暴露刷新评论的函数到全局
   useEffect(() => {
@@ -57,6 +90,10 @@ const Editor = ({
 
     const setCommentCreationFlag = (flag: boolean) => {
       setIsCommentBeingCreated(flag)
+      // 当创建评论时，强制展开侧边栏
+      if (flag) {
+        setIsSidebarExpanded(true)
+      }
     }
 
     const getCurrentEditorContent = () => {
@@ -68,15 +105,21 @@ const Editor = ({
       }
     }
 
+    const expandCommentSidebar = () => {
+      setIsSidebarExpanded(true)
+    }
+
     // 将函数绑定到window对象
     ;(window as any).refreshComments = refreshComments
     ;(window as any).setCommentCreationFlag = setCommentCreationFlag
     ;(window as any).getCurrentEditorContent = getCurrentEditorContent
+    ;(window as any).expandCommentSidebar = expandCommentSidebar
 
     return () => {
       delete (window as any).refreshComments
       delete (window as any).setCommentCreationFlag
       delete (window as any).getCurrentEditorContent
+      delete (window as any).expandCommentSidebar
     }
   }, []) // editor在这个useEffect中被定义，不需要作为依赖
 
@@ -291,8 +334,12 @@ const Editor = ({
   }, [editor, handleUpload])
 
   return (
-    <div className="grid min-h-full grid-cols-[1fr,300px] gap-4">
-      <div className="min-h-full">
+    <div className="relative flex min-h-[calc(100vh-200px)] overflow-hidden">
+      {/* 主编辑器区域 */}
+      <div
+        className={`flex-1 transition-all duration-300 ${
+          hasComments && isSidebarExpanded ? 'pr-80' : ''
+        }`}>
         <BlockNoteView
           editor={editor}
           editable={editable}
@@ -311,14 +358,57 @@ const Editor = ({
           <FormattingToolbarController formattingToolbar={formattingToolbar} />
         </BlockNoteView>
       </div>
-      <div className="flex min-h-full flex-col border-l">
-        <div className="relative flex-1">
+
+      {/* 隐藏的评论检测器 - 总是渲染来检测评论状态 */}
+      {!hasComments && (
+        <div className="hidden">
           <PositionedCommentList
             editor={editor}
             refreshTrigger={commentRefreshTrigger}
+            onCommentsChange={setHasComments}
           />
         </div>
-      </div>
+      )}
+
+      {/* 收缩按钮 - 位于侧边栏外部左侧 */}
+      {hasComments && isSidebarExpanded && (
+        <div className="absolute right-80  z-40 -translate-x-2">
+          <button
+            onClick={() => setIsSidebarExpanded(false)}
+            className="flex h-8 w-8 items-center justify-center rounded-md border bg-background shadow-sm transition-colors hover:bg-muted"
+            title="收缩侧边栏">
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* 侧边栏：只有在有评论时才显示 */}
+      {hasComments && (
+        <div
+          className={`absolute bottom-0 right-0 top-0 z-30 flex w-80 flex-col border-l bg-background  transition-transform duration-300 ease-in-out ${
+            isSidebarExpanded ? 'translate-x-0' : 'translate-x-full'
+          }`}>
+          <div className="relative flex-1">
+            <PositionedCommentList
+              editor={editor}
+              refreshTrigger={commentRefreshTrigger}
+              onCommentsChange={setHasComments}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 收缩状态下的切换按钮 */}
+      {hasComments && !isSidebarExpanded && (
+        <div className="absolute right-4  z-40">
+          <button
+            onClick={() => setIsSidebarExpanded(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-md border bg-background shadow-sm transition-colors hover:bg-muted"
+            title="展开评论侧边栏">
+            <MessageCircle className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -126,9 +126,17 @@ export function CommentButton() {
       setComment('')
       setIsOpen(false)
 
-      // 刷新评论列表
+      // 刷新评论列表并展开侧边栏
       if (typeof window !== 'undefined' && (window as any).refreshComments) {
         ;(window as any).refreshComments()
+      }
+
+      // 强制展开评论侧边栏
+      if (
+        typeof window !== 'undefined' &&
+        (window as any).expandCommentSidebar
+      ) {
+        ;(window as any).expandCommentSidebar()
       }
 
       // 如果文档被修改，直接更新编辑器内容，不重新加载文档

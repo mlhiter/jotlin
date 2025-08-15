@@ -47,6 +47,7 @@ interface Comment {
 interface PositionedCommentListProps {
   editor: BlockNoteEditor<any, any>
   refreshTrigger?: number
+  onCommentsChange?: (hasComments: boolean) => void
 }
 
 interface CommentItemProps {
@@ -452,6 +453,7 @@ const CommentBlock = ({
 export function PositionedCommentList({
   editor,
   refreshTrigger,
+  onCommentsChange,
 }: PositionedCommentListProps) {
   const params = useParams()
   const [comments, setComments] = useState<Comment[]>([])
@@ -674,6 +676,14 @@ export function PositionedCommentList({
         await fetchComments()
       }
 
+      // 强制展开评论侧边栏
+      if (
+        typeof window !== 'undefined' &&
+        (window as any).expandCommentSidebar
+      ) {
+        ;(window as any).expandCommentSidebar()
+      }
+
       toast.success('Reply posted')
     } catch (error) {
       console.error('Error posting reply:', error)
@@ -740,10 +750,13 @@ export function PositionedCommentList({
         throw new Error('Failed to delete comment')
       }
 
-      setComments((prev) => prev.filter((c) => c.id !== commentId))
+      const updatedComments = comments.filter((c) => c.id !== commentId)
+      setComments(updatedComments)
+      // 通知父组件评论状态变化
+      onCommentsChange?.(updatedComments.length > 0)
 
-      const remainingComments = comments.filter(
-        (c) => c.blockId === blockId && c.id !== commentId
+      const remainingComments = updatedComments.filter(
+        (c) => c.blockId === blockId
       )
       if (remainingComments.length === 0) {
         const block = editor.getBlock(blockId)
@@ -793,12 +806,15 @@ export function PositionedCommentList({
       }
       const data = await response.json()
       setComments(data)
+      // 通知父组件评论状态变化
+      onCommentsChange?.(data.length > 0)
     } catch (error) {
       console.error('Error fetching comments:', error)
+      onCommentsChange?.(false)
     } finally {
       setIsLoading(false)
     }
-  }, [params.documentId])
+  }, [params.documentId, onCommentsChange])
 
   useEffect(() => {
     if (params.documentId) {
@@ -864,7 +880,7 @@ export function PositionedCommentList({
   }
 
   if (comments.length === 0) {
-    return <div className="p-4 text-muted-foreground">No comments yet</div>
+    return null
   }
 
   return (
