@@ -250,7 +250,7 @@ export async function applyAIModification(
   documentId: string,
   modification: AIAction,
   commentBlockId?: string
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; newContent?: string }> {
   try {
     if (modification.type === 'no_action') {
       return {
@@ -341,6 +341,7 @@ export async function applyAIModification(
       return {
         success: true,
         message: `AI已在评论块下方添加了回复内容。原因：${modification.reasoning}`,
+        newContent: updatedContent,
       }
     }
 
@@ -369,6 +370,7 @@ export async function applyAIModification(
       return {
         success: true,
         message: `AI已根据指令修改了文档内容。修改原因：${modification.reasoning}`,
+        newContent: contentToSave,
       }
     }
 

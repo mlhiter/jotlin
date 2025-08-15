@@ -168,7 +168,7 @@ model Message {
 model Comment {
   id        String   @id @default(uuid())
   content   String   @db.Text
-  blockId   String   // 评论所在块的ID
+  blockId   String   // 评论所在块的ID（所有回复都关联到原始块）
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -179,17 +179,22 @@ model Comment {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   mentions   Mention[]
 
-  // Reply relations
-  parentId   String?
-  parent     Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies    Comment[] @relation("CommentReplies")
+  // 平级回复设计 - 所有评论都是针对原文块的平级评论
+  replyToCommentId String?  // 回复的目标评论ID（仅用于UI显示回复关系）
+  replyToComment   Comment? @relation("CommentReference", fields: [replyToCommentId], references: [id], onDelete: SetNull)
+  referencedBy     Comment[] @relation("CommentReference")
+
+  // 回复链排序 - 用于确定在回复链中的位置
+  replyOrder       Int      @default(0)
 
   // AI reply flag
   isAIReply  Boolean  @default(false)
 
   @@index([documentId])
   @@index([userId])
-  @@index([parentId])
+  @@index([blockId])
+  @@index([replyToCommentId])
+  @@index([replyOrder])
 }
 
 model Mention {

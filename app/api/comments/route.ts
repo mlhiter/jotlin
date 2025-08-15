@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    const { documentId, content, blockId, parentId } = await req.json()
+    const { documentId, content, blockId, replyToCommentId } = await req.json()
 
     if (!documentId || !content || !blockId) {
       return new NextResponse('Bad Request', { status: 400 })
@@ -58,6 +58,19 @@ export async function POST(req: Request) {
     // 验证@提及
     const validMentions = validateMentions(mentions, allCollaborators)
 
+    // 计算回复顺序
+    let replyOrder = 0
+    if (replyToCommentId) {
+      // 如果是回复，找到被回复评论的replyOrder，新评论的order = 被回复评论的order + 1
+      const replyToComment = await prisma.comment.findUnique({
+        where: { id: replyToCommentId },
+        select: { replyOrder: true },
+      })
+      if (replyToComment) {
+        replyOrder = replyToComment.replyOrder + 1
+      }
+    }
+
     // 创建评论
     const comment = await prisma.comment.create({
       data: {
@@ -65,7 +78,8 @@ export async function POST(req: Request) {
         blockId,
         documentId,
         userId: user.id,
-        parentId: parentId || undefined,
+        replyToCommentId: replyToCommentId || undefined,
+        replyOrder,
       },
       include: {
         user: {
@@ -75,7 +89,7 @@ export async function POST(req: Request) {
             email: true,
           },
         },
-        replies: {
+        replyToComment: {
           include: {
             user: {
               select: {
@@ -92,6 +106,7 @@ export async function POST(req: Request) {
     // 处理@提及
     let aiProcessingResults: string[] = []
     let documentModified = false
+    let newDocumentContent: string | undefined
 
     if (validMentions.length > 0) {
       try {
@@ -145,6 +160,9 @@ export async function POST(req: Request) {
                   aiAction.type === 'add_content')
               ) {
                 documentModified = true
+                if (result.newContent) {
+                  newDocumentContent = result.newContent
+                }
               }
               console.log('AI处理结果:', result.message)
 
@@ -174,7 +192,8 @@ export async function POST(req: Request) {
                       blockId,
                       documentId,
                       userId: newAiUser.id,
-                      parentId: comment.id,
+                      replyToCommentId: comment.id,
+                      replyOrder: 1, // AI回复的order比原评论大1
                       isAIReply: true,
                     },
                   })
@@ -185,7 +204,8 @@ export async function POST(req: Request) {
                       blockId,
                       documentId,
                       userId: aiUser.id,
-                      parentId: comment.id,
+                      replyToCommentId: comment.id,
+                      replyOrder: 1, // AI回复的order比原评论大1
                       isAIReply: true,
                     },
                   })
@@ -212,6 +232,7 @@ export async function POST(req: Request) {
       comment,
       aiResults: aiProcessingResults,
       documentModified, // 告诉前端文档是否被修改
+      newContent: newDocumentContent, // 返回新的文档内容
     })
   } catch (error) {
     console.error('[COMMENTS_POST]', error)
@@ -332,7 +353,6 @@ export async function GET(req: Request) {
     const comments = await prisma.comment.findMany({
       where: {
         documentId,
-        parentId: null, // 只获取顶级评论
       },
       include: {
         user: {
@@ -342,7 +362,7 @@ export async function GET(req: Request) {
             email: true,
           },
         },
-        replies: {
+        replyToComment: {
           include: {
             user: {
               select: {
@@ -351,16 +371,20 @@ export async function GET(req: Request) {
                 email: true,
               },
             },
-            replies: true, // 支持多层嵌套
-          },
-          orderBy: {
-            createdAt: 'asc',
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [
+        {
+          blockId: 'asc', // 先按块ID排序
+        },
+        {
+          replyOrder: 'asc', // 再按回复顺序排序
+        },
+        {
+          createdAt: 'asc', // 最后按创建时间排序
+        },
+      ],
     })
 
     return NextResponse.json(comments)

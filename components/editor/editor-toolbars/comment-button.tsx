@@ -56,6 +56,15 @@ export function CommentButton() {
   const handleAddComment = async () => {
     try {
       setIsLoading(true)
+
+      // 标记正在创建评论
+      if (
+        typeof window !== 'undefined' &&
+        (window as any).setCommentCreationFlag
+      ) {
+        ;(window as any).setCommentCreationFlag(true)
+      }
+
       const selection = editor.getSelection()
 
       if (!selection || !params.documentId || !user) {
@@ -122,19 +131,40 @@ export function CommentButton() {
         ;(window as any).refreshComments()
       }
 
-      // 如果文档被修改，立即重新加载文档
-      if (result.documentModified) {
-        setTimeout(() => {
-          if (typeof window !== 'undefined' && (window as any).reloadDocument) {
-            ;(window as any).reloadDocument()
-          }
-        }, 1000) // 给AI处理一些时间
+      // 如果文档被修改，直接更新编辑器内容，不重新加载文档
+      if (result.documentModified && result.newContent) {
+        try {
+          // 直接更新编辑器内容
+          const blocks = JSON.parse(result.newContent)
+          setTimeout(() => {
+            try {
+              editor.replaceBlocks(editor.document, blocks)
+              toast.info('文档内容已更新')
+            } catch (error) {
+              console.error('Failed to update editor content:', error)
+              toast.error('Failed to update document content')
+            }
+          }, 500) // 给AI处理一些时间
+        } catch (error) {
+          console.error('Failed to parse new content:', error)
+          toast.error('Failed to parse updated content')
+        }
       }
     } catch (error) {
       console.error(error)
       toast.error('Failed to add comment')
     } finally {
       setIsLoading(false)
+
+      // 评论创建完成，取消标记
+      if (
+        typeof window !== 'undefined' &&
+        (window as any).setCommentCreationFlag
+      ) {
+        setTimeout(() => {
+          ;(window as any).setCommentCreationFlag(false)
+        }, 1000) // 给一些缓冲时间
+      }
     }
   }
 

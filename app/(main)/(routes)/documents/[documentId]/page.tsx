@@ -30,23 +30,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     }
   }, [clearCurrentDocument])
 
-  // 暴露重新加载文档的函数到全局
-  useEffect(() => {
-    const reloadDocument = () => {
-      // 无效化当前文档的查询缓存，触发重新获取
-      queryClient.invalidateQueries({
-        queryKey: ['document', params.documentId],
-      })
-    }
-
-    // 将函数绑定到window对象
-    ;(window as any).reloadDocument = reloadDocument
-
-    return () => {
-      delete (window as any).reloadDocument
-    }
-  }, [queryClient, params.documentId])
-
   const { data: document } = useQuery({
     queryKey: ['document', params.documentId],
     queryFn: async () => {
@@ -84,6 +67,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     }
   }, [debounceOnChange])
 
+  // 简化editorProps，使用稳定的初始内容
   const editorProps = useMemo(() => {
     if (!currentDocument?.content) {
       return {
@@ -91,41 +75,12 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
         documentId: params.documentId,
         initialContent: undefined,
         initialMarkdown: undefined,
-        isShared: (currentDocument?.collaborators?.length ?? 0) > 1,
+        isShared: false,
       }
     }
 
-    // Analyze content using the advanced detector
+    // 分析内容但不再作为依赖
     const analysis = analyzeContent(currentDocument.content)
-
-    console.log('Content analysis result:', {
-      type: analysis.type,
-      confidence: analysis.confidence,
-      isValid: analysis.isValid,
-      issues: analysis.issues,
-    })
-
-    let contentToUse = analysis.content
-
-    // Auto-fix recursive JSON nesting if detected
-    if (analysis.type === 'recursive-json') {
-      console.log('Auto-fixing recursive JSON nesting')
-
-      // Auto-save the fixed content
-      setTimeout(() => {
-        console.log('Auto-saving fixed content...')
-        documentApi
-          .update({
-            id: params.documentId,
-            content: contentToUse,
-          })
-          .catch((error) => {
-            console.error('Failed to auto-save fixed content:', error)
-          })
-      }, 1000)
-    }
-
-    // Determine how to handle the content based on analysis
     const shouldTreatAsMarkdown =
       analysis.type === 'markdown' ||
       (analysis.type === 'unknown' && analysis.confidence < 50)
@@ -133,14 +88,14 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     return {
       onChange: debounceOnChange,
       documentId: params.documentId,
-      initialContent: shouldTreatAsMarkdown ? undefined : contentToUse,
-      initialMarkdown: shouldTreatAsMarkdown ? contentToUse : undefined,
+      initialContent: shouldTreatAsMarkdown ? undefined : analysis.content,
+      initialMarkdown: shouldTreatAsMarkdown ? analysis.content : undefined,
       isShared: (currentDocument?.collaborators?.length ?? 0) > 1,
     }
   }, [
     debounceOnChange,
     params.documentId,
-    currentDocument?.content,
+    !!currentDocument?.content, // 只依赖是否有内容，不依赖内容本身
     currentDocument?.collaborators?.length,
   ])
 

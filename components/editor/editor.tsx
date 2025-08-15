@@ -24,7 +24,7 @@ import { useSession } from '@/hooks/use-session'
 import { getRandomLightColor } from '@/libs/utils'
 import { blockSchema, getCustomSlashMenuItems } from './editor-blocks'
 import { formattingToolbar } from './editor-toolbars'
-import { CommentList } from './editor-blocks/comment-list'
+import { PositionedCommentList } from './editor-blocks/positioned-comment-list'
 
 interface EditorProps {
   onChange: (value: string) => void
@@ -47,6 +47,7 @@ const Editor = ({
   const { user } = useSession()
   const params = useParams()
   const [commentRefreshTrigger, setCommentRefreshTrigger] = useState(0)
+  const [isCommentBeingCreated, setIsCommentBeingCreated] = useState(false)
 
   // 暴露刷新评论的函数到全局
   useEffect(() => {
@@ -54,13 +55,30 @@ const Editor = ({
       setCommentRefreshTrigger((prev) => prev + 1)
     }
 
+    const setCommentCreationFlag = (flag: boolean) => {
+      setIsCommentBeingCreated(flag)
+    }
+
+    const getCurrentEditorContent = () => {
+      try {
+        return JSON.stringify(editor.document, null, 2)
+      } catch (error) {
+        console.error('Failed to get current editor content:', error)
+        return null
+      }
+    }
+
     // 将函数绑定到window对象
     ;(window as any).refreshComments = refreshComments
+    ;(window as any).setCommentCreationFlag = setCommentCreationFlag
+    ;(window as any).getCurrentEditorContent = getCurrentEditorContent
 
     return () => {
       delete (window as any).refreshComments
+      delete (window as any).setCommentCreationFlag
+      delete (window as any).getCurrentEditorContent
     }
-  }, [])
+  }, []) // editor在这个useEffect中被定义，不需要作为依赖
 
   const handleUpload = useCallback(async (file: File) => {
     const res = await imageApi.upload({
@@ -68,22 +86,26 @@ const Editor = ({
     })
     return res
   }, [])
-  const editor = BlockNoteEditor.create({
-    schema: blockSchema,
-    initialContent: initialContent ? JSON.parse(initialContent) : undefined,
-    uploadFile: handleUpload,
-    dictionary: en,
-    collaboration:
-      webrtcProvider && ydoc
-        ? {
-            provider: webrtcProvider,
-            fragment: ydoc.getXmlFragment('document-store'),
-            user: {
-              name: user?.name as string,
-              color: getRandomLightColor(),
-            },
-          }
-        : undefined,
+
+  // 使用useState确保编辑器实例只创建一次
+  const [editor] = useState(() => {
+    return BlockNoteEditor.create({
+      schema: blockSchema,
+      initialContent: initialContent ? JSON.parse(initialContent) : undefined,
+      uploadFile: handleUpload,
+      dictionary: en,
+      collaboration:
+        webrtcProvider && ydoc
+          ? {
+              provider: webrtcProvider,
+              fragment: ydoc.getXmlFragment('document-store'),
+              user: {
+                name: user?.name as string,
+                color: getRandomLightColor(),
+              },
+            }
+          : undefined,
+    })
   })
 
   // Handle initial markdown content
@@ -180,7 +202,20 @@ const Editor = ({
     }
 
     // Set up listener for block deletion to clean up orphaned comments
+    let lastDocumentChangeTime = 0
     const handleDocumentChange = async () => {
+      // 如果正在创建评论，跳过此次检查
+      if (isCommentBeingCreated) {
+        return
+      }
+
+      // 防止频繁触发，特别是在评论创建后
+      const now = Date.now()
+      if (now - lastDocumentChangeTime < 1000) {
+        return
+      }
+      lastDocumentChangeTime = now
+
       try {
         const allBlocks = editor.document
         const currentBlockIds = new Set(allBlocks.map((block) => block.id))
@@ -256,29 +291,33 @@ const Editor = ({
   }, [editor, handleUpload])
 
   return (
-    <div className="grid grid-cols-[1fr,300px] gap-4">
-      <BlockNoteView
-        editor={editor}
-        editable={editable}
-        theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
-        onChange={() => {
-          onChange(JSON.stringify(editor.document, null, 2))
-        }}
-        formattingToolbar={false}
-        slashMenu={false}>
-        <SuggestionMenuController
-          triggerCharacter={'/'}
-          getItems={async (query) =>
-            filterSuggestionItems(getCustomSlashMenuItems(editor), query)
-          }
-        />
-        <FormattingToolbarController formattingToolbar={formattingToolbar} />
-      </BlockNoteView>
-      <div className="border-l">
-        <div className="border-b p-4">
-          <h2 className="font-semibold">Comments</h2>
+    <div className="grid min-h-full grid-cols-[1fr,300px] gap-4">
+      <div className="min-h-full">
+        <BlockNoteView
+          editor={editor}
+          editable={editable}
+          theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+          onChange={() => {
+            onChange(JSON.stringify(editor.document, null, 2))
+          }}
+          formattingToolbar={false}
+          slashMenu={false}>
+          <SuggestionMenuController
+            triggerCharacter={'/'}
+            getItems={async (query) =>
+              filterSuggestionItems(getCustomSlashMenuItems(editor), query)
+            }
+          />
+          <FormattingToolbarController formattingToolbar={formattingToolbar} />
+        </BlockNoteView>
+      </div>
+      <div className="flex min-h-full flex-col border-l">
+        <div className="relative flex-1">
+          <PositionedCommentList
+            editor={editor}
+            refreshTrigger={commentRefreshTrigger}
+          />
         </div>
-        <CommentList editor={editor} refreshTrigger={commentRefreshTrigger} />
       </div>
     </div>
   )

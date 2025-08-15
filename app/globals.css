@@ -161,3 +161,35 @@ body,
   @apply bg-purple-100 text-purple-800 hover:bg-purple-200;
   @apply dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/30;
 }
+
+/* Inline comment styles */
+.inline-comment-container {
+  pointer-events: auto;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.inline-comment-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.inline-comment-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.inline-comment-container::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 2px;
+}
+
+.inline-comment-container::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Line clamp utility for comment content */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
