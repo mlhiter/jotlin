@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { Spinner } from '@/components/spinner'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 import { Doc } from '@/types/document'
 import { documentApi } from '@/api/document'
@@ -26,9 +26,12 @@ export const InviteUser = ({
 }: InviteUserProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { user } = useSession()
-  const { data: collaboratorInfo } = useQuery({
-    queryKey: ['collaborator-info', collaborator],
+
+  // 使用更具体的查询键，包含文档ID和协作者邮箱，避免缓存冲突
+  const { data: collaboratorInfo, isLoading } = useQuery({
+    queryKey: ['collaborator-info', document.id, collaborator],
     queryFn: () => userApi.getInfoByEmail({ email: collaborator }),
+    enabled: !!collaborator && !!document.id, // 确保参数存在时才执行查询
   })
 
   const isOwner = document.userId === user?.id
@@ -44,48 +47,81 @@ export const InviteUser = ({
       .finally(() => setIsSubmitting(false))
 
     toast.promise(promise, {
-      loading: 'removing...',
-      success: 'Privilege has been removed',
-      error: 'Failed to remove him.',
+      loading: '移除中...',
+      success: '权限已移除',
+      error: '移除失败',
     })
   }
 
-  if (collaboratorInfo === undefined)
+  // 生成用户名首字母作为头像备用显示
+  const getInitials = (name: string | undefined, email: string) => {
+    if (name) {
+      return name.slice(0, 2).toUpperCase()
+    }
+    return email.slice(0, 2).toUpperCase()
+  }
+
+  if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Spinner size="lg" />
+      <div className="flex h-12 items-center justify-center">
+        <Spinner size="sm" />
       </div>
     )
+  }
+
+  if (!collaboratorInfo) {
+    return null
+  }
 
   return (
-    <div className="mt-4 flex items-center  justify-between gap-x-2 pl-1">
-      <div className="flex items-center justify-between gap-x-2">
-        <Avatar className="h-7 w-7">
+    <div className="flex items-center justify-between gap-x-3 rounded-lg p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+      <div className="flex min-w-0 flex-1 items-center gap-x-3">
+        <Avatar className="h-10 w-10 flex-shrink-0">
           <AvatarImage
-            src={collaboratorInfo?.image || ''}
-            alt={collaboratorInfo?.name}></AvatarImage>
+            src={collaboratorInfo.image || ''}
+            alt={collaboratorInfo.name || collaboratorInfo.email}
+          />
+          <AvatarFallback className="bg-blue-500 text-sm font-medium text-white">
+            {getInitials(collaboratorInfo.name, collaboratorInfo.email)}
+          </AvatarFallback>
         </Avatar>
-        <div>
-          {collaboratorInfo && first ? (
-            <div className="text-rose-400">创建者</div>
-          ) : collaboratorInfo ? (
-            <div>协作人</div>
-          ) : null}
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex items-center gap-x-2">
+            <span className="truncate text-sm font-medium">
+              {collaboratorInfo.name || '未设置用户名'}
+            </span>
+            {first && (
+              <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-800 dark:bg-rose-900 dark:text-rose-200">
+                创建者
+              </span>
+            )}
+            {!first && (
+              <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                协作者
+              </span>
+            )}
+          </div>
+          <span className="truncate text-sm text-gray-500 dark:text-gray-400">
+            {collaboratorInfo.email}
+          </span>
         </div>
-        <div className="text-base font-light">{collaboratorInfo?.email}</div>
       </div>
-      {first || !isOwner ? (
-        <Button className="hidden h-8 w-16"></Button>
-      ) : (
-        <Button
-          onClick={onRemovePrivilege}
-          disabled={isSubmitting}
-          className="h-8 w-16 text-xs"
-          size="sm"
-          variant="destructive">
-          remove
-        </Button>
-      )}
+
+      <div className="flex-shrink-0">
+        {first || !isOwner ? (
+          <div className="w-16"></div>
+        ) : (
+          <Button
+            onClick={onRemovePrivilege}
+            disabled={isSubmitting}
+            className="h-8 w-16 text-xs"
+            size="sm"
+            variant="destructive">
+            {isSubmitting ? '...' : '移除'}
+          </Button>
+        )}
+      </div>
     </div>
   )
 }
