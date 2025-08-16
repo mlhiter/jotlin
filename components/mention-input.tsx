@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
@@ -25,6 +26,8 @@ interface MentionInputProps {
   placeholder?: string
   disabled?: boolean
   className?: string
+  multiline?: boolean
+  rows?: number
 }
 
 export function MentionInput({
@@ -35,12 +38,14 @@ export function MentionInput({
   placeholder = '写下你的评论...',
   disabled = false,
   className = '',
+  multiline = true,
+  rows = 3,
 }: MentionInputProps) {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [suggestions, setSuggestions] = useState<MentionSuggestion[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [mentionStart, setMentionStart] = useState(-1)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
 
   // 处理@触发
   const handleInputChange = (newValue: string) => {
@@ -133,7 +138,9 @@ export function MentionInput({
   }
 
   // 键盘事件处理
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (
+    e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     if (showSuggestions) {
       if (e.key === 'ArrowDown') {
         e.preventDefault()
@@ -172,15 +179,28 @@ export function MentionInput({
 
   return (
     <div className={`relative ${className}`}>
-      <Input
-        ref={inputRef}
-        value={value}
-        onChange={(e) => handleInputChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="pr-20"
-      />
+      {multiline ? (
+        <Textarea
+          ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+          value={value}
+          onChange={(e) => handleInputChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          rows={rows}
+          className="resize-none pr-20"
+        />
+      ) : (
+        <Input
+          ref={inputRef as React.RefObject<HTMLInputElement>}
+          value={value}
+          onChange={(e) => handleInputChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="pr-20"
+        />
+      )}
 
       {/* @建议列表 */}
       {showSuggestions && (

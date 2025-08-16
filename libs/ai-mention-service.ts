@@ -6,10 +6,21 @@ export interface AIMentionContext {
   blockId: string
   documentContent?: string
   documentTitle?: string
+  replyToCommentId?: string // 如果是回复，包含被回复评论的ID
+  commentChain?: Array<{
+    content: string
+    isAI: boolean
+    createdAt: string
+  }> // 评论链历史
 }
 
 export interface AIAction {
-  type: 'modify_content' | 'add_content' | 'suggest_edit' | 'no_action'
+  type:
+    | 'modify_content'
+    | 'add_content'
+    | 'suggest_edit'
+    | 'delete_content'
+    | 'no_action'
   content?: string | Array<any> | object
   blockId?: string
   suggestion?: string
@@ -138,6 +149,8 @@ export async function processAIMention(
       documentContent: document.content || '',
       documentTitle: document.title,
       blockId: context.blockId,
+      commentChain: context.commentChain,
+      isReplyToAI: !!context.replyToCommentId,
     })
 
     // 调用AI服务
@@ -166,9 +179,42 @@ function buildAIPrompt(params: {
   documentContent: string
   documentTitle: string
   blockId: string
+  commentChain?: Array<{
+    content: string
+    isAI: boolean
+    createdAt: string
+  }>
+  isReplyToAI?: boolean
 }): string {
-  const { action, instruction, documentContent, documentTitle, blockId } =
-    params
+  const {
+    action,
+    instruction,
+    documentContent,
+    documentTitle,
+    blockId,
+    commentChain,
+    isReplyToAI,
+  } = params
+
+  let contextSection = ''
+  if (commentChain && commentChain.length > 0) {
+    contextSection = `
+
+评论对话历史：
+${commentChain.map((c, i) => `${i + 1}. ${c.isAI ? '[AI回复]' : '[用户评论]'}: ${c.content}`).join('\n')}
+`
+  }
+
+  let roleContext = ''
+  if (isReplyToAI) {
+    roleContext = `
+特别说明：用户正在回复你之前的AI回复，可能是：
+- 对你之前回复的反馈或建议
+- 要求进一步修改或澄清
+- 表达不同意见并希望你重新考虑
+请仔细考虑用户的反馈，并根据需要调整你的回应或操作。
+`
+  }
 
   return `
 你是一个文档编辑助手。用户在文档《${documentTitle}》的评论中@了你，需要你根据指令来修改文档内容。
@@ -177,7 +223,7 @@ function buildAIPrompt(params: {
 \`\`\`
 ${documentContent}
 \`\`\`
-
+${contextSection}${roleContext}
 用户指令类型：${action}
 用户具体指令：${instruction}
 评论所在的块ID：${blockId}
@@ -186,21 +232,30 @@ ${documentContent}
 
 \`\`\`json
 {
-  "type": "modify_content" | "add_content" | "suggest_edit" | "no_action",
+  "type": "modify_content" | "add_content" | "suggest_edit" | "delete_content" | "no_action",
   "content": "要添加或修改的内容（如果适用）",
-  "blockId": "要修改的块ID（如果适用）",
+  "blockId": "要修改或删除的块ID（如果适用）",
   "suggestion": "修改建议（如果type是suggest_edit）",
   "reasoning": "执行此操作的原因说明"
 }
 \`\`\`
 
+操作类型说明：
+- **add_content**: 在文档末尾或指定位置添加新内容
+- **modify_content**: 修改现有内容（如果提供blockId则修改指定块，否则修改整个文档）
+- **delete_content**: 删除指定的块（需要提供blockId）
+- **suggest_edit**: 提供修改建议而不直接操作
+- **no_action**: 无法执行操作
+
 注意事项：
 1. 如果用户指令不够明确，返回type为"suggest_edit"并提供建议
 2. 如果指令无法执行，返回type为"no_action"并说明原因
-3. 优先使用"add_content"在评论块下方添加新内容，而不是直接修改现有内容
-4. 只有当用户明确要求修改现有内容时，才使用"modify_content"
-5. 确保修改符合用户的意图和上下文
-6. 生成的内容应该简洁明了，直接回答用户的问题或执行用户的指令
+3. 优先使用"add_content"在文档末尾添加新内容，避免破坏现有结构
+4. 使用"modify_content"时，如果要修改特定段落，请提供对应的blockId
+5. 使用"delete_content"时，必须提供要删除的blockId
+6. 确保修改符合用户的意图和上下文
+7. 生成的内容应该简洁明了，直接回答用户的问题或执行用户的指令
+8. 如果是对AI回复的反馈，要虚心接受建议并进行相应调整
 `
 }
 
@@ -250,7 +305,18 @@ export async function applyAIModification(
   documentId: string,
   modification: AIAction,
   commentBlockId?: string
-): Promise<{ success: boolean; message: string; newContent?: string }> {
+): Promise<{
+  success: boolean
+  message: string
+  newContent?: string
+  insertInstruction?: {
+    type: 'add_block' | 'modify_block' | 'delete_block'
+    content?: string
+    afterBlockId?: string
+    targetBlockId?: string
+    insertAtEnd?: boolean
+  }
+}> {
   try {
     if (modification.type === 'no_action') {
       return {
@@ -271,106 +337,76 @@ export async function applyAIModification(
       modification.content &&
       commentBlockId
     ) {
-      // Get current document to insert new content after the commented block
-      const document = await prisma.document.findUnique({
-        where: { id: documentId },
-        select: { content: true },
-      })
-
-      if (!document) {
-        throw new Error('Document not found')
-      }
-
-      let currentContent: any[] = []
-      if (document.content) {
-        try {
-          currentContent = JSON.parse(document.content)
-        } catch (error) {
-          console.error('Error parsing document content:', error)
-          currentContent = []
-        }
-      }
-
-      // Find the index of the commented block
-      const commentBlockIndex = currentContent.findIndex(
-        (block) => block.id === commentBlockId
-      )
-
-      // Create new AI response block
-      const newAIBlock = {
-        id: Math.random().toString(36).substring(2, 11),
-        type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
-        content: [
-          {
-            type: 'text',
-            text: '🤖 AI回复: ',
-            styles: { bold: true, textColor: '#8B5CF6' },
-          },
-          {
-            type: 'text',
-            text:
-              typeof modification.content === 'string'
-                ? modification.content
-                : JSON.stringify(modification.content),
-            styles: {},
-          },
-        ],
-        children: [],
-      }
-
-      // Insert the new block after the commented block
-      if (commentBlockIndex !== -1) {
-        currentContent.splice(commentBlockIndex + 1, 0, newAIBlock)
-      } else {
-        // If block not found, append at the end
-        currentContent.push(newAIBlock)
-      }
-
-      // Update document with new content
-      const updatedContent = JSON.stringify(currentContent)
-      await prisma.document.update({
-        where: { id: documentId },
-        data: { content: updatedContent },
-      })
-
+      // 不在这里直接修改文档，而是返回插入指令让前端处理
       return {
         success: true,
-        message: `AI已在评论块下方添加了回复内容。原因：${modification.reasoning}`,
-        newContent: updatedContent,
+        message: `AI回复：${modification.reasoning}`,
+        insertInstruction: {
+          type: 'add_block',
+          content:
+            typeof modification.content === 'string'
+              ? modification.content
+              : JSON.stringify(modification.content),
+          afterBlockId: commentBlockId,
+          insertAtEnd: true, // 建议插入到文档末尾
+        },
       }
     }
 
     if (modification.type === 'modify_content' && modification.content) {
-      // 处理不同类型的content数据
-      let contentToSave: string
-
-      if (typeof modification.content === 'string') {
-        contentToSave = modification.content
-      } else if (
-        Array.isArray(modification.content) ||
-        typeof modification.content === 'object'
-      ) {
-        // 如果是数组或对象，转换为JSON字符串
-        contentToSave = JSON.stringify(modification.content)
+      // 检查是否有指定的blockId进行局部修改
+      if (modification.blockId && commentBlockId) {
+        return {
+          success: true,
+          message: `AI回复：${modification.reasoning}`,
+          insertInstruction: {
+            type: 'modify_block',
+            content:
+              typeof modification.content === 'string'
+                ? modification.content
+                : JSON.stringify(modification.content),
+            targetBlockId: modification.blockId,
+          },
+        }
       } else {
-        contentToSave = String(modification.content)
+        // 全文档修改
+        let contentToSave: string
+
+        if (typeof modification.content === 'string') {
+          contentToSave = modification.content
+        } else if (
+          Array.isArray(modification.content) ||
+          typeof modification.content === 'object'
+        ) {
+          // 如果是数组或对象，转换为JSON字符串
+          contentToSave = JSON.stringify(modification.content)
+        } else {
+          contentToSave = String(modification.content)
+        }
+
+        // 更新文档内容
+        await prisma.document.update({
+          where: { id: documentId },
+          data: { content: contentToSave },
+        })
+
+        return {
+          success: true,
+          message: `AI已根据指令修改了文档内容。修改原因：${modification.reasoning}`,
+          newContent: contentToSave,
+        }
       }
+    }
 
-      // 更新文档内容
-      await prisma.document.update({
-        where: { id: documentId },
-        data: { content: contentToSave },
-      })
-
+    // 支持删除操作
+    if (modification.type === 'delete_content' && modification.blockId) {
       return {
         success: true,
-        message: `AI已根据指令修改了文档内容。修改原因：${modification.reasoning}`,
-        newContent: contentToSave,
+        message: `AI回复：${modification.reasoning}`,
+        insertInstruction: {
+          type: 'delete_block',
+          targetBlockId: modification.blockId,
+        },
       }
     }
 

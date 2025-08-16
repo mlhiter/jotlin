@@ -138,6 +138,35 @@ export async function POST(req: Request) {
         const aiMentions = validMentions.filter((m) => m.type === 'ai')
         for (const aiMention of aiMentions) {
           try {
+            // 获取评论链上下文（如果是回复）
+            let commentChain: Array<{
+              content: string
+              isAI: boolean
+              createdAt: string
+            }> = []
+
+            if (replyToCommentId) {
+              // 获取评论链历史
+              const chainComments = await prisma.comment.findMany({
+                where: {
+                  blockId,
+                  documentId,
+                },
+                include: {
+                  user: true,
+                },
+                orderBy: {
+                  replyOrder: 'asc',
+                },
+              })
+
+              commentChain = chainComments.map((c) => ({
+                content: c.content,
+                isAI: c.user.email === 'ai@jotlin.com' || !!c.isAIReply,
+                createdAt: c.createdAt.toISOString(),
+              }))
+            }
+
             // 直接调用AI处理逻辑，避免循环调用
             const aiAction = await processAIMentionDirect({
               commentContent: content,
@@ -145,6 +174,8 @@ export async function POST(req: Request) {
               blockId,
               documentContent: document.content || '',
               documentTitle: document.title,
+              replyToCommentId,
+              commentChain,
             })
 
             if (aiAction.type !== 'no_action') {
@@ -193,7 +224,7 @@ export async function POST(req: Request) {
                       documentId,
                       userId: newAiUser.id,
                       replyToCommentId: comment.id,
-                      replyOrder: 1, // AI回复的order比原评论大1
+                      replyOrder: comment.replyOrder + 1, // AI回复的order比被回复评论大1
                       isAIReply: true,
                     },
                   })
@@ -205,7 +236,7 @@ export async function POST(req: Request) {
                       documentId,
                       userId: aiUser.id,
                       replyToCommentId: comment.id,
-                      replyOrder: 1, // AI回复的order比原评论大1
+                      replyOrder: comment.replyOrder + 1, // AI回复的order比被回复评论大1
                       isAIReply: true,
                     },
                   })

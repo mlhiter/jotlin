@@ -18,6 +18,7 @@ import {
 
 import { useSession } from '@/hooks/use-session'
 import { parseMentions, formatMentionsInText } from '@/libs/mention-parser'
+import { MentionInput } from '@/components/mention-input'
 import { MoreHorizontal, Edit, Trash2 } from 'lucide-react'
 
 interface Comment {
@@ -71,6 +72,7 @@ interface CommentItemProps {
   onReplyContentChange: (content: string) => void
   onScrollToComment: (blockId: string) => void
   editor: BlockNoteEditor<any, any>
+  collaborators: Array<{ userEmail: string }>
   style?: React.CSSProperties
 }
 
@@ -169,6 +171,7 @@ const CommentItem = ({
   onReplyContentChange,
   onScrollToComment,
   editor,
+  collaborators,
 }: Omit<CommentItemProps, 'style'>) => {
   const [isHovered, setIsHovered] = useState(false)
 
@@ -260,18 +263,15 @@ const CommentItem = ({
           {/* 评论内容 */}
           {editingId === comment.id ? (
             <div>
-              <Input
+              <MentionInput
                 value={editContent}
-                onChange={(e) => onEditContentChange(e.target.value)}
+                onChange={onEditContentChange}
+                onSubmit={() => onSaveEdit(comment.id)}
+                collaborators={collaborators}
+                placeholder="编辑评论..."
                 className="mb-2"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    onSaveEdit(comment.id)
-                  } else if (e.key === 'Escape') {
-                    onCancelEdit()
-                  }
-                }}
+                multiline={true}
+                rows={2}
               />
               <div className="flex gap-2">
                 <Button
@@ -307,37 +307,31 @@ const CommentItem = ({
 
           {/* 底部操作区域 */}
           <div className="flex min-h-[24px] items-center justify-between">
-            {/* 回复按钮 */}
-            {!isAI && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onStartReply(comment.id)
-                }}
-                className={`text-xs text-muted-foreground transition-opacity hover:text-foreground ${
-                  isHovered ? 'opacity-100' : 'opacity-0'
-                }`}>
-                回复
-              </button>
-            )}
+            {/* 回复按钮 - AI评论也可以被回复 */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onStartReply(comment.id)
+              }}
+              className={`text-xs text-muted-foreground transition-opacity hover:text-foreground ${
+                isHovered ? 'opacity-100' : 'opacity-0'
+              }`}>
+              {isAI ? '回复AI' : '回复'}
+            </button>
           </div>
 
           {/* 回复输入框 */}
           {replyingTo === comment.id && (
             <div className="mt-2 space-y-2">
-              <Input
+              <MentionInput
                 value={replyContent}
-                onChange={(e) => onReplyContentChange(e.target.value)}
+                onChange={onReplyContentChange}
+                onSubmit={() => onSubmitReply(comment.id, comment.blockId)}
+                collaborators={collaborators}
                 placeholder="写下你的回复..."
                 className="w-full"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    onSubmitReply(comment.id, comment.blockId)
-                  } else if (e.key === 'Escape') {
-                    onCancelReply()
-                  }
-                }}
+                multiline={true}
+                rows={2}
               />
               <div className="flex gap-2">
                 <Button
@@ -384,6 +378,7 @@ interface CommentBlockProps {
   onReplyContentChange: (content: string) => void
   onScrollToComment: (blockId: string) => void
   editor: BlockNoteEditor<any, any>
+  collaborators: Array<{ userEmail: string }>
   style?: React.CSSProperties
 }
 
@@ -407,6 +402,7 @@ const CommentBlock = ({
   onReplyContentChange,
   onScrollToComment,
   editor,
+  collaborators,
   style,
 }: CommentBlockProps) => {
   // 按replyOrder排序评论，确保回复链的顺序正确
@@ -446,6 +442,7 @@ const CommentBlock = ({
             onReplyContentChange={onReplyContentChange}
             onScrollToComment={onScrollToComment}
             editor={editor}
+            collaborators={collaborators}
           />
         ))}
       </div>
@@ -473,6 +470,9 @@ export function PositionedCommentList({
   }>({})
   const [newCommentContent, setNewCommentContent] = useState('')
   const [isCreatingComment, setIsCreatingComment] = useState(false)
+  const [collaborators, setCollaborators] = useState<
+    Array<{ userEmail: string }>
+  >([])
 
   const sidebarRef = useRef<HTMLDivElement>(null)
   const { user: currentUser } = useSession()
@@ -703,6 +703,144 @@ export function PositionedCommentList({
         throw new Error('Failed to create reply')
       }
 
+      const result = await response.json()
+
+      // 如果有AI处理结果，显示通知
+      if (result.aiResults && result.aiResults.length > 0) {
+        toast.success(`回复已发布。AI回复：${result.aiResults.join(', ')}`)
+      } else {
+        toast.success('回复已发布')
+      }
+
+      // 处理AI的插入指令
+      if (result.insertInstruction) {
+        try {
+          const instruction = result.insertInstruction
+
+          if (instruction.type === 'add_block') {
+            // 使用BlockNote API插入新块
+            const newBlock = {
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'blue',
+                textAlignment: 'left',
+              },
+              content: [
+                {
+                  type: 'text',
+                  text: '🤖 AI回复: ',
+                  styles: { bold: true, textColor: 'blue' },
+                },
+                {
+                  type: 'text',
+                  text: instruction.content || '',
+                  styles: {},
+                },
+              ],
+            }
+
+            if (instruction.insertAtEnd) {
+              // 插入到文档末尾
+              editor.insertBlocks(
+                [newBlock],
+                editor.document[editor.document.length - 1],
+                'after'
+              )
+            } else if (instruction.afterBlockId) {
+              // 插入到指定块之后
+              const targetBlock = editor.getBlock(instruction.afterBlockId)
+              if (targetBlock) {
+                editor.insertBlocks([newBlock], targetBlock, 'after')
+              } else {
+                // 如果找不到目标块，插入到末尾
+                editor.insertBlocks(
+                  [newBlock],
+                  editor.document[editor.document.length - 1],
+                  'after'
+                )
+              }
+            }
+
+            toast.info('AI已添加回复内容')
+          } else if (
+            instruction.type === 'modify_block' &&
+            instruction.targetBlockId
+          ) {
+            // 修改指定块的内容
+            const targetBlock = editor.getBlock(instruction.targetBlockId)
+            if (targetBlock) {
+              editor.updateBlock(targetBlock, {
+                ...targetBlock,
+                content: [
+                  {
+                    type: 'text',
+                    text: instruction.content || '',
+                    styles: {},
+                  },
+                ],
+              })
+              toast.info('AI已修改指定内容')
+            } else {
+              toast.error('找不到要修改的内容块')
+            }
+          } else if (
+            instruction.type === 'delete_block' &&
+            instruction.targetBlockId
+          ) {
+            // 删除指定块
+            const targetBlock = editor.getBlock(instruction.targetBlockId)
+            if (targetBlock) {
+              editor.removeBlocks([targetBlock])
+              toast.info('AI已删除指定内容')
+            } else {
+              toast.error('找不到要删除的内容块')
+            }
+          }
+        } catch (error) {
+          console.error('Error applying AI instruction:', error)
+          toast.error('应用AI操作时出错')
+        }
+      }
+
+      // 如果文档被修改（modify_content情况），刷新编辑器内容
+      if (result.documentModified && result.newContent) {
+        try {
+          const blocks = JSON.parse(result.newContent)
+
+          // 保存当前块的评论样式状态
+          const currentBlocks = editor.document
+          const commentedBlockIds = new Set<string>()
+          currentBlocks.forEach((block: any) => {
+            if (block.props?.backgroundColor === 'commented') {
+              commentedBlockIds.add(block.id)
+            }
+          })
+
+          // 更新文档内容
+          editor.replaceBlocks(editor.document, blocks)
+
+          // 恢复评论块的样式
+          setTimeout(() => {
+            commentedBlockIds.forEach((blockId) => {
+              const block = editor.getBlock(blockId)
+              if (block) {
+                editor.updateBlock(block, {
+                  props: {
+                    ...block.props,
+                    backgroundColor: 'commented',
+                  },
+                })
+              }
+            })
+          }, 100)
+
+          toast.info('文档已由AI自动更新')
+        } catch (error) {
+          console.error('Error updating document:', error)
+        }
+      }
+
       handleCancelReply()
 
       // 使用全局函数刷新评论，避免重复的API调用
@@ -720,8 +858,6 @@ export function PositionedCommentList({
       ) {
         ;(window as any).expandCommentSidebar()
       }
-
-      toast.success('Reply posted')
     } catch (error) {
       console.error('Error posting reply:', error)
       toast.error('Failed to post reply')
@@ -853,7 +989,8 @@ export function PositionedCommentList({
         throw new Error('Failed to create comment')
       }
 
-      const newComment = await response.json()
+      const result = await response.json()
+      const newComment = result.comment || result
 
       // 立即添加评论到本地状态
       setComments((prev) => [...prev, newComment])
@@ -869,6 +1006,142 @@ export function PositionedCommentList({
         })
       }
 
+      // 如果有AI处理结果，显示通知
+      if (result.aiResults && result.aiResults.length > 0) {
+        toast.success(`评论已创建。AI回复：${result.aiResults.join(', ')}`)
+      } else {
+        toast.success('评论已创建')
+      }
+
+      // 处理AI的插入指令
+      if (result.insertInstruction) {
+        try {
+          const instruction = result.insertInstruction
+
+          if (instruction.type === 'add_block') {
+            // 使用BlockNote API插入新块
+            const newBlock = {
+              type: 'paragraph',
+              props: {
+                textColor: 'default',
+                backgroundColor: 'blue',
+                textAlignment: 'left',
+              },
+              content: [
+                {
+                  type: 'text',
+                  text: '🤖 AI回复: ',
+                  styles: { bold: true, textColor: 'blue' },
+                },
+                {
+                  type: 'text',
+                  text: instruction.content || '',
+                  styles: {},
+                },
+              ],
+            }
+
+            if (instruction.insertAtEnd) {
+              // 插入到文档末尾
+              editor.insertBlocks(
+                [newBlock],
+                editor.document[editor.document.length - 1],
+                'after'
+              )
+            } else if (instruction.afterBlockId) {
+              // 插入到指定块之后
+              const targetBlock = editor.getBlock(instruction.afterBlockId)
+              if (targetBlock) {
+                editor.insertBlocks([newBlock], targetBlock, 'after')
+              } else {
+                // 如果找不到目标块，插入到末尾
+                editor.insertBlocks(
+                  [newBlock],
+                  editor.document[editor.document.length - 1],
+                  'after'
+                )
+              }
+            }
+
+            toast.info('AI已添加回复内容')
+          } else if (
+            instruction.type === 'modify_block' &&
+            instruction.targetBlockId
+          ) {
+            // 修改指定块的内容
+            const targetBlock = editor.getBlock(instruction.targetBlockId)
+            if (targetBlock) {
+              editor.updateBlock(targetBlock, {
+                ...targetBlock,
+                content: [
+                  {
+                    type: 'text',
+                    text: instruction.content || '',
+                    styles: {},
+                  },
+                ],
+              })
+              toast.info('AI已修改指定内容')
+            } else {
+              toast.error('找不到要修改的内容块')
+            }
+          } else if (
+            instruction.type === 'delete_block' &&
+            instruction.targetBlockId
+          ) {
+            // 删除指定块
+            const targetBlock = editor.getBlock(instruction.targetBlockId)
+            if (targetBlock) {
+              editor.removeBlocks([targetBlock])
+              toast.info('AI已删除指定内容')
+            } else {
+              toast.error('找不到要删除的内容块')
+            }
+          }
+        } catch (error) {
+          console.error('Error applying AI instruction:', error)
+          toast.error('应用AI操作时出错')
+        }
+      }
+
+      // 如果文档被修改（modify_content情况），刷新编辑器内容
+      if (result.documentModified && result.newContent) {
+        try {
+          const blocks = JSON.parse(result.newContent)
+
+          // 保存当前块的评论样式状态
+          const currentBlocks = editor.document
+          const commentedBlockIds = new Set<string>()
+          currentBlocks.forEach((block: any) => {
+            if (block.props?.backgroundColor === 'commented') {
+              commentedBlockIds.add(block.id)
+            }
+          })
+
+          // 更新文档内容
+          editor.replaceBlocks(editor.document, blocks)
+
+          // 恢复评论块的样式
+          setTimeout(() => {
+            commentedBlockIds.forEach((blockId) => {
+              const block = editor.getBlock(blockId)
+              if (block) {
+                editor.updateBlock(block, {
+                  props: {
+                    ...block.props,
+                    backgroundColor: 'commented',
+                  },
+                })
+              }
+            })
+          }, 100)
+
+          toast.info('文档已由AI自动更新')
+        } catch (error) {
+          console.error('Error updating document:', error)
+        }
+      }
+
       // 清理状态
       setNewCommentContent('')
       onNewCommentCreated?.()
@@ -876,7 +1149,14 @@ export function PositionedCommentList({
       // 通知父组件评论状态变化
       onCommentsChange?.(true)
 
-      toast.success('Comment created successfully')
+      // 强制刷新评论列表以显示AI回复
+      setTimeout(() => {
+        if ((window as any).refreshComments) {
+          ;(window as any).refreshComments()
+        } else {
+          fetchComments()
+        }
+      }, 1000)
     } catch (error) {
       console.error('Error creating comment:', error)
       toast.error('Failed to create comment')
@@ -889,6 +1169,21 @@ export function PositionedCommentList({
     setNewCommentContent('')
     onNewCommentCreated?.()
   }
+
+  // 获取文档协作者
+  const fetchCollaborators = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `/api/documents/${params.documentId}/collaborators`
+      )
+      if (response.ok) {
+        const data = await response.json()
+        setCollaborators(data)
+      }
+    } catch (error) {
+      console.error('Error fetching collaborators:', error)
+    }
+  }, [params.documentId])
 
   // 提取fetchComments函数使其可重用
   const fetchComments = useCallback(async () => {
@@ -915,8 +1210,9 @@ export function PositionedCommentList({
   useEffect(() => {
     if (params.documentId) {
       fetchComments()
+      fetchCollaborators()
     }
-  }, [params.documentId, refreshTrigger, fetchComments])
+  }, [params.documentId, refreshTrigger, fetchComments, fetchCollaborators])
 
   // 监听评论内容、编辑和回复状态变化，立即更新位置
   useEffect(() => {
@@ -1018,20 +1314,16 @@ export function PositionedCommentList({
 
                 {/* 新评论输入 */}
                 <div className="space-y-3">
-                  <Input
+                  <MentionInput
                     value={newCommentContent}
-                    onChange={(e) => setNewCommentContent(e.target.value)}
+                    onChange={setNewCommentContent}
+                    onSubmit={handleCreateNewComment}
+                    collaborators={collaborators}
                     placeholder="写下你的评论..."
-                    className="w-full"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        handleCreateNewComment()
-                      } else if (e.key === 'Escape') {
-                        handleCancelNewComment()
-                      }
-                    }}
                     disabled={isCreatingComment}
+                    className="w-full"
+                    multiline={true}
+                    rows={3}
                   />
                   <div className="flex gap-2">
                     <Button
@@ -1105,6 +1397,7 @@ export function PositionedCommentList({
               onReplyContentChange={setReplyContent}
               onScrollToComment={handleScrollToComment}
               editor={editor}
+              collaborators={collaborators}
             />
           </div>
         )
