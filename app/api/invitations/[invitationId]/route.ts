@@ -72,6 +72,39 @@ export async function PUT(
       await recursiveUpdate(existingInvitation.documentId)
     }
 
+    // Create notification for the inviter about the response
+    try {
+      // Find the inviter user
+      const inviterUser = await prisma.user.findUnique({
+        where: { email: existingInvitation.userEmail },
+      })
+
+      // Get document information
+      const document = await prisma.document.findUnique({
+        where: { id: existingInvitation.documentId },
+        select: { title: true },
+      })
+
+      if (inviterUser && document) {
+        const actionText = isAccepted ? 'accepted' : 'declined'
+        await prisma.notification.create({
+          data: {
+            type: 'invitation_response',
+            title: `Invitation ${actionText}`,
+            content: `${session.user.email} has ${actionText} your invitation to collaborate on "${document.title}"`,
+            userId: inviterUser.id,
+            documentId: existingInvitation.documentId,
+          },
+        })
+      }
+    } catch (notificationError) {
+      // Log the error but don't fail the invitation update
+      console.error(
+        'Failed to create notification for invitation response:',
+        notificationError
+      )
+    }
+
     return NextResponse.json(updatedInvitation)
   } catch (error) {
     console.error('[INVITATION_UPDATE]', error)

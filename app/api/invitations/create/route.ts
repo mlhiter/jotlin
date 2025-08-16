@@ -36,6 +36,38 @@ export async function POST(req: Request) {
       },
     })
 
+    // Create notification for the invited user
+    try {
+      // Find the invited user to get their user ID
+      const invitedUser = await prisma.user.findUnique({
+        where: { email: invitationData.collaboratorEmail },
+      })
+
+      // Get document information for the notification
+      const document = await prisma.document.findUnique({
+        where: { id: invitationData.documentId },
+        select: { title: true },
+      })
+
+      if (invitedUser && document) {
+        await prisma.notification.create({
+          data: {
+            type: 'invitation',
+            title: 'New collaboration invitation',
+            content: `You have been invited to collaborate on "${document.title}"`,
+            userId: invitedUser.id,
+            documentId: invitationData.documentId,
+          },
+        })
+      }
+    } catch (notificationError) {
+      // Log the error but don't fail the invitation creation
+      console.error(
+        'Failed to create notification for invitation:',
+        notificationError
+      )
+    }
+
     return NextResponse.json(invitation)
   } catch (error) {
     console.error('[INVITATION_CREATE]', error)

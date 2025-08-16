@@ -28,8 +28,8 @@ const Invite = ({ documentId }: InviteProps) => {
     e.preventDefault()
 
     setIsSubmitting(true)
+    const loadingToast = toast.loading('Inviting...')
     try {
-      toast.loading('Inviting...')
       await invitationApi
         .create({
           documentId,
@@ -40,6 +40,8 @@ const Invite = ({ documentId }: InviteProps) => {
       toast.success('Invitation has been sent')
     } catch (error) {
       toast.error('Failed to invite him.')
+    } finally {
+      toast.dismiss(loadingToast)
     }
   }
 

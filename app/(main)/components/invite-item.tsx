@@ -2,7 +2,8 @@
 
 import { CheckCircle, FileIcon, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 
 import { Spinner } from '@/components/spinner'
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,8 @@ import { Invitation } from '@/types/invitation'
 import { useSession } from '@/hooks/use-session'
 import { documentApi } from '@/api/document'
 import { invitationApi } from '@/api/invitation'
+import { useInvitationStore } from '@/stores/invitation'
+import { useDocumentStore } from '@/stores/document'
 
 type UserInfo = Pick<User, 'name' | 'image'>
 
@@ -25,6 +28,10 @@ interface InviteItemProps {
 
 const InviteItem = ({ invitation }: InviteItemProps) => {
   const { user } = useSession()
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const { updateInvitation } = useInvitationStore()
+  const { setDocuments } = useDocumentStore()
   const {
     id,
     documentId,
@@ -57,14 +64,26 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
 
   const accept = async () => {
     try {
-      await invitationApi.update({ id, isAccepted: true })
+      await updateInvitation({ id, isAccepted: true })
+
+      // 刷新文档列表 - 清除所有文档查询缓存以重新获取最新数据
+      queryClient.invalidateQueries({ queryKey: ['documents'] })
+
+      // 手动触发文档列表更新
+      await Promise.all([
+        setDocuments(null, 'share'),
+        setDocuments(null, 'private'),
+      ])
+
+      // 路由到被邀请的文档
+      router.push(`/documents/${documentId}`)
     } catch (error) {
       console.log(error)
     }
   }
   const reject = async () => {
     try {
-      await invitationApi.update({ id, isAccepted: false })
+      await updateInvitation({ id, isAccepted: false })
     } catch (error) {
       console.log(error)
     }
@@ -73,7 +92,7 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
   // if document has been removed or user has been removed or the invitation is invalid
   if (!isValid) {
     return (
-      <Card className="mb-3 border-none bg-background">
+      <Card className="border-none bg-background">
         <CardContent className="p-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground/70">
             <X className="h-4 w-4" />
@@ -84,7 +103,11 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
     )
   }
 
-  if (documentInfo === undefined || userInfo === undefined) {
+  // Show loading only if document info is undefined or if we need user info but don't have it
+  if (
+    documentInfo === undefined ||
+    (collaboratorEmail === user?.email && userInfo === undefined)
+  ) {
     return (
       <div className="flex h-16 items-center justify-center">
         <Spinner size="lg" />
@@ -122,7 +145,7 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
   }
 
   return (
-    <Card className="mb-3 overflow-hidden border-none bg-background">
+    <Card className="overflow-hidden border-none bg-background">
       <CardContent className="p-4">
         {/* you are the inviter */}
         {userEmail === user?.email && (
@@ -189,16 +212,16 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 px-3 text-xs font-normal hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                    className="h-8 px-2.5 text-xs font-normal hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
                     onClick={reject}>
-                    <X className="mr-1.5 h-3.5 w-3.5" />
+                    <X className="mr-1 h-3.5 w-3.5" />
                     Decline
                   </Button>
                   <Button
                     size="sm"
-                    className="h-8 bg-primary px-3 text-xs font-normal hover:bg-primary/90"
+                    className="h-8 bg-primary px-2.5 text-xs font-normal hover:bg-primary/90"
                     onClick={accept}>
-                    <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
+                    <CheckCircle className="mr-1 h-3.5 w-3.5" />
                     Accept
                   </Button>
                 </div>

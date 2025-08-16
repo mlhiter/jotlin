@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/popover'
 import { useSearch } from '@/stores/search'
 import { useSettings } from '@/stores/settings'
-import { Badge } from '@/components/ui/badge'
 import { useInvitationStore } from '@/stores/invitation'
 import { useSession } from '@/hooks/use-session'
 
@@ -49,6 +48,13 @@ const Navigation = () => {
   useEffect(() => {
     if (user?.email) {
       fetchInvitations(user.email)
+
+      // 设置定期刷新邀请列表，每10秒检查一次
+      const interval = setInterval(() => {
+        fetchInvitations(user.email)
+      }, 10000)
+
+      return () => clearInterval(interval)
     }
   }, [user?.email, fetchInvitations])
 
@@ -163,17 +169,13 @@ const Navigation = () => {
               <div className="relative mr-2">
                 <Inbox className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
                 {unreadCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -right-2 -top-2 h-4 w-4 items-center justify-center p-0 text-[10px]">
-                    {unreadCount}
-                  </Badge>
+                  <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
                 )}
               </div>
               <span className="truncate">Inbox</span>
             </PopoverTrigger>
             <PopoverContent
-              className="mt-4 w-80 p-4"
+              className="mt-4 w-96 p-4"
               side={isMobile ? 'bottom' : 'right'}>
               <InboxContent />
             </PopoverContent>
