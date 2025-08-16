@@ -34,7 +34,7 @@ const DocumentList = ({
   useEffect(() => {
     if (forceExpanded && level === 0) {
       // Expand root level documents when forceExpanded is true
-      const currentDocs = getDocuments(parentDocumentId, type)
+      const currentDocs = getDocuments(parentDocumentId ?? null, type)
       if (currentDocs && currentDocs.length > 0) {
         const newExpanded: Record<string, boolean> = {}
         currentDocs.forEach((doc) => {
@@ -103,6 +103,7 @@ const DocumentList = ({
             level={level}
             onExpand={() => onExpand(document.id)}
             expanded={expanded[document.id]}
+            ownerId={document.userId}
           />
           {expanded[document.id] && (
             <DocumentList

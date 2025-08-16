@@ -18,14 +18,20 @@ export async function PUT(
       where: {
         id: documentId,
       },
+      include: {
+        collaborators: true,
+      },
     })
 
     if (!existingDocument) {
       return new NextResponse('Not found', { status: 404 })
     }
 
+    // 只有文档创建者才能归档文档（即使有协作者）
     if (existingDocument.userId !== session.user.id) {
-      return new NextResponse('Unauthorized', { status: 401 })
+      return new NextResponse('Only document owner can archive the document', {
+        status: 403,
+      })
     }
 
     const recursiveArchive = async (documentId: string) => {

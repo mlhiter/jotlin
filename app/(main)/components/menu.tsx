@@ -32,6 +32,9 @@ const Menu = ({ documentId }: MenuProps) => {
   })
   const { archiveDocument, updateDocument } = useDocumentActions()
 
+  // 检查当前用户是否是文档创建者
+  const isOwner = currentDocument?.userId === user?.id
+
   const onArchive = () => {
     archiveDocument(documentId)
   }
@@ -101,10 +104,12 @@ const Menu = ({ documentId }: MenuProps) => {
           <Download className="mr-2 h-4 w-4" />
           Export to md file
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onArchive}>
-          <Trash className="mr-2 h-4 w-4" />
-          Delete
-        </DropdownMenuItem>
+        {isOwner && (
+          <DropdownMenuItem onClick={onArchive}>
+            <Trash className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <div className="p-2 text-xs text-muted-foreground">
           Last edited by:{user?.name}

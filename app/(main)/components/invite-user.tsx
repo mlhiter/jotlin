@@ -2,7 +2,7 @@
 
 import { toast } from 'sonner'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Spinner } from '@/components/spinner'
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,7 @@ export const InviteUser = ({
 }: InviteUserProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { user } = useSession()
+  const queryClient = useQueryClient()
 
   // 使用更具体的查询键，包含文档ID和协作者邮箱，避免缓存冲突
   const { data: collaboratorInfo, isLoading } = useQuery({
@@ -35,6 +36,7 @@ export const InviteUser = ({
   })
 
   const isOwner = document.userId === user?.id
+  const isCurrentUser = collaborator === user?.email
 
   const onRemovePrivilege = () => {
     setIsSubmitting(true)
@@ -43,6 +45,17 @@ export const InviteUser = ({
       .removeAccess({
         documentId: document.id,
         collaboratorEmail: collaborator,
+      })
+      .then(() => {
+        // 刷新文档列表和协作者列表
+        queryClient.invalidateQueries({
+          queryKey: ['documents'],
+          exact: false,
+        })
+        queryClient.invalidateQueries({
+          queryKey: ['collaborators', document.id],
+          exact: false,
+        })
       })
       .finally(() => setIsSubmitting(false))
 
@@ -109,17 +122,22 @@ export const InviteUser = ({
       </div>
 
       <div className="flex-shrink-0">
-        {first || !isOwner ? (
+        {first ? (
+          // 创建者不能移除自己
           <div className="w-16"></div>
-        ) : (
+        ) : isOwner || isCurrentUser ? (
+          // 文档所有者可以移除协作者，协作者可以移除自己
           <Button
             onClick={onRemovePrivilege}
             disabled={isSubmitting}
             className="h-8 w-16 text-xs"
             size="sm"
             variant="destructive">
-            {isSubmitting ? '...' : '移除'}
+            {isSubmitting ? '...' : isCurrentUser ? '退出' : '移除'}
           </Button>
+        ) : (
+          // 非所有者不能移除其他人
+          <div className="w-16"></div>
         )}
       </div>
     </div>

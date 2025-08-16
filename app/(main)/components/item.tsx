@@ -24,6 +24,7 @@ import { cn } from '@/libs/utils'
 import { useSession } from '@/hooks/use-session'
 import { documentApi } from '@/api/document'
 import { useDocumentActions } from '@/hooks/use-document-actions'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface ItemProps {
   id?: string
@@ -38,6 +39,7 @@ interface ItemProps {
   icon: LucideIcon
   type?: 'private' | 'share'
   hideActions?: boolean
+  ownerId?: string
 }
 
 const Item = ({
@@ -53,10 +55,15 @@ const Item = ({
   icon: Icon,
   type,
   hideActions = false,
+  ownerId,
 }: ItemProps) => {
   const router = useRouter()
   const { user } = useSession()
   const { archiveDocument, createDocument } = useDocumentActions()
+  const queryClient = useQueryClient()
+
+  // 判断当前用户是否是文档创建者
+  const isOwner = ownerId === user?.id
 
   const onArchive = async (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -74,6 +81,11 @@ const Item = ({
         collaboratorEmail: user!.email,
       })
       .then(() => {
+        // 刷新文档列表以移除退出的文档
+        queryClient.invalidateQueries({
+          queryKey: ['documents'],
+          exact: false,
+        })
         router.push('/documents')
       })
 
@@ -150,10 +162,9 @@ const Item = ({
               align="start"
               side="right"
               forceMount>
-              <DropdownMenuItem
-                onClick={type === 'private' ? onArchive : onQuitDocument}>
+              <DropdownMenuItem onClick={isOwner ? onArchive : onQuitDocument}>
                 <Trash className="mr-2 h-4 w-4" />
-                {type === 'private' ? 'Delete' : 'Quit'}
+                {isOwner ? 'Delete' : 'Quit'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <div className="p-2 text-xs text-muted-foreground">
