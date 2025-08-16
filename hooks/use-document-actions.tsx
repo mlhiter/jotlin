@@ -27,14 +27,16 @@ export const useDocumentActions = () => {
   }
 
   const archiveDocument = async (id: string) => {
+    const loadingToast = toast.loading('Moving to trash...')
     try {
-      toast.loading('Moving to trash...')
       await documentApi.archive(id)
       router.push('/documents')
       invalidateDocumentQueries()
       toast.success('Note moved to trash!')
     } catch (error) {
       toast.error('Failed to archive note.')
+    } finally {
+      toast.dismiss(loadingToast)
     }
   }
 
@@ -52,24 +54,28 @@ export const useDocumentActions = () => {
   }
 
   const restoreDocument = async (id: string) => {
+    const loadingToast = toast.loading('Restoring note...')
     try {
-      toast.loading('Restoring note...')
       await documentApi.restore(id)
       invalidateDocumentQueries()
       toast.success('Note restored!')
     } catch {
       toast.error('Failed to restore note.')
+    } finally {
+      toast.dismiss(loadingToast)
     }
   }
 
   const removeDocument = async (id: string) => {
+    const loadingToast = toast.loading('Deleting note...')
     try {
-      toast.loading('Deleting note...')
       await documentApi.remove(id)
       invalidateTrashDocumentQueries()
       toast.success('Note deleted!')
     } catch {
       toast.error('Failed to delete note.')
+    } finally {
+      toast.dismiss(loadingToast)
     }
 
     if (params.documentId === id) {
