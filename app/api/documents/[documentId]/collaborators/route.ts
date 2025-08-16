@@ -29,7 +29,11 @@ export async function GET(
       },
       include: {
         user: {
-          select: { email: true },
+          select: {
+            email: true,
+            name: true,
+            image: true,
+          },
         },
         collaborators: {
           select: { userEmail: true },
@@ -43,19 +47,35 @@ export async function GET(
       })
     }
 
-    // 返回所有协作者（包括文档所有者）
-    const collaborators = [
-      { userEmail: document.user.email },
-      ...document.collaborators,
+    // 获取所有协作者的完整用户信息
+    const collaboratorEmails = [
+      document.user.email,
+      ...document.collaborators.map((c) => c.userEmail),
     ]
 
-    // 去重
-    const uniqueCollaborators = collaborators.filter(
-      (collaborator, index, self) =>
-        index === self.findIndex((c) => c.userEmail === collaborator.userEmail)
-    )
+    // 去重邮箱
+    const uniqueEmails = [...new Set(collaboratorEmails)]
 
-    return NextResponse.json(uniqueCollaborators)
+    // 批量获取用户信息
+    const usersInfo = await prisma.user.findMany({
+      where: {
+        email: { in: uniqueEmails },
+      },
+      select: {
+        email: true,
+        name: true,
+        image: true,
+      },
+    })
+
+    // 构建协作者信息
+    const collaboratorsWithInfo = usersInfo.map((user) => ({
+      userEmail: user.email,
+      userName: user.name,
+      userImage: user.image,
+    }))
+
+    return NextResponse.json(collaboratorsWithInfo)
   } catch (error) {
     console.error('[COLLABORATORS_GET]', error)
     return new NextResponse('Internal Error', { status: 500 })

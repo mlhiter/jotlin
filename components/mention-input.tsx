@@ -8,6 +8,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 interface Collaborator {
   userEmail: string
+  userName: string
+  userImage?: string | null
 }
 
 interface MentionSuggestion {
@@ -90,17 +92,20 @@ export function MentionInput({
     // 用户选项
     collaborators.forEach((collaborator) => {
       const email = collaborator.userEmail
+      const name = collaborator.userName
       const username = email.split('@')[0]
 
       if (
         email.toLowerCase().includes(query.toLowerCase()) ||
-        username.toLowerCase().includes(query.toLowerCase())
+        username.toLowerCase().includes(query.toLowerCase()) ||
+        name.toLowerCase().includes(query.toLowerCase())
       ) {
         suggestions.push({
           type: 'user',
-          display: email,
+          display: name, // 显示用户名而不是邮箱
           value: username,
           email: email,
+          avatar: collaborator.userImage,
         })
       }
     })
@@ -218,7 +223,7 @@ export function MentionInput({
                 </div>
               ) : (
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src={suggestion.avatar} />
+                  <AvatarImage src={suggestion.avatar || undefined} />
                   <AvatarFallback>
                     {suggestion.display.charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -226,7 +231,7 @@ export function MentionInput({
               )}
               <div className="flex-1">
                 <div className="text-sm font-medium">
-                  {suggestion.type === 'ai' ? 'AI助手' : `@${suggestion.value}`}
+                  {suggestion.type === 'ai' ? 'AI助手' : suggestion.display}
                 </div>
                 {suggestion.email && (
                   <div className="text-xs text-gray-500">

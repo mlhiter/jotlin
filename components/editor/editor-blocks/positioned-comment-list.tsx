@@ -72,7 +72,11 @@ interface CommentItemProps {
   onReplyContentChange: (content: string) => void
   onScrollToComment: (blockId: string) => void
   editor: BlockNoteEditor<any, any>
-  collaborators: Array<{ userEmail: string }>
+  collaborators: Array<{
+    userEmail: string
+    userName: string
+    userImage?: string | null
+  }>
   style?: React.CSSProperties
 }
 
@@ -378,7 +382,11 @@ interface CommentBlockProps {
   onReplyContentChange: (content: string) => void
   onScrollToComment: (blockId: string) => void
   editor: BlockNoteEditor<any, any>
-  collaborators: Array<{ userEmail: string }>
+  collaborators: Array<{
+    userEmail: string
+    userName: string
+    userImage?: string | null
+  }>
   style?: React.CSSProperties
 }
 
@@ -471,7 +479,7 @@ export function PositionedCommentList({
   const [newCommentContent, setNewCommentContent] = useState('')
   const [isCreatingComment, setIsCreatingComment] = useState(false)
   const [collaborators, setCollaborators] = useState<
-    Array<{ userEmail: string }>
+    Array<{ userEmail: string; userName: string; userImage?: string | null }>
   >([])
 
   const sidebarRef = useRef<HTMLDivElement>(null)
