@@ -20,6 +20,7 @@ import { useSession } from '@/hooks/use-session'
 import { parseMentions, formatMentionsInText } from '@/libs/mention-parser'
 import { MentionInput } from '@/components/mention-input'
 import { MoreHorizontal, Edit, Trash2 } from 'lucide-react'
+import { useRealtimeComments } from '@/hooks/use-realtime-comments'
 
 interface Comment {
   id: string
@@ -78,6 +79,7 @@ interface CommentItemProps {
     userImage?: string | null
   }>
   style?: React.CSSProperties
+  isNewlyAdded?: boolean
 }
 
 // 获取块内容的辅助函数
@@ -176,6 +178,7 @@ const CommentItem = ({
   onScrollToComment,
   editor,
   collaborators,
+  isNewlyAdded = false,
 }: Omit<CommentItemProps, 'style'>) => {
   const [isHovered, setIsHovered] = useState(false)
 
@@ -189,7 +192,11 @@ const CommentItem = ({
 
   return (
     <div
-      className="group relative p-3 transition-colors hover:bg-muted/30"
+      className={`group relative p-3 transition-all duration-500 hover:bg-muted/30 ${
+        isNewlyAdded
+          ? 'border-l-4 border-l-blue-500 bg-blue-50 animate-in slide-in-from-right-5'
+          : ''
+      }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}>
       <div className="flex items-start gap-3">
@@ -388,6 +395,7 @@ interface CommentBlockProps {
     userImage?: string | null
   }>
   style?: React.CSSProperties
+  newlyAddedCommentIds: Set<string>
 }
 
 const CommentBlock = ({
@@ -412,6 +420,7 @@ const CommentBlock = ({
   editor,
   collaborators,
   style,
+  newlyAddedCommentIds,
 }: CommentBlockProps) => {
   // 按replyOrder排序评论，确保回复链的顺序正确
   const sortedComments = comments.sort((a, b) => a.replyOrder - b.replyOrder)
@@ -451,6 +460,7 @@ const CommentBlock = ({
             onScrollToComment={onScrollToComment}
             editor={editor}
             collaborators={collaborators}
+            isNewlyAdded={newlyAddedCommentIds.has(comment.id)}
           />
         ))}
       </div>
@@ -469,6 +479,7 @@ export function PositionedCommentList({
   const params = useParams()
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
@@ -484,6 +495,120 @@ export function PositionedCommentList({
 
   const sidebarRef = useRef<HTMLDivElement>(null)
   const { user: currentUser } = useSession()
+
+  // 使用ref存储isInitialLoad状态，避免依赖项问题
+  const isInitialLoadRef = useRef(true)
+
+  // 追踪最近创建的评论，避免重复通知
+  const recentlyCreatedCommentIds = useRef<Set<string>>(new Set())
+
+  // 追踪新添加的评论ID（用于高亮显示）
+  const [newlyAddedCommentIds, setNewlyAddedCommentIds] = useState<Set<string>>(
+    new Set()
+  )
+
+  // 提取fetchComments函数使其可重用
+  const fetchComments = useCallback(
+    async (forceLoading = false) => {
+      try {
+        // 只有初始加载或强制加载时才显示loading状态
+        if (isInitialLoadRef.current || forceLoading) {
+          setIsLoading(true)
+        }
+
+        const response = await fetch(
+          `/api/comments?documentId=${params.documentId}`
+        )
+        if (!response.ok) {
+          throw new Error('Failed to fetch comments')
+        }
+        const data = await response.json()
+        setComments(data)
+        // 通知父组件评论状态变化
+        onCommentsChange?.(data.length > 0)
+      } catch (error) {
+        console.error('Error fetching comments:', error)
+        onCommentsChange?.(false)
+      } finally {
+        setIsLoading(false)
+        if (isInitialLoadRef.current) {
+          setIsInitialLoad(false)
+          isInitialLoadRef.current = false
+        }
+      }
+    },
+    [params.documentId, onCommentsChange] // 移除isInitialLoad依赖
+  )
+
+  // 处理检测到新评论的函数
+  const handleNewComments = useCallback(
+    async (newComments: Comment[]) => {
+      if (newComments.length > 0) {
+        // 使用ref获取当前评论状态，避免依赖comments
+        setComments((currentComments) => {
+          const currentCommentIds = new Set(currentComments.map((c) => c.id))
+
+          // 手动触发一次完整的评论获取
+          fetchComments(false).then(() => {
+            // 获取完成后，对比新旧评论列表找出真正的新评论
+            setTimeout(() => {
+              setComments((latestComments) => {
+                const realNewComments = latestComments.filter(
+                  (c) => !currentCommentIds.has(c.id)
+                )
+
+                if (realNewComments.length > 0) {
+                  // 过滤掉最近由当前用户创建的评论，避免重复通知
+                  const commentsToNotify = realNewComments.filter(
+                    (c) => !recentlyCreatedCommentIds.current.has(c.id)
+                  )
+
+                  const newCommentIds = realNewComments.map((c) => c.id)
+
+                  // 标记新评论ID用于高亮
+                  setNewlyAddedCommentIds((prev) => {
+                    const newSet = new Set(prev)
+                    newCommentIds.forEach((id) => newSet.add(id))
+                    return newSet
+                  })
+
+                  // 3秒后移除高亮
+                  setTimeout(() => {
+                    setNewlyAddedCommentIds((prev) => {
+                      const newSet = new Set(prev)
+                      newCommentIds.forEach((id) => newSet.delete(id))
+                      return newSet
+                    })
+                  }, 3000)
+
+                  // 只为非当前用户创建的评论显示提示
+                  if (commentsToNotify.length > 0) {
+                    if (commentsToNotify.length === 1) {
+                      toast.info(`收到新评论：${commentsToNotify[0].user.name}`)
+                    } else {
+                      toast.info(`收到 ${commentsToNotify.length} 条新评论`)
+                    }
+                  }
+                }
+                return latestComments
+              })
+            }, 200)
+          })
+
+          return currentComments // 返回当前状态不变
+        })
+      }
+    },
+    [fetchComments]
+  )
+
+  // 实时评论hook
+  const { isPolling, triggerCheck, reset } = useRealtimeComments({
+    documentId: params.documentId as string,
+    enabled: !!params.documentId && !isInitialLoad,
+    pollingInterval: 5000, // 5秒轮询一次
+    onNewComments: handleNewComments,
+  })
 
   // 按blockId分组评论，然后按照在编辑器中的出现顺序排序 - 使用useMemo避免每次渲染都重新创建
   const commentsByBlock = useMemo(() => {
@@ -713,6 +838,15 @@ export function PositionedCommentList({
 
       const result = await response.json()
 
+      // 记录当前用户创建的评论ID，避免轮询时重复通知
+      if (result.comment) {
+        recentlyCreatedCommentIds.current.add(result.comment.id)
+        // 10秒后清除记录
+        setTimeout(() => {
+          recentlyCreatedCommentIds.current.delete(result.comment.id)
+        }, 10000)
+      }
+
       // 如果有AI处理结果，显示通知
       if (result.aiResults && result.aiResults.length > 0) {
         toast.success(`回复已发布。AI回复：${result.aiResults.join(', ')}`)
@@ -851,12 +985,11 @@ export function PositionedCommentList({
 
       handleCancelReply()
 
-      // 使用全局函数刷新评论，避免重复的API调用
+      // 只刷新一次评论，获取包括AI回复在内的所有新评论
       if ((window as any).refreshComments) {
         ;(window as any).refreshComments()
       } else {
-        // 备用：如果全局函数不存在才直接获取
-        await fetchComments()
+        await fetchComments(false)
       }
 
       // 强制展开评论侧边栏
@@ -999,6 +1132,13 @@ export function PositionedCommentList({
 
       const result = await response.json()
       const newComment = result.comment || result
+
+      // 记录当前用户创建的评论ID，避免轮询时重复通知
+      recentlyCreatedCommentIds.current.add(newComment.id)
+      // 10秒后清除记录，允许后续的编辑/删除操作触发通知
+      setTimeout(() => {
+        recentlyCreatedCommentIds.current.delete(newComment.id)
+      }, 10000)
 
       // 立即添加评论到本地状态
       setComments((prev) => [...prev, newComment])
@@ -1157,12 +1297,12 @@ export function PositionedCommentList({
       // 通知父组件评论状态变化
       onCommentsChange?.(true)
 
-      // 强制刷新评论列表以显示AI回复
+      // 刷新评论列表以显示AI回复，延时确保AI处理完成
       setTimeout(() => {
         if ((window as any).refreshComments) {
           ;(window as any).refreshComments()
         } else {
-          fetchComments()
+          fetchComments(false)
         }
       }, 1000)
     } catch (error) {
@@ -1192,28 +1332,6 @@ export function PositionedCommentList({
       console.error('Error fetching collaborators:', error)
     }
   }, [params.documentId])
-
-  // 提取fetchComments函数使其可重用
-  const fetchComments = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch(
-        `/api/comments?documentId=${params.documentId}`
-      )
-      if (!response.ok) {
-        throw new Error('Failed to fetch comments')
-      }
-      const data = await response.json()
-      setComments(data)
-      // 通知父组件评论状态变化
-      onCommentsChange?.(data.length > 0)
-    } catch (error) {
-      console.error('Error fetching comments:', error)
-      onCommentsChange?.(false)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [params.documentId, onCommentsChange])
 
   useEffect(() => {
     if (params.documentId) {
@@ -1294,6 +1412,15 @@ export function PositionedCommentList({
       ref={sidebarRef}
       className="relative w-full p-4"
       style={{ minHeight: 'calc(100vh - 2rem)' }}>
+      {/* 实时状态指示器 */}
+      {!isInitialLoad && (
+        <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <div
+            className={`h-2 w-2 rounded-full ${isPolling ? 'animate-pulse bg-yellow-500' : 'bg-green-500'}`}
+          />
+          {isPolling ? '检查新评论中...' : '实时监听中'}
+        </div>
+      )}
       {Object.entries(commentsByBlock).map(([blockId, blockComments]) => {
         const blockContent = getBlockContent(editor, blockId)
 
@@ -1406,6 +1533,7 @@ export function PositionedCommentList({
               onScrollToComment={handleScrollToComment}
               editor={editor}
               collaborators={collaborators}
+              newlyAddedCommentIds={newlyAddedCommentIds}
             />
           </div>
         )

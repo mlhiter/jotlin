@@ -376,15 +376,27 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url)
     const documentId = searchParams.get('documentId')
+    const incrementalUpdate = searchParams.get('incrementalUpdate') === 'true'
+    const since = searchParams.get('since')
 
     if (!documentId) {
       return new NextResponse('Bad Request', { status: 400 })
     }
 
+    // 构建查询条件
+    const whereCondition: any = {
+      documentId,
+    }
+
+    // 如果是增量更新且提供了since参数，只获取该时间之后的评论
+    if (incrementalUpdate && since) {
+      whereCondition.createdAt = {
+        gt: new Date(since),
+      }
+    }
+
     const comments = await prisma.comment.findMany({
-      where: {
-        documentId,
-      },
+      where: whereCondition,
       include: {
         user: {
           select: {
@@ -418,6 +430,16 @@ export async function GET(req: Request) {
       ],
     })
 
+    // 如果是增量更新，返回带有lastUpdateTime的结构
+    if (incrementalUpdate) {
+      return NextResponse.json({
+        comments,
+        lastUpdateTime: new Date().toISOString(),
+        isIncremental: true,
+      })
+    }
+
+    // 普通请求直接返回评论数组
     return NextResponse.json(comments)
   } catch (error) {
     console.error('[COMMENTS_GET]', error)
