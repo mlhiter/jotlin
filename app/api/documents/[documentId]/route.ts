@@ -119,8 +119,57 @@ export async function DELETE(
       return new NextResponse('Not found', { status: 404 })
     }
 
-    if (existingDocument.userId !== session.user.id) {
+    // Check if user has permission to delete the document
+    const hasAccess = await prisma.documentCollaborator.findFirst({
+      where: {
+        documentId,
+        userEmail: session.user.email,
+      },
+    })
+
+    if (!hasAccess && existingDocument.userId !== session.user.id) {
       return new NextResponse('Unauthorized', { status: 401 })
+    }
+
+    // 为协作者创建文档删除通知
+    try {
+      // 获取当前用户信息
+      const currentUser = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true, name: true },
+      })
+
+      // 获取所有协作者（除当前用户外）
+      const collaborators = await prisma.documentCollaborator.findMany({
+        where: {
+          documentId,
+          userEmail: {
+            not: session.user.email,
+          },
+        },
+      })
+
+      // 为每个协作者创建通知
+      for (const collaborator of collaborators) {
+        const collaboratorUser = await prisma.user.findUnique({
+          where: { email: collaborator.userEmail },
+          select: { id: true },
+        })
+
+        if (collaboratorUser) {
+          await prisma.notification.create({
+            data: {
+              type: 'document_deleted',
+              title: `${currentUser?.name || '用户'} 删除了文档`,
+              content: `文档《${existingDocument.title}》已被删除`,
+              userId: collaboratorUser.id,
+              documentId: documentId,
+            },
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error creating document delete notifications:', error)
     }
 
     // First delete all collaborators

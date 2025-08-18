@@ -28,7 +28,11 @@ interface Notification {
   commentId?: string
 }
 
-export function NotificationBell() {
+interface NotificationBellProps {
+  documentId?: string // 如果提供，则只显示与此文档相关的通知
+}
+
+export function NotificationBell({ documentId }: NotificationBellProps) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
@@ -38,7 +42,10 @@ export function NotificationBell() {
   // 获取通知
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('/api/notifications')
+      const url = documentId
+        ? `/api/notifications?documentId=${documentId}`
+        : '/api/notifications'
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         setNotifications(Array.isArray(data) ? data : [])
@@ -55,7 +62,10 @@ export function NotificationBell() {
   // 获取未读数量
   const fetchUnreadCount = async () => {
     try {
-      const response = await fetch('/api/notifications?countOnly=true')
+      const url = documentId
+        ? `/api/notifications?countOnly=true&documentId=${documentId}`
+        : '/api/notifications?countOnly=true'
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         setUnreadCount(data?.count || 0)
@@ -93,7 +103,10 @@ export function NotificationBell() {
   const markAllAsRead = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/notifications?markAllAsRead=true', {
+      const url = documentId
+        ? `/api/notifications?markAllAsRead=true&documentId=${documentId}`
+        : '/api/notifications?markAllAsRead=true'
+      const response = await fetch(url, {
         method: 'PATCH',
       })
 

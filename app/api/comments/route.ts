@@ -103,6 +103,42 @@ export async function POST(req: Request) {
       },
     })
 
+    // 创建评论回复通知
+    if (replyToCommentId) {
+      try {
+        const originalComment = await prisma.comment.findUnique({
+          where: { id: replyToCommentId },
+          include: {
+            user: {
+              select: { id: true, name: true },
+            },
+          },
+        })
+
+        if (originalComment && originalComment.userId !== user.id) {
+          // 获取文档信息
+          const document = await prisma.document.findUnique({
+            where: { id: documentId },
+            select: { title: true },
+          })
+
+          // 为原评论作者创建通知
+          await prisma.notification.create({
+            data: {
+              type: 'comment_reply',
+              title: `${user.name} 回复了你的评论`,
+              content: `在文档《${document?.title || '未知文档'}》中回复了你的评论`,
+              userId: originalComment.userId,
+              documentId: documentId,
+              commentId: comment.id,
+            },
+          })
+        }
+      } catch (error) {
+        console.error('Error creating reply notification:', error)
+      }
+    }
+
     // 处理@提及
     let aiProcessingResults: string[] = []
     let documentModified = false

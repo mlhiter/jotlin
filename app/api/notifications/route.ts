@@ -13,6 +13,7 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const unreadOnly = searchParams.get('unreadOnly') === 'true'
     const countOnly = searchParams.get('countOnly') === 'true'
+    const documentId = searchParams.get('documentId')
 
     // 根据邮箱查找用户
     const user = await prisma.user.findUnique({
@@ -25,11 +26,18 @@ export async function GET(req: Request) {
 
     if (countOnly) {
       try {
+        const whereClause: any = {
+          userId: user.id,
+          isRead: false,
+        }
+
+        // 如果指定了documentId，则只计算与该文档相关的通知
+        if (documentId) {
+          whereClause.documentId = documentId
+        }
+
         const count = await prisma.notification.count({
-          where: {
-            userId: user.id,
-            isRead: false,
-          },
+          where: whereClause,
         })
         console.log(`Notification count for user ${user.id}:`, count)
         return NextResponse.json({ count })
@@ -40,10 +48,17 @@ export async function GET(req: Request) {
     }
 
     try {
+      const whereClause: any = {
+        userId: user.id,
+      }
+
+      // 如果指定了documentId，则只获取与该文档相关的通知
+      if (documentId) {
+        whereClause.documentId = documentId
+      }
+
       const notifications = await prisma.notification.findMany({
-        where: {
-          userId: user.id,
-        },
+        where: whereClause,
         orderBy: {
           createdAt: 'desc',
         },
@@ -80,6 +95,7 @@ export async function PATCH(req: Request) {
     const { searchParams } = new URL(req.url)
     const notificationId = searchParams.get('id')
     const markAllAsRead = searchParams.get('markAllAsRead') === 'true'
+    const documentId = searchParams.get('documentId')
 
     // 根据邮箱查找用户
     const user = await prisma.user.findUnique({
@@ -91,11 +107,18 @@ export async function PATCH(req: Request) {
     }
 
     if (markAllAsRead) {
+      const whereClause: any = {
+        userId: user.id,
+        isRead: false,
+      }
+
+      // 如果指定了documentId，则只标记与该文档相关的通知为已读
+      if (documentId) {
+        whereClause.documentId = documentId
+      }
+
       const result = await prisma.notification.updateMany({
-        where: {
-          userId: user.id,
-          isRead: false,
-        },
+        where: whereClause,
         data: {
           isRead: true,
         },

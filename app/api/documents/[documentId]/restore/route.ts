@@ -18,6 +18,9 @@ export async function PUT(
       where: {
         id: documentId,
       },
+      include: {
+        collaborators: true,
+      },
     })
 
     if (!existingDocument) {
@@ -73,6 +76,39 @@ export async function PUT(
     })
 
     await recursiveRestore(documentId)
+
+    // 为协作者创建文档恢复通知
+    try {
+      // 获取当前用户信息
+      const currentUser = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true, name: true },
+      })
+
+      // 为所有协作者创建通知
+      for (const collaborator of existingDocument.collaborators) {
+        if (collaborator.userEmail !== session.user.email) {
+          const collaboratorUser = await prisma.user.findUnique({
+            where: { email: collaborator.userEmail },
+            select: { id: true },
+          })
+
+          if (collaboratorUser) {
+            await prisma.notification.create({
+              data: {
+                type: 'document_restored',
+                title: `${currentUser?.name || '用户'} 恢复了文档`,
+                content: `文档《${existingDocument.title}》已从归档中恢复`,
+                userId: collaboratorUser.id,
+                documentId: documentId,
+              },
+            })
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error creating document restore notifications:', error)
+    }
 
     const updatedDocument = await prisma.document.findUnique({
       where: {

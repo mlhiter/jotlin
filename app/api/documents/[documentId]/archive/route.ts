@@ -66,6 +66,39 @@ export async function PUT(
 
     await recursiveArchive(documentId)
 
+    // 为协作者创建文档归档通知
+    try {
+      // 获取当前用户信息
+      const currentUser = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true, name: true },
+      })
+
+      // 为所有协作者创建通知
+      for (const collaborator of existingDocument.collaborators) {
+        if (collaborator.userEmail !== session.user.email) {
+          const collaboratorUser = await prisma.user.findUnique({
+            where: { email: collaborator.userEmail },
+            select: { id: true },
+          })
+
+          if (collaboratorUser) {
+            await prisma.notification.create({
+              data: {
+                type: 'document_archived',
+                title: `${currentUser?.name || '用户'} 归档了文档`,
+                content: `文档《${existingDocument.title}》已被归档`,
+                userId: collaboratorUser.id,
+                documentId: documentId,
+              },
+            })
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error creating document archive notifications:', error)
+    }
+
     const updatedDocument = await prisma.document.findUnique({
       where: {
         id: documentId,
