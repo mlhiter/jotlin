@@ -59,8 +59,8 @@ export async function GET(req: Request) {
           return false
         }
 
-        // 只有在最后查看时间之后创建/更新的邀请才算未读
-        const invitationTime = inv.updatedAt || inv.createdAt
+        // 只有在最后查看时间之后创建的邀请才算未读
+        const invitationTime = inv.createdAt
         const isAfterLastView =
           new Date(invitationTime) > new Date(inboxLastViewedAt)
 

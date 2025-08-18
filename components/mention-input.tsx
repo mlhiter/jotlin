@@ -103,9 +103,9 @@ export function MentionInput({
         suggestions.push({
           type: 'user',
           display: name, // 显示用户名而不是邮箱
-          value: username,
+          value: email, // 使用完整邮箱作为value
           email: email,
-          avatar: collaborator.userImage,
+          avatar: collaborator.userImage || undefined,
         })
       }
     })

@@ -54,7 +54,7 @@ export async function GET(
     ]
 
     // 去重邮箱
-    const uniqueEmails = [...new Set(collaboratorEmails)]
+    const uniqueEmails = Array.from(new Set(collaboratorEmails))
 
     // 批量获取用户信息
     const usersInfo = await prisma.user.findMany({

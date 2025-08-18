@@ -310,7 +310,8 @@ const CommentItem = ({
                   comment.replyToComment?.user.name
                     ? `@${comment.replyToComment.user.name}: ${comment.content}`
                     : comment.content,
-                  parseMentions(comment.content)
+                  parseMentions(comment.content),
+                  collaborators
                 ),
               }}
             />

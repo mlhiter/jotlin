@@ -71,10 +71,10 @@ function detectRecursiveJSON(content: string): {
   try {
     const parsed = JSON.parse(content)
 
-    function extractDeepestValidJSON(
+    const extractDeepestValidJSON = (
       current: any,
       depth = 0
-    ): { content?: any; depth: number } {
+    ): { content?: any; depth: number } => {
       if (depth > 15) {
         return { depth }
       }

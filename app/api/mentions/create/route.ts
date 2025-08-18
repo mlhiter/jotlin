@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/libs/auth'
-import { prisma } from '@/libs/prisma'
+import { processMentions } from '@/libs/mention-service'
 import { ParsedMention } from '@/libs/mention-parser'
 
 export async function POST(req: Request) {
@@ -24,6 +24,11 @@ export async function POST(req: Request) {
       documentTitle: string
     } = await req.json()
 
+    console.log(
+      '📧 Processing mentions:',
+      mentions.map((m) => `${m.type}:${m.targetEmail || 'AI'}`).join(', ')
+    )
+
     if (
       !mentions ||
       !commentId ||
@@ -34,56 +39,20 @@ export async function POST(req: Request) {
       return new NextResponse('Missing required fields', { status: 400 })
     }
 
-    const notifications = []
+    // 使用统一的mention处理服务
+    const result = await processMentions({
+      mentions,
+      commentId,
+      documentId,
+      mentionerName,
+      documentTitle,
+    })
 
-    for (const mention of mentions) {
-      if (mention.type === 'user' && mention.targetEmail) {
-        // 查找被@的用户
-        const targetUser = await prisma.user.findUnique({
-          where: { email: mention.targetEmail },
-        })
-
-        if (targetUser) {
-          // 创建@提及记录
-          const mentionRecord = await prisma.mention.create({
-            data: {
-              type: 'user',
-              targetUserId: targetUser.id,
-              targetEmail: targetUser.email,
-              commentId: commentId,
-            },
-          })
-
-          // 创建通知
-          const notification = await prisma.notification.create({
-            data: {
-              type: 'mention',
-              title: `${mentionerName} 在评论中@了你`,
-              content: `在文档《${documentTitle}》的评论中提到了你`,
-              userId: targetUser.id,
-              documentId: documentId,
-              commentId: commentId,
-              mentionId: mentionRecord.id,
-            },
-          })
-
-          notifications.push(notification)
-        }
-      } else if (mention.type === 'ai') {
-        // 创建AI提及记录
-        const mentionRecord = await prisma.mention.create({
-          data: {
-            type: 'ai',
-            commentId: commentId,
-          },
-        })
-
-        // AI提及不需要创建通知，但需要返回mention记录
-        notifications.push({ type: 'ai', mentionId: mentionRecord.id })
-      }
+    if (result.success) {
+      return NextResponse.json(result.notifications)
+    } else {
+      return new NextResponse(result.error || 'Internal Error', { status: 500 })
     }
-
-    return NextResponse.json(notifications)
   } catch (error) {
     console.error('[MENTIONS_CREATE]', error)
     return new NextResponse('Internal Error', { status: 500 })

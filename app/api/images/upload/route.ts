@@ -51,9 +51,5 @@ export async function POST(req: Request) {
   }
 }
 
-export const config = {
-  api: {
-    bodyParser: false,
-    sizeLimit: '4mb',
-  },
-}
+// Next.js 14 App Router handles file uploads differently
+// No need for explicit config

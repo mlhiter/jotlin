@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/libs/auth'
 import { prisma } from '@/libs/prisma'
 import { parseMentions, validateMentions } from '@/libs/mention-parser'
+import { processMentions } from '@/libs/mention-service'
 import {
   processAIMentionDirect,
   applyAIModification,
@@ -57,6 +58,16 @@ export async function POST(req: Request) {
 
     // 验证@提及
     const validMentions = validateMentions(mentions, allCollaborators)
+    if (validMentions.length > 0) {
+      console.log(
+        '🎯 Found valid mentions:',
+        validMentions.map((m) => ({
+          type: m.type,
+          targetEmail: m.targetEmail,
+          originalText: m.originalText,
+        }))
+      )
+    }
 
     // 计算回复顺序
     let replyOrder = 0
@@ -146,28 +157,22 @@ export async function POST(req: Request) {
 
     if (validMentions.length > 0) {
       try {
-        // 创建通知 - 通过API调用
-        const mentionResponse = await fetch(
-          `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/mentions/create`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Cookie: req.headers.get('cookie') || '', // 传递认证信息
-            },
-            body: JSON.stringify({
-              mentions: validMentions,
-              commentId: comment.id,
-              documentId,
-              mentionerName: user.name,
-              documentTitle: document.title,
-            }),
-          }
-        )
+        // 创建通知 - 直接调用函数
+        const result = await processMentions({
+          mentions: validMentions,
+          commentId: comment.id,
+          documentId,
+          mentionerName: user.name,
+          documentTitle: document.title,
+        })
 
-        let notifications = []
-        if (mentionResponse.ok) {
-          notifications = await mentionResponse.json()
+        if (result.success) {
+          console.log(
+            '✅ Mentions processed successfully, notifications created:',
+            result.notifications.length
+          )
+        } else {
+          console.error('❌ Mention processing failed:', result.error)
         }
 
         // 处理AI提及
@@ -289,7 +294,10 @@ export async function POST(req: Request) {
           }
         }
       } catch (mentionError) {
-        console.error('Error processing mentions:', mentionError)
+        console.error('❌ Error processing mentions:', mentionError)
+        console.error(
+          '❌ Mention processing failed, but comment was still created'
+        )
         // 提及处理失败不应该影响评论创建
       }
     }
