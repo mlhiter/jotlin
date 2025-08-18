@@ -5,13 +5,69 @@ export interface NotificationData {
   title: string
   content: string
   userId: string
+  priority?: string
   documentId?: string
+  documentTitle?: string
   commentId?: string
   mentionId?: string
+  invitationId?: string
+  senderId?: string
+  senderName?: string
+  senderEmail?: string
+}
+
+export interface UnifiedNotificationData {
+  type:
+    | 'invitation'
+    | 'mention'
+    | 'comment_reply'
+    | 'comment_added'
+    | 'document_shared'
+    | 'document_deleted'
+    | 'ai_response'
+  title: string
+  content: string
+  userId: string
+  priority?: 'high' | 'medium' | 'low'
+  documentId?: string
+  documentTitle?: string
+  commentId?: string
+  mentionId?: string
+  invitationId?: string
+  senderId?: string
+  senderName?: string
+  senderEmail?: string
 }
 
 /**
- * 创建通知
+ * 创建统一通知 (新的统一通知系统)
+ */
+export async function createUnifiedNotification(data: UnifiedNotificationData) {
+  try {
+    const response = await fetch('/api/notifications/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...data,
+        priority: data.priority || 'medium',
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to create unified notification')
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error creating unified notification:', error)
+    throw new Error('Failed to create unified notification')
+  }
+}
+
+/**
+ * 创建通知 (保持向后兼容)
  */
 export async function createNotification(data: NotificationData) {
   try {

@@ -9,8 +9,21 @@ export async function POST(req: Request) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    const { type, title, content, userId, documentId, commentId, mentionId } =
-      await req.json()
+    const {
+      type,
+      title,
+      content,
+      userId,
+      priority,
+      documentId,
+      documentTitle,
+      commentId,
+      mentionId,
+      invitationId,
+      senderId,
+      senderName,
+      senderEmail,
+    } = await req.json()
 
     if (!type || !title || !content || !userId) {
       return new NextResponse('Missing required fields', { status: 400 })
@@ -22,9 +35,15 @@ export async function POST(req: Request) {
         title,
         content,
         userId,
+        priority: priority || 'medium',
         documentId,
+        documentTitle,
         commentId,
         mentionId,
+        invitationId,
+        senderId,
+        senderName,
+        senderEmail,
       },
     })
 

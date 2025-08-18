@@ -22,15 +22,15 @@ import {
 } from '@/components/ui/popover'
 import { useSearch } from '@/stores/search'
 import { useSettings } from '@/stores/settings'
-import { useInvitationStore } from '@/stores/invitation'
 import { useSession } from '@/hooks/use-session'
+import { useUnifiedNotifications } from '@/hooks/use-unified-notifications'
 
 import Item from './item'
 import Navbar from './navbar'
 import TrashBox from './trash-box'
 import UserItem from './user-item'
 import DocumentList from './document-list'
-import InboxContent from './inbox-content'
+import { UnifiedInboxContent } from './unified-inbox-content'
 import { ChatList } from './chat-list'
 import { useDocumentActions } from '@/hooks/use-document-actions'
 
@@ -42,28 +42,15 @@ const Navigation = () => {
   const queryClient = useQueryClient()
   const { createDocument } = useDocumentActions()
   const isMobile = useMediaQuery('(max-width:768px)')
-  const { unreadCount, fetchInvitations, fetchUnreadCount } =
-    useInvitationStore()
+  const { unreadCount } = useUnifiedNotifications()
   const { user } = useSession()
-
-  useEffect(() => {
-    if (user?.email) {
-      fetchInvitations(user.email)
-
-      // 设置定期刷新未读数量，每30秒检查一次（比刷新整个列表更轻量）
-      const interval = setInterval(() => {
-        fetchUnreadCount(user.email)
-      }, 30000)
-
-      return () => clearInterval(interval)
-    }
-  }, [user?.email, fetchInvitations, fetchUnreadCount])
 
   const isResizingRef = useRef(false)
   const sidebarRef = useRef<ElementRef<'aside'>>(null)
   const navbarRef = useRef<ElementRef<'div'>>(null)
   const [isResetting, setIsResetting] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isInboxOpen, setIsInboxOpen] = useState(false)
 
   useEffect(() => {
     if (isMobile) {
@@ -165,7 +152,7 @@ const Navigation = () => {
           <UserItem />
           <Item onClick={search.onOpen} label="Search" icon={Search} isSearch />
           <Item onClick={settings.onOpen} label="Settings" icon={Settings} />
-          <Popover>
+          <Popover open={isInboxOpen} onOpenChange={setIsInboxOpen}>
             <PopoverTrigger className="group flex min-h-[27px] w-full items-center py-1 pl-3 pr-3 text-sm font-medium text-muted-foreground hover:bg-primary/5">
               <div className="relative mr-2">
                 <Inbox className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
@@ -176,9 +163,9 @@ const Navigation = () => {
               <span className="truncate">Inbox</span>
             </PopoverTrigger>
             <PopoverContent
-              className="mt-4 w-96 p-4"
+              className="mt-4 w-auto p-0"
               side={isMobile ? 'bottom' : 'right'}>
-              <InboxContent />
+              <UnifiedInboxContent onClose={() => setIsInboxOpen(false)} />
             </PopoverContent>
           </Popover>
           <Item onClick={handleCreate} label="New Page" icon={PlusCircle} />

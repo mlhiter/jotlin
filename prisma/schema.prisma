@@ -215,16 +215,24 @@ model Mention {
 
 model Notification {
   id         String   @id @default(uuid())
-  type       String   // "mention", "comment_reply", etc.
+  type       String   // "invitation", "mention", "comment_reply", "comment_added", "document_shared", "document_deleted", "ai_response"
   title      String
   content    String   @db.Text
   isRead     Boolean  @default(false)
+  priority   String   @default("medium") // "high", "medium", "low"
   createdAt  DateTime @default(now())
 
   // 相关资源
-  documentId String?
-  commentId  String?
-  mentionId  String?
+  documentId    String?
+  documentTitle String? // 缓存文档标题，避免额外查询
+  commentId     String?
+  mentionId     String?
+  invitationId  String? // 关联邀请
+
+  // 发送者信息（缓存，避免额外查询）
+  senderId    String?
+  senderName  String?
+  senderEmail String?
 
   // Relations
   userId String
@@ -232,4 +240,7 @@ model Notification {
 
   @@index([userId])
   @@index([isRead])
+  @@index([type])
+  @@index([priority])
+  @@index([createdAt])
 }
