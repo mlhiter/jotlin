@@ -23,6 +23,7 @@ model User {
   emailVerified       Boolean      @default(false)
   imageUrl            String?
   username            String?
+  inboxLastViewedAt   DateTime?
   documents           Document[]   @relation("UserDocuments")
   invitationsReceived Invitation[] @relation("ReceivedInvitations")
   invitationsSent     Invitation[] @relation("SentInvitations")

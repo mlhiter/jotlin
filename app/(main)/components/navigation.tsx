@@ -42,21 +42,22 @@ const Navigation = () => {
   const queryClient = useQueryClient()
   const { createDocument } = useDocumentActions()
   const isMobile = useMediaQuery('(max-width:768px)')
-  const { unreadCount, fetchInvitations } = useInvitationStore()
+  const { unreadCount, fetchInvitations, fetchUnreadCount } =
+    useInvitationStore()
   const { user } = useSession()
 
   useEffect(() => {
     if (user?.email) {
       fetchInvitations(user.email)
 
-      // 设置定期刷新邀请列表，每10秒检查一次
+      // 设置定期刷新未读数量，每30秒检查一次（比刷新整个列表更轻量）
       const interval = setInterval(() => {
-        fetchInvitations(user.email)
-      }, 10000)
+        fetchUnreadCount(user.email)
+      }, 30000)
 
       return () => clearInterval(interval)
     }
-  }, [user?.email, fetchInvitations])
+  }, [user?.email, fetchInvitations, fetchUnreadCount])
 
   const isResizingRef = useRef(false)
   const sidebarRef = useRef<ElementRef<'aside'>>(null)

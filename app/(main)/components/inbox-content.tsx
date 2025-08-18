@@ -12,17 +12,16 @@ import InviteItem from './invite-item'
 
 const InboxContent = () => {
   const { user } = useSession()
-  const { invitations, fetchInvitations, markAsRead } = useInvitationStore()
+  const { invitations, fetchInvitations, markInboxAsViewed } =
+    useInvitationStore()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  // 当 Inbox 弹窗打开时，标记所有邀请为已读
+  // 当 Inbox 弹窗打开时，标记inbox为已查看
   useEffect(() => {
-    if (invitations && user?.email) {
-      invitations.forEach((invitation) => {
-        markAsRead(invitation.id, user.email)
-      })
+    if (user?.email) {
+      markInboxAsViewed(user.email)
     }
-  }, [invitations, user?.email, markAsRead])
+  }, [user?.email, markInboxAsViewed])
 
   const handleRefresh = async () => {
     if (!user?.email || isRefreshing) return

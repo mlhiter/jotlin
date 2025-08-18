@@ -9,6 +9,8 @@ type InvitationStore = {
   unreadCount: number
 
   fetchInvitations: (email: string) => Promise<void>
+  fetchUnreadCount: (email: string) => Promise<void>
+  markInboxAsViewed: (email: string) => Promise<void>
   markAsRead: (id: string, userEmail: string) => void
   getUnreadCount: () => number
 
@@ -32,24 +34,43 @@ export const useInvitationStore = create(
     fetchInvitations: async (email) => {
       const invitations = await invitationApi.getByEmail(email)
 
-      // 计算未读数量：
-      // 1. 如果当前用户是被邀请人(collaboratorEmail)且未回复，算作未读
-      // 2. 如果当前用户是邀请人(userEmail)且收到了回复，算作未读
-      const newUnreadCount = invitations.filter((inv) => {
-        if (inv.collaboratorEmail === email) {
-          // 当前用户是被邀请人，未回复的邀请算作未读
-          return !inv.isReplied
-        } else if (inv.userEmail === email) {
-          // 当前用户是邀请人，已回复的邀请算作未读（需要查看回复结果）
-          return inv.isReplied
-        }
-        return false
-      }).length
-
       set((state) => {
         state.invitations = invitations
-        state.unreadCount = newUnreadCount
       })
+
+      // 同时获取未读数量
+      await get().fetchUnreadCount(email)
+    },
+
+    fetchUnreadCount: async (email) => {
+      try {
+        const response = await fetch(
+          `/api/invitations/get-by-email?email=${encodeURIComponent(email)}&countOnly=true`
+        )
+        if (response.ok) {
+          const data = await response.json()
+          set((state) => {
+            state.unreadCount = data.count || 0
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching unread count:', error)
+      }
+    },
+
+    markInboxAsViewed: async (email) => {
+      try {
+        const response = await fetch('/api/users/mark-inbox-viewed', {
+          method: 'POST',
+        })
+
+        if (response.ok) {
+          // 标记为已查看后，重新获取未读数量
+          await get().fetchUnreadCount(email)
+        }
+      } catch (error) {
+        console.error('Error marking inbox as viewed:', error)
+      }
     },
 
     markAsRead: (id: string, userEmail: string) => {
