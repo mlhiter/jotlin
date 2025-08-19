@@ -6,7 +6,6 @@ import { useParams } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 import { type BlockNoteEditor } from '@blocknote/core'
 
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import {

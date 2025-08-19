@@ -276,13 +276,16 @@ const ChatPage = () => {
   useEffect(() => {
     if (messages) {
       // Check if there are existing messages to determine if requirement was already submitted
-      if (messages.length > 0 && !requirementSubmitted) {
+      if (messages.length > 0) {
         setRequirementSubmitted(true)
       }
 
       setLocalMessages((prevLocal) => {
+        // Only keep temp messages from the current chat, not from previous chats
         const tempMessages = prevLocal.filter(
-          (msg) => msg.id.startsWith('temp-') || msg.id.startsWith('ai-')
+          (msg) =>
+            (msg.id.startsWith('temp-') || msg.id.startsWith('ai-')) &&
+            msg.chatId === chatId
         )
 
         if (tempMessages.length > 0) {
@@ -314,7 +317,7 @@ const ChatPage = () => {
       })
       setMessages(messages)
     }
-  }, [messages, setMessages, requirementSubmitted])
+  }, [messages, setMessages, chatId])
 
   useEffect(() => {
     scrollToBottom()
@@ -322,10 +325,17 @@ const ChatPage = () => {
 
   useEffect(() => {
     setUserScrolled(false)
-    setLocalMessages([])
-    setRequirementSubmitted(false) // Reset requirement submission state when switching chats
+    // Don't clear localMessages immediately - let it be handled by the messages effect
+    setRequirementSubmitted(false)
     resetGeneration() // Reset document generation state when switching chats
   }, [chatId, resetGeneration])
+
+  // Separate effect to handle requirementSubmitted based on messages
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      setRequirementSubmitted(true)
+    }
+  }, [messages, chatId])
 
   const handleSend = () => {
     if (!input.trim() || sendMessageMutation.isPending || isTyping) return
