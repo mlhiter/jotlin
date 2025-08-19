@@ -19,6 +19,7 @@ import { cn } from '@/libs/utils'
 import { RequirementGenerator } from '@/components/requirement-generator'
 import DocumentGenerationProgress from '@/components/document-generation-progress'
 import { useDocumentGeneration } from '@/hooks/use-document-generation'
+import ChatExportMenu from '@/components/chat-export-menu'
 
 const ChatPage = () => {
   const params = useParams()
@@ -491,25 +492,36 @@ const ChatPage = () => {
       <div className="border-b">
         <div className="flex items-center justify-between p-4 pb-2">
           <h1 className="text-xl font-semibold">{chat?.title}</h1>
-          {!requirementSubmitted ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                // Scroll to requirement generator
-                const reqGenerator = document.getElementById(
-                  'requirement-generator'
-                )
-                reqGenerator?.scrollIntoView({ behavior: 'smooth' })
-              }}
-              className="text-sm text-muted-foreground hover:text-foreground">
-              Start inputting requirement →
-            </Button>
-          ) : (
-            <div className="text-sm text-muted-foreground">
-              ✅ Requirement submitted, you can start chatting
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {chat?.documents && chat.documents.length > 0 && (
+              <ChatExportMenu
+                chatId={chatId}
+                chatTitle={chat.title}
+                chatDescription={chat.description || undefined}
+                documents={chat.documents}
+                disabled={chatLoading}
+              />
+            )}
+            {!requirementSubmitted ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  // Scroll to requirement generator
+                  const reqGenerator = document.getElementById(
+                    'requirement-generator'
+                  )
+                  reqGenerator?.scrollIntoView({ behavior: 'smooth' })
+                }}
+                className="text-sm text-muted-foreground hover:text-foreground">
+                Start inputting requirement →
+              </Button>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                ✅ Requirement submitted, you can start chatting
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Requirement Generator - Always visible in header area */}
