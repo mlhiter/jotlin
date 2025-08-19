@@ -19,8 +19,9 @@ import {
 import { useSession } from '@/hooks/use-session'
 import { parseMentions, formatMentionsInText } from '@/libs/mention-parser'
 import { MentionInput } from '@/components/mention-input'
-import { MoreHorizontal, Edit, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Edit, Trash2, Loader2 } from 'lucide-react'
 import { useRealtimeComments } from '@/hooks/use-realtime-comments'
+import { Spinner } from '@/components/spinner'
 
 interface Comment {
   id: string
@@ -1401,7 +1402,11 @@ export function PositionedCommentList({
   }, [comments.length, newCommentBlockId, updateCommentPositions])
 
   if (isLoading) {
-    return <div className="p-4">Loading comments...</div>
+    return (
+      <div className="flex h-32 w-full items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
   }
 
   if (comments.length === 0 && !newCommentBlockId) {
