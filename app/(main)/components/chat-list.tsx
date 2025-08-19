@@ -258,14 +258,15 @@ export const ChatList = ({}: ChatListProps) => {
                       hideActions={true}
                     />
                   ))}
-                {/* Add new document button */}
-                <Item
-                  onClick={() => handleCreateDocument(chat.id)}
-                  icon={Plus}
-                  level={2}
-                  label="Add a page"
-                  hideActions={true}
-                />
+                {chat.documents && chat.documents.length > 0 && (
+                  <Item
+                    onClick={() => handleCreateDocument(chat.id)}
+                    icon={Plus}
+                    level={2}
+                    label="Add a page"
+                    hideActions={true}
+                  />
+                )}
               </>
             )}
           </div>
