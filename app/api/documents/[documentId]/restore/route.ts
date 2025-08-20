@@ -27,7 +27,22 @@ export async function PUT(
       return new NextResponse('Not found', { status: 404 })
     }
 
-    if (existingDocument.userId !== session.user.id) {
+    // Check if user has permission to restore the document (owner or collaborator)
+    const document = await prisma.document.findUnique({
+      where: { id: documentId },
+      include: { collaborators: true },
+    })
+
+    if (!document) {
+      return new NextResponse('Document not found', { status: 404 })
+    }
+
+    const isOwner = document.userId === session.user.id
+    const isCollaborator = document.collaborators.some(
+      (collaborator) => collaborator.userEmail === session.user.email
+    )
+
+    if (!isOwner && !isCollaborator) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 

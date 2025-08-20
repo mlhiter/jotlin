@@ -23,6 +23,7 @@ export async function DELETE(
       },
       include: {
         user: true,
+        collaborators: true,
       },
     })
 
@@ -30,9 +31,13 @@ export async function DELETE(
       return new NextResponse('Not found', { status: 404 })
     }
 
-    const userEmail = session.user.email
+    // Check if user has permission to modify the document (owner or collaborator)
+    const isOwner = existingDocument.userId === session.user.id
+    const isCollaborator = existingDocument.collaborators.some(
+      (collaborator) => collaborator.userEmail === session.user.email
+    )
 
-    if (existingDocument.user.email !== userEmail) {
+    if (!isOwner && !isCollaborator) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 

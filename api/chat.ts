@@ -5,6 +5,9 @@ import {
   UpdateChatRequest,
   Message,
   CreateMessageRequest,
+  ChatInvitation,
+  CreateChatInvitationRequest,
+  UpdateChatInvitationRequest,
 } from '@/types/chat'
 
 export const chatApi = {
@@ -143,5 +146,32 @@ export const chatApi = {
     } catch (error) {
       onError(error as Error)
     }
+  },
+
+  // Chat collaboration APIs
+  getCollaborators: async (chatId: string) => {
+    return GET<any[]>(`/api/chats/${chatId}/collaborators`)
+  },
+
+  removeCollaborator: async (chatId: string, collaboratorEmail: string) => {
+    return DELETE(`/api/chats/${chatId}/collaborators`, { collaboratorEmail })
+  },
+
+  createInvitation: async (
+    chatId: string,
+    data: CreateChatInvitationRequest
+  ) => {
+    return POST<ChatInvitation>(`/api/chats/${chatId}/invitations/create`, data)
+  },
+
+  updateInvitation: async (
+    chatId: string,
+    invitationId: string,
+    data: UpdateChatInvitationRequest
+  ) => {
+    return PUT<ChatInvitation>(
+      `/api/chats/${chatId}/invitations/${invitationId}`,
+      data
+    )
   },
 }

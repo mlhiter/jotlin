@@ -16,11 +16,13 @@ export async function GET(
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    const chat = await prisma.chat.findFirst({
+    const chat = await prisma.chat.findUnique({
       where: {
         id: params.chatId,
-        userId: session.user.id,
         isDeleted: false,
+      },
+      include: {
+        collaborators: true,
       },
     })
 
@@ -28,9 +30,29 @@ export async function GET(
       return new NextResponse('Not found', { status: 404 })
     }
 
+    // Check if user has access to this chat (owner or collaborator)
+    const isOwner = chat.userId === session.user.id
+    const isCollaborator = chat.collaborators.some(
+      (collaborator) => collaborator.userEmail === session.user.email
+    )
+
+    if (!isOwner && !isCollaborator) {
+      return new NextResponse('Unauthorized', { status: 401 })
+    }
+
     const messages = await prisma.message.findMany({
       where: {
         chatId: params.chatId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'asc',

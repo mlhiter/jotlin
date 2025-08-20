@@ -21,6 +21,7 @@ import { toast } from 'sonner'
 import { cn } from '@/libs/utils'
 import { useUnifiedNotifications } from '@/hooks/use-unified-notifications'
 import { invitationApi } from '@/api/invitation'
+import { chatApi } from '@/api/chat'
 import { useQueryClient } from '@tanstack/react-query'
 import { useDocumentStore } from '@/stores/document'
 
@@ -47,7 +48,13 @@ const notificationConfig = {
     icon: UserPlus,
     color: 'text-blue-500',
     bgColor: 'bg-blue-50',
-    label: '邀请',
+    label: '文档邀请',
+  },
+  chat_invitation: {
+    icon: MessageSquare,
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-50',
+    label: '聊天邀请',
   },
   mention: {
     icon: MessageSquare,
@@ -137,7 +144,7 @@ export function UnifiedInboxContent({
     }
   }
 
-  // 接受邀请
+  // 接受文档邀请
   const acceptInvitation = async (invitationId: string, documentId: string) => {
     try {
       // 接受邀请
@@ -167,12 +174,46 @@ export function UnifiedInboxContent({
     }
   }
 
+  // 接受聊天邀请
+  const acceptChatInvitation = async (
+    chatInvitationId: string,
+    chatId: string
+  ) => {
+    try {
+      // 接受聊天邀请
+      await chatApi.updateInvitation(chatId, chatInvitationId, {
+        isAccepted: true,
+      })
+
+      // 刷新聊天相关的所有缓存
+      queryClient.invalidateQueries({ queryKey: ['chats'] })
+      queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
+      queryClient.invalidateQueries({ queryKey: ['messages', chatId] })
+      queryClient.invalidateQueries({
+        queryKey: ['chat-collaborators', chatId],
+      })
+
+      // 刷新文档列表以获得新的文档访问权限
+      queryClient.invalidateQueries({ queryKey: ['documents'] })
+
+      // 重新获取通知列表以更新状态
+      await fetchNotifications()
+
+      toast.success('聊天邀请已接受')
+      return true
+    } catch (error) {
+      console.error('Error accepting chat invitation:', error)
+      toast.error('接受聊天邀请失败')
+      return false
+    }
+  }
+
   // 处理通知点击
   const handleNotificationClick = async (notification: UnifiedNotification) => {
     try {
       // 根据通知类型进行不同的处理
       if (notification.type === 'invitation' && notification.invitationId) {
-        // 邀请类型：检查是否已经接受过
+        // 文档邀请类型：检查是否已经接受过
         if (notification.isRead) {
           // 已经接受过的邀请，直接跳转到文档
           if (notification.documentId) {
@@ -189,6 +230,31 @@ export function UnifiedInboxContent({
           if (success && notification.documentId) {
             // 接受成功后跳转到文档
             router.push(`/documents/${notification.documentId}`)
+            // 关闭弹窗
+            onClose?.()
+          }
+        }
+      } else if (
+        notification.type === 'chat_invitation' &&
+        (notification as any).chatInvitationId
+      ) {
+        // 聊天邀请类型：检查是否已经接受过
+        if (notification.isRead) {
+          // 已经接受过的邀请，直接跳转到聊天
+          if ((notification as any).chatId) {
+            router.push(`/chats/${(notification as any).chatId}`)
+            onClose?.()
+          }
+        } else {
+          // 未接受的邀请，自动接受并跳转到聊天
+          const success = await acceptChatInvitation(
+            (notification as any).chatInvitationId,
+            (notification as any).chatId!
+          )
+
+          if (success && (notification as any).chatId) {
+            // 接受成功后跳转到聊天
+            router.push(`/chats/${(notification as any).chatId}`)
             // 关闭弹窗
             onClose?.()
           }

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Send, Paperclip } from 'lucide-react'
+import { Send, Paperclip, Bot, User } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { chatApi } from '@/api/chat'
@@ -15,16 +15,34 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/libs/utils'
 import { RequirementGenerator } from '@/components/requirement-generator'
 import DocumentGenerationProgress from '@/components/document-generation-progress'
 import { useDocumentGeneration } from '@/hooks/use-document-generation'
 import ChatExportMenu from '@/components/chat-export-menu'
+import ChatInvite from '@/components/chat-invite'
+import { useSession } from '@/hooks/use-session'
+
+// Helper function to get user initials
+const getInitials = (name: string | null, email: string) => {
+  if (name && name.trim()) {
+    return name
+      .trim()
+      .split(' ')
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+  return email.slice(0, 2).toUpperCase()
+}
 
 const ChatPage = () => {
   const params = useParams()
   const chatId = params.chatId as string
   const queryClient = useQueryClient()
+  const { user } = useSession()
   const {
     setActiveChat,
     setMessages,
@@ -493,6 +511,7 @@ const ChatPage = () => {
         <div className="flex items-center justify-between p-4 pb-2">
           <h1 className="text-xl font-semibold">{chat?.title}</h1>
           <div className="flex items-center gap-2">
+            <ChatInvite chatId={chatId} />
             {chat?.documents && chat.documents.length > 0 && (
               <ChatExportMenu
                 chatId={chatId}
@@ -547,35 +566,90 @@ const ChatPage = () => {
         ref={scrollAreaRef}
         onScrollCapture={handleScroll}>
         <div className="space-y-4">
-          {localMessages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                'flex',
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              )}>
+          {localMessages.map((message) => {
+            // For user messages, use the message's user info if available, otherwise current user
+            const messageUser =
+              message.role === 'user' && message.user ? message.user : user
+            const displayName =
+              messageUser?.name || messageUser?.email || 'Unknown User'
+
+            return (
               <div
+                key={message.id}
                 className={cn(
-                  'max-w-[70%] rounded-lg px-4 py-2',
-                  message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
+                  'flex items-start gap-3',
+                  message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                 )}>
-                <p className="whitespace-pre-wrap">
-                  {message.content
-                    ?.replace(/__DOCUMENTS_GENERATED__:.*?\n/g, '')
-                    ?.replace(/__DOCUMENT_GENERATION_START__:.*?\n/g, '')
-                    ?.replace(/__GENERATION_PROGRESS__:.*?\n/g, '')}
-                </p>
-                <p className="mt-1 text-xs opacity-70">
-                  {new Date(message.createdAt).toLocaleTimeString()}
-                </p>
+                <div
+                  className={cn(
+                    'flex flex-col items-center gap-1',
+                    message.role === 'user' ? 'items-end' : 'items-start'
+                  )}>
+                  {/* Avatar */}
+                  <Avatar className="h-8 w-8 flex-shrink-0">
+                    {message.role === 'user' ? (
+                      <>
+                        <AvatarImage src={messageUser?.image || undefined} />
+                        <AvatarFallback className="bg-blue-500 text-xs font-medium text-white">
+                          {messageUser?.email ? (
+                            getInitials(messageUser.name, messageUser.email)
+                          ) : (
+                            <User className="h-4 w-4" />
+                          )}
+                        </AvatarFallback>
+                      </>
+                    ) : (
+                      <AvatarFallback className="bg-primary">
+                        <Bot className="h-4 w-4 text-primary-foreground" />
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+
+                  {/* User Name */}
+                  <span className="max-w-20 truncate text-xs text-muted-foreground">
+                    {message.role === 'user' ? displayName : 'AI助手'}
+                  </span>
+                </div>
+
+                {/* Message Content */}
+                <div
+                  className={cn(
+                    'max-w-[70%] rounded-lg px-4 py-2',
+                    message.role === 'user'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted'
+                  )}>
+                  <p className="whitespace-pre-wrap">
+                    {message.content
+                      ?.replace(/__DOCUMENTS_GENERATED__:.*?\n/g, '')
+                      ?.replace(/__DOCUMENT_GENERATION_START__:.*?\n/g, '')
+                      ?.replace(/__GENERATION_PROGRESS__:.*?\n/g, '')}
+                  </p>
+                  <p className="mt-1 text-xs opacity-70">
+                    {new Date(message.createdAt).toLocaleTimeString()}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
 
           {(isTyping || streamingContent) && (
-            <div className="flex justify-start">
+            <div className="flex items-start gap-3">
+              <div className="flex flex-col items-start gap-1">
+                {/* AI Avatar */}
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  <AvatarFallback className="bg-primary">
+                    <Bot className="h-4 w-4 text-primary-foreground" />
+                  </AvatarFallback>
+                </Avatar>
+
+                {/* AI Name */}
+                <span className="max-w-20 truncate text-xs text-muted-foreground">
+                  AI助手
+                </span>
+              </div>
+
+              {/* AI Message Content */}
               <div className="max-w-[70%] rounded-lg bg-muted px-4 py-2">
                 {streamingContent ? (
                   <div>
@@ -604,7 +678,22 @@ const ChatPage = () => {
 
           {/* Document Generation Progress */}
           {documentGenerationState.documents.length > 0 && (
-            <div className="flex justify-start">
+            <div className="flex items-start gap-3">
+              <div className="flex flex-col items-start gap-1">
+                {/* AI Avatar */}
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  <AvatarFallback className="bg-primary">
+                    <Bot className="h-4 w-4 text-primary-foreground" />
+                  </AvatarFallback>
+                </Avatar>
+
+                {/* AI Name */}
+                <span className="max-w-20 truncate text-xs text-muted-foreground">
+                  AI助手
+                </span>
+              </div>
+
+              {/* Document Generation Content */}
               <div className="max-w-[85%]">
                 <DocumentGenerationProgress
                   documents={documentGenerationState.documents}

@@ -27,11 +27,23 @@ export async function PUT(
       return new NextResponse('Not found', { status: 404 })
     }
 
-    // 只有文档创建者才能归档文档（即使有协作者）
-    if (existingDocument.userId !== session.user.id) {
-      return new NextResponse('Only document owner can archive the document', {
-        status: 403,
-      })
+    // Check if user has permission to archive the document (owner or collaborator)
+    const document = await prisma.document.findUnique({
+      where: { id: documentId },
+      include: { collaborators: true },
+    })
+
+    if (!document) {
+      return new NextResponse('Document not found', { status: 404 })
+    }
+
+    const isOwner = document.userId === session.user.id
+    const isCollaborator = document.collaborators.some(
+      (collaborator) => collaborator.userEmail === session.user.email
+    )
+
+    if (!isOwner && !isCollaborator) {
+      return new NextResponse('Unauthorized', { status: 401 })
     }
 
     const recursiveArchive = async (documentId: string) => {

@@ -24,10 +24,9 @@ export async function POST(
       return new Response('Message is required', { status: 400 })
     }
 
-    const chat = await prisma.chat.findFirst({
+    const chat = await prisma.chat.findUnique({
       where: {
         id: params.chatId,
-        userId: session.user.id,
         isDeleted: false,
       },
       include: {
@@ -44,11 +43,22 @@ export async function POST(
             content: true,
           },
         },
+        collaborators: true,
       },
     })
 
     if (!chat) {
       return new Response('Chat not found', { status: 404 })
+    }
+
+    // Check if user has access to this chat (owner or collaborator)
+    const isOwner = chat.userId === session.user.id
+    const isCollaborator = chat.collaborators.some(
+      (collaborator) => collaborator.userEmail === session.user.email
+    )
+
+    if (!isOwner && !isCollaborator) {
+      return new Response('Unauthorized', { status: 401 })
     }
 
     const conversationHistory = chat.messages.map((msg) => {

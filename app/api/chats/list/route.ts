@@ -13,7 +13,8 @@ export async function GET() {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    const chats = await prisma.chat.findMany({
+    // Get chats where user is owner or collaborator
+    const ownedChats = await prisma.chat.findMany({
       where: {
         userId: session.user.id,
         isDeleted: false,
@@ -36,11 +37,52 @@ export async function GET() {
             createdAt: true,
           },
         },
-      },
-      orderBy: {
-        updatedAt: 'desc',
+        collaborators: true,
       },
     })
+
+    const collaboratedChats = await prisma.chat.findMany({
+      where: {
+        collaborators: {
+          some: {
+            userEmail: session.user.email,
+          },
+        },
+        isDeleted: false,
+      },
+      include: {
+        documents: {
+          select: {
+            id: true,
+            title: true,
+            icon: true,
+          },
+        },
+        messages: {
+          take: 1,
+          orderBy: {
+            createdAt: 'desc',
+          },
+          select: {
+            content: true,
+            createdAt: true,
+          },
+        },
+        collaborators: true,
+      },
+    })
+
+    // Combine and deduplicate chats
+    const allChats = [...ownedChats, ...collaboratedChats]
+    const uniqueChats = allChats.filter(
+      (chat, index, self) => index === self.findIndex((c) => c.id === chat.id)
+    )
+
+    // Sort by updatedAt desc
+    const chats = uniqueChats.sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    )
 
     return NextResponse.json(chats)
   } catch (error) {

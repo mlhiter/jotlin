@@ -68,15 +68,22 @@ export async function PUT(
       return new NextResponse('Not found', { status: 404 })
     }
 
-    // Check if user has permission to update the document
-    const hasAccess = await prisma.documentCollaborator.findFirst({
-      where: {
-        documentId,
-        userEmail: session.user.email,
-      },
+    // Check if user has permission to update the document (owner or collaborator)
+    const document = await prisma.document.findUnique({
+      where: { id: documentId },
+      include: { collaborators: true },
     })
 
-    if (!hasAccess) {
+    if (!document) {
+      return new NextResponse('Document not found', { status: 404 })
+    }
+
+    const isOwner = document.userId === session.user.id
+    const isCollaborator = document.collaborators.some(
+      (collaborator) => collaborator.userEmail === session.user.email
+    )
+
+    if (!isOwner && !isCollaborator) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
@@ -119,15 +126,22 @@ export async function DELETE(
       return new NextResponse('Not found', { status: 404 })
     }
 
-    // Check if user has permission to delete the document
-    const hasAccess = await prisma.documentCollaborator.findFirst({
-      where: {
-        documentId,
-        userEmail: session.user.email,
-      },
+    // Check if user has permission to delete the document (owner or collaborator)
+    const document = await prisma.document.findUnique({
+      where: { id: documentId },
+      include: { collaborators: true },
     })
 
-    if (!hasAccess && existingDocument.userId !== session.user.id) {
+    if (!document) {
+      return new NextResponse('Document not found', { status: 404 })
+    }
+
+    const isOwner = document.userId === session.user.id
+    const isCollaborator = document.collaborators.some(
+      (collaborator) => collaborator.userEmail === session.user.email
+    )
+
+    if (!isOwner && !isCollaborator) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 

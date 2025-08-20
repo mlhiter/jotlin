@@ -69,7 +69,7 @@ export async function GET(req: Request) {
       }
 
       // 获取统一通知 + 邀请转换的通知
-      const [notifications, invitations] = await Promise.all([
+      const [notifications, invitations, chatInvitations] = await Promise.all([
         // 获取现有的通知
         prisma.notification.findMany({
           where: whereClause,
@@ -78,7 +78,7 @@ export async function GET(req: Request) {
           },
           take: limit,
         }),
-        // 获取邀请并转换为通知格式（只有当未过滤类型或过滤类型为 invitation 时才查询）
+        // 获取文档邀请并转换为通知格式（只有当未过滤类型或过滤类型为 invitation 时才查询）
         !type || type === 'invitation'
           ? prisma.invitation.findMany({
               where: {
@@ -100,9 +100,36 @@ export async function GET(req: Request) {
               take: limit,
             })
           : Promise.resolve([]),
+        // 获取聊天邀请并转换为通知格式
+        !type || type === 'chat_invitation'
+          ? prisma.chatInvitation.findMany({
+              where: {
+                collaboratorEmail: session.user.email,
+                isValid: true,
+              },
+              include: {
+                user: {
+                  select: {
+                    name: true,
+                    email: true,
+                    image: true,
+                  },
+                },
+                chat: {
+                  select: {
+                    title: true,
+                  },
+                },
+              },
+              orderBy: {
+                createdAt: 'desc',
+              },
+              take: limit,
+            })
+          : Promise.resolve([]),
       ])
 
-      // 将邀请转换为统一通知格式
+      // 将文档邀请转换为统一通知格式
       const invitationNotifications = await Promise.all(
         invitations.map(async (invitation) => {
           // 获取文档信息
@@ -129,8 +156,31 @@ export async function GET(req: Request) {
         })
       )
 
+      // 将聊天邀请转换为统一通知格式
+      const chatInvitationNotifications = chatInvitations.map(
+        (chatInvitation) => ({
+          id: `chat_invitation_${chatInvitation.id}`,
+          type: 'chat_invitation',
+          title: `${chatInvitation.user.name || chatInvitation.userEmail} 邀请你协作聊天`,
+          content: `你被邀请协作聊天「${chatInvitation.chat.title}」`,
+          isRead: chatInvitation.isReplied, // 已回复视为已读
+          priority: 'high',
+          createdAt: chatInvitation.createdAt.toISOString(),
+          chatId: chatInvitation.chatId,
+          chatTitle: chatInvitation.chat.title,
+          chatInvitationId: chatInvitation.id,
+          senderId: null,
+          senderName: chatInvitation.user.name,
+          senderEmail: chatInvitation.userEmail,
+        })
+      )
+
       // 合并并按时间排序
-      const allNotifications = [...notifications, ...invitationNotifications]
+      const allNotifications = [
+        ...notifications,
+        ...invitationNotifications,
+        ...chatInvitationNotifications,
+      ]
         .sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

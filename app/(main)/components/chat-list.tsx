@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronRight,
   FileIcon,
+  Users,
 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -190,12 +191,15 @@ export const ChatList = ({}: ChatListProps) => {
                 )}
                 <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate font-medium">
+                  <div className="flex items-center truncate font-medium">
                     {chat.title}
                     {chat.documents && chat.documents.length > 0 && (
                       <span className="ml-2 text-xs text-muted-foreground">
                         ({chat.documents.length})
                       </span>
+                    )}
+                    {chat.collaborators && chat.collaborators.length > 0 && (
+                      <Users className="ml-2 h-3 w-3 text-muted-foreground" />
                     )}
                   </div>
                   {chat.messages?.[0] && (

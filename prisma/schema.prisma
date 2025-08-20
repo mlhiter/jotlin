@@ -25,8 +25,10 @@ model User {
   username            String?
   inboxLastViewedAt   DateTime?
   documents           Document[]   @relation("UserDocuments")
-  invitationsReceived Invitation[] @relation("ReceivedInvitations")
-  invitationsSent     Invitation[] @relation("SentInvitations")
+  invitationsReceived     Invitation[]     @relation("ReceivedInvitations")
+  invitationsSent         Invitation[]     @relation("SentInvitations")
+  chatInvitationsReceived ChatInvitation[] @relation("ReceivedChatInvitations")
+  chatInvitationsSent     ChatInvitation[] @relation("SentChatInvitations")
   accounts            Account[]
   chats               Chat[]       @relation("UserChats")
   messages            Message[]    @relation("UserMessages")
@@ -135,17 +137,19 @@ model Verification {
 }
 
 model Chat {
-  id          String     @id @default(uuid())
-  title       String
-  description String?
-  isArchived  Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  userId      String
-  isDeleted   Boolean    @default(false)
-  documents   Document[] @relation("ChatDocuments")
-  user        User       @relation("UserChats", fields: [userId], references: [id])
-  messages    Message[]  @relation("ChatMessages")
+  id            String              @id @default(uuid())
+  title         String
+  description   String?
+  isArchived    Boolean             @default(false)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  userId        String
+  isDeleted     Boolean             @default(false)
+  documents     Document[]          @relation("ChatDocuments")
+  user          User                @relation("UserChats", fields: [userId], references: [id])
+  messages      Message[]           @relation("ChatMessages")
+  collaborators ChatCollaborator[]
+  invitations   ChatInvitation[]
 
   @@index([userId])
   @@map("chat")
@@ -243,4 +247,35 @@ model Notification {
   @@index([type])
   @@index([priority])
   @@index([createdAt])
+}
+
+model ChatCollaborator {
+  id        String   @id @default(uuid())
+  chatId    String
+  userEmail String
+  createdAt DateTime @default(now())
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userEmail])
+  @@index([userEmail])
+  @@map("chat_collaborator")
+}
+
+model ChatInvitation {
+  id                String   @id @default(uuid())
+  chatId            String
+  userEmail         String
+  collaboratorEmail String
+  isAccepted        Boolean  @default(false)
+  isReplied         Boolean  @default(false)
+  isValid           Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  chat              Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  collaborator      User     @relation("ReceivedChatInvitations", fields: [collaboratorEmail], references: [email])
+  user              User     @relation("SentChatInvitations", fields: [userEmail], references: [email])
+
+  @@index([chatId])
+  @@index([userEmail])
+  @@index([collaboratorEmail])
+  @@map("chat_invitation")
 }
