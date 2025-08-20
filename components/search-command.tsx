@@ -1,9 +1,9 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import { File } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
 
 import {
   CommandDialog,
@@ -14,10 +14,10 @@ import {
   CommandList,
 } from '@/components/ui/command'
 
-import { Doc } from '@/types/document'
-import { useSearch } from '@/stores/search'
-import { useSession } from '@/hooks/use-session'
 import { documentApi } from '@/api/document'
+import { useSession } from '@/hooks/use-session'
+import { useSearch } from '@/stores/search'
+import { Doc } from '@/types/document'
 
 export const SearchCommand = () => {
   const router = useRouter()

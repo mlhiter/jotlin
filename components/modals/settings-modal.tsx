@@ -1,9 +1,10 @@
-import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+
+import { useSettings } from '@/stores/settings'
 
 import { ModeToggle } from '../mode-toggle'
 
-import { useSettings } from '@/stores/settings'
 
 const SettingsModal = () => {
   const settings = useSettings()

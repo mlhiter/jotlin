@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
 import { useParams } from 'next/navigation'
+import { useState } from 'react'
 
-import { SingleImageDropzone } from '../single-image-dropzone'
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 
 import { imageApi } from '@/api/image'
-import { useCoverImage } from '@/stores/cover-image'
 import { useDocumentActions } from '@/hooks/use-document-actions'
+import { useCoverImage } from '@/stores/cover-image'
+
+import { SingleImageDropzone } from '../single-image-dropzone'
 
 const CoverImageModal = () => {
   const params = useParams()

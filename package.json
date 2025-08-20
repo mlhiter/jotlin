@@ -3,14 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "concurrently \"npm run dev:app\" \"npm run dev:agent\" \"npm run dev:webrtc\"",
+    "dev:app": "next dev -p 3001",
     "dev:agent": "cd agent-server/fastapi && . venv/bin/activate && python run.py",
+    "dev:webrtc": "PORT=4444 node node_modules/y-webrtc/bin/server.js",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "prettier": "prettier --write .",
-    "shadcn-ui": "npx shadcn@latest add",
-    "webrtc": "PORT=4444 node node_modules/y-webrtc/bin/server.js"
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "code-quality": "npm run lint && npm run type-check",
+    "clean-console": "grep -r \"console\\.\" --include=\"*.ts\" --include=\"*.tsx\" app/ components/ libs/ agent-server/fastapi/ hooks/ stores/ | grep -v \"console.warn\\|console.error\\|console.info\"",
+    "format": "prettier --write .",
+    "shadcn-ui": "npx shadcn@latest add"
   },
   "dependencies": {
     "@blocknote/core": "^0.34.0",
@@ -81,6 +85,7 @@
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
     "autoprefixer": "^10.0.1",
+    "concurrently": "^9.2.0",
     "eslint": "^8",
     "eslint-config-next": "14.0.3",
     "postcss": "^8",

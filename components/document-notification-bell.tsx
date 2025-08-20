@@ -1,16 +1,18 @@
 'use client'
 
 import { Bell } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState } from 'react'
+
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useUnifiedNotifications } from '@/hooks/use-unified-notifications'
+
 import { UnifiedInboxContent } from '@/app/(main)/components/unified-inbox-content'
-import { useEffect, useState } from 'react'
+import { useUnifiedNotifications } from '@/hooks/use-unified-notifications'
 
 interface DocumentNotificationBellProps {
   documentId: string

@@ -1,6 +1,9 @@
 'use client'
 
+import { FileText, Sparkles } from 'lucide-react'
 import { useState } from 'react'
+
+import { RequirementGenerator } from '@/components/requirement-generator'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,8 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { RequirementGenerator } from '@/components/requirement-generator'
-import { FileText, Sparkles } from 'lucide-react'
 
 interface ChatRequirementIntegrationProps {
   chatMessage?: string // Optional: pre-fill with current chat message

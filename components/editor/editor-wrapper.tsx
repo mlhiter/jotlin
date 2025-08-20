@@ -1,9 +1,9 @@
 'use client'
 
-import * as Y from 'yjs'
 import dynamic from 'next/dynamic'
-import { WebrtcProvider } from 'y-webrtc'
 import { memo, useEffect, useState } from 'react'
+import { WebrtcProvider } from 'y-webrtc'
+import * as Y from 'yjs'
 
 interface EditorWrapperProps {
   onChange: (value: string) => void
@@ -99,12 +99,12 @@ const EditorWrapper = memo(
             'status',
             ({ connected }: { connected: boolean }) => {
               if (connected) {
-                console.log('WebRTC connection established successfully')
+                console.info('WebRTC connection established successfully')
                 setIsConnecting(false)
                 setError(null)
                 retryCount = 0
               } else {
-                console.log(
+                console.info(
                   'WebRTC connection lost, attempting to reconnect...'
                 )
                 handleConnectionError(new Error('Connection lost'))
@@ -128,7 +128,7 @@ const EditorWrapper = memo(
         if (retryCount < maxRetries) {
           retryCount++
           setTimeout(() => {
-            console.log(`Retrying connection (attempt ${retryCount})...`)
+            console.info(`Retrying connection (attempt ${retryCount})...`)
             cleanup()
             initializeCollaboration()
           }, retryDelay * retryCount)

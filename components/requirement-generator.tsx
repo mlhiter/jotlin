@@ -1,8 +1,11 @@
 'use client'
 
+import { AlertCircle, Save } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
+
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Card,
   CardContent,
@@ -11,14 +14,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
-import { AlertCircle, Save } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+
 import {
   requirementApi,
   GeneratedDocument,
   RequirementGenerationStatus,
 } from '@/api/requirements'
-import { toast } from 'sonner'
 import { cn } from '@/libs/utils'
 
 interface RequirementGeneratorProps {
@@ -88,8 +90,6 @@ export function RequirementGenerator({
 
   const handleSaveDocument = async (doc: GeneratedDocument) => {
     try {
-      console.log('Saving document:', doc.title)
-
       // Create document using the markdown API
       const { documentApi } = await import('@/api/document')
       const response = await documentApi.createFromMarkdown({

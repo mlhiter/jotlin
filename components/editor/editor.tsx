@@ -1,21 +1,21 @@
 'use client'
 
-import * as Y from 'yjs'
-import DOMPurify from 'dompurify'
-import { marked } from 'marked'
-import { useTheme } from 'next-themes'
 import { BlockNoteEditor } from '@blocknote/core'
-import { en } from '@blocknote/core/locales'
-import { WebrtcProvider } from 'y-webrtc'
-import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import { BlockNoteView } from '@blocknote/mantine'
 import { filterSuggestionItems, PartialBlock } from '@blocknote/core'
+import { en } from '@blocknote/core/locales'
+import { BlockNoteView } from '@blocknote/mantine'
 import {
   SuggestionMenuController,
   FormattingToolbarController,
 } from '@blocknote/react'
+import DOMPurify from 'dompurify'
 import { ChevronRight, MessageCircle } from 'lucide-react'
+import { marked } from 'marked'
+import { useParams } from 'next/navigation'
+import { useTheme } from 'next-themes'
+import { useCallback, useEffect, useState } from 'react'
+import { WebrtcProvider } from 'y-webrtc'
+import * as Y from 'yjs'
 
 import '@blocknote/mantine/style.css'
 import '@blocknote/core/fonts/inter.css'
@@ -23,9 +23,10 @@ import '@blocknote/core/fonts/inter.css'
 import { imageApi } from '@/api/image'
 import { useSession } from '@/hooks/use-session'
 import { getRandomLightColor } from '@/libs/utils'
+
 import { blockSchema, getCustomSlashMenuItems } from './editor-blocks'
-import { formattingToolbar } from './editor-toolbars'
 import { PositionedCommentList } from './editor-blocks/positioned-comment-list'
+import { formattingToolbar } from './editor-toolbars'
 
 interface EditorProps {
   onChange: (value: string) => void
@@ -174,25 +175,12 @@ const Editor = ({
     if (initialMarkdown && !initialContent) {
       const loadMarkdownContent = async () => {
         try {
-          console.log(
-            'Loading initial markdown content, length:',
-            initialMarkdown.length
-          )
           const blocks = await editor.tryParseMarkdownToBlocks(initialMarkdown)
-          console.log(
-            'Successfully parsed markdown to',
-            blocks.length,
-            'blocks'
-          )
           editor.replaceBlocks(editor.document, blocks)
         } catch (error) {
           console.error(
             'Failed to parse initial markdown with BlockNote parser:',
             error
-          )
-          console.log(
-            'Markdown preview:',
-            initialMarkdown.substring(0, 300) + '...'
           )
 
           // Fallback: use our enhanced markdown parser
@@ -203,11 +191,6 @@ const Editor = ({
             const fallbackBlocks = await convertMarkdownToBlocks(
               initialMarkdown,
               null
-            )
-            console.log(
-              'Fallback parser created',
-              fallbackBlocks.length,
-              'blocks'
             )
             editor.replaceBlocks(editor.document, fallbackBlocks)
           } catch (fallbackError) {

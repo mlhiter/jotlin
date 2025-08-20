@@ -1,11 +1,12 @@
 'use client'
 
-import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
-import { documentApi } from '@/api/document'
 import ConfirmModal from '@/components/modals/confirm-modal'
 import { Button } from '@/components/ui/button'
+
+import { documentApi } from '@/api/document'
 
 interface BannerProps {
   documentId: string

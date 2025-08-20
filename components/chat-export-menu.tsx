@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { toast } from 'sonner'
-import { Download, Copy, Archive } from 'lucide-react'
 import { useCreateBlockNote } from '@blocknote/react'
 import JSZip from 'jszip'
+import { Download, Copy, Archive } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
+
 import { documentApi } from '@/api/document'
 import { Doc } from '@/types/document'
 

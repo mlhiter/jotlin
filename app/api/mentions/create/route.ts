@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
+
 import { auth } from '@/libs/auth'
-import { processMentions } from '@/libs/mention-service'
 import { ParsedMention } from '@/libs/mention-parser'
+import { processMentions } from '@/libs/mention-service'
 
 export async function POST(req: Request) {
   try {
@@ -23,11 +24,6 @@ export async function POST(req: Request) {
       mentionerName: string
       documentTitle: string
     } = await req.json()
-
-    console.log(
-      '📧 Processing mentions:',
-      mentions.map((m) => `${m.type}:${m.targetEmail || 'AI'}`).join(', ')
-    )
 
     if (
       !mentions ||

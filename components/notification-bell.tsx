@@ -1,7 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { formatDistanceToNow } from 'date-fns'
 import { Bell, Check, CheckCheck } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
+
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,11 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { formatDistanceToNow } from 'date-fns'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
 
 interface Notification {
   id: string

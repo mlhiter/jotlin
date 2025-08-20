@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { Doc } from '@/types/document'
 import { useDocumentActions } from '@/hooks/use-document-actions'
+import { Doc } from '@/types/document'
 
 interface TitleProps {
   initialData: Doc

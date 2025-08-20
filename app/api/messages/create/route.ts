@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { NextResponse } from 'next/server'
+
 import { auth } from '@/libs/auth'
 import { prisma } from '@/libs/prisma'
 

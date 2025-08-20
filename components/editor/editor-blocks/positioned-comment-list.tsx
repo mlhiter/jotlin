@@ -1,13 +1,16 @@
 'use client'
 
-import { toast } from 'sonner'
-import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
-import { useParams } from 'next/navigation'
-import { formatDistanceToNow } from 'date-fns'
 import { type BlockNoteEditor } from '@blocknote/core'
+import { formatDistanceToNow } from 'date-fns'
+import { MoreHorizontal, Edit, Trash2, Loader2 } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
+import { toast } from 'sonner'
 
-import { Button } from '@/components/ui/button'
+import { MentionInput } from '@/components/mention-input'
+import { Spinner } from '@/components/spinner'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,12 +18,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+import { useRealtimeComments } from '@/hooks/use-realtime-comments'
 import { useSession } from '@/hooks/use-session'
 import { parseMentions, formatMentionsInText } from '@/libs/mention-parser'
-import { MentionInput } from '@/components/mention-input'
-import { MoreHorizontal, Edit, Trash2, Loader2 } from 'lucide-react'
-import { useRealtimeComments } from '@/hooks/use-realtime-comments'
-import { Spinner } from '@/components/spinner'
 
 interface Comment {
   id: string

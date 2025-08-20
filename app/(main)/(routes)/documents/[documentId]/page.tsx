@@ -1,17 +1,17 @@
 'use client'
 
-import { debounce } from 'lodash'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { debounce } from 'lodash'
 import { useEffect, useMemo, useCallback } from 'react'
 
 import Cover from '@/components/cover'
+import { EditorWrapper } from '@/components/editor/editor-wrapper'
 import Toolbar from '@/components/toolbar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { EditorWrapper } from '@/components/editor/editor-wrapper'
 
 import { documentApi } from '@/api/document'
-import { useDocumentStore } from '@/stores/document'
 import { analyzeContent } from '@/libs/content-detector'
+import { useDocumentStore } from '@/stores/document'
 
 interface DocumentIdPageProps {
   params: {

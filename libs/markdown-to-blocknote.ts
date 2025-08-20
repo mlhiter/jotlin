@@ -7,24 +7,17 @@ export async function convertMarkdownToBlocks(
   editor?: any
 ): Promise<any[]> {
   try {
-    console.log('Converting markdown to blocks, length:', markdown.length)
-
     if (editor && editor.tryParseMarkdownToBlocks) {
       // Use BlockNote's official markdown parser
-      console.log('Using BlockNote official parser')
       const blocks = await editor.tryParseMarkdownToBlocks(markdown)
-      console.log('BlockNote parser result:', blocks.length, 'blocks')
       return blocks
     }
 
     // Fallback: simple markdown to blocks conversion
-    console.log('Using fallback parser')
     const blocks = parseMarkdownFallback(markdown)
-    console.log('Fallback parser result:', blocks.length, 'blocks')
     return blocks
   } catch (error) {
     console.error('Failed to parse markdown:', error)
-    console.log('Markdown content preview:', markdown.substring(0, 200) + '...')
 
     // Enhanced fallback: split into paragraphs
     const paragraphs = markdown.split('\n\n').filter((p) => p.trim())

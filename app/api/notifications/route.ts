@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+
 import { auth } from '@/libs/auth'
 import { prisma } from '@/libs/prisma'
 
@@ -39,7 +40,6 @@ export async function GET(req: Request) {
         const count = await prisma.notification.count({
           where: whereClause,
         })
-        console.log(`Notification count for user ${user.id}:`, count)
         return NextResponse.json({ count })
       } catch (error) {
         console.error('Error counting notifications:', error)

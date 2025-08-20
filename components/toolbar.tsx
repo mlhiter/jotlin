@@ -4,11 +4,12 @@ import { ImageIcon, Smile, X } from 'lucide-react'
 import { ElementRef, useRef, useState } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 
-import { Button } from './ui/button'
-import IconPicker from './icon-picker'
+import { useDocumentActions } from '@/hooks/use-document-actions'
 import { useCoverImage } from '@/stores/cover-image'
 import { useDocumentStore } from '@/stores/document'
-import { useDocumentActions } from '@/hooks/use-document-actions'
+
+import IconPicker from './icon-picker'
+import { Button } from './ui/button'
 
 interface ToolbarProps {
   preview?: boolean

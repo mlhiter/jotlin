@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+
 import { Chat, Message } from '@/types/chat'
 
 interface ChatStore {

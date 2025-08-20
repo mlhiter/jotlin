@@ -2,6 +2,8 @@
 
 import { ChevronsLeftRight } from 'lucide-react'
 
+import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,8 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
 
 import { useSession } from '@/hooks/use-session'
 

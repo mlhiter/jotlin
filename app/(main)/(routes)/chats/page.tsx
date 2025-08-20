@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { MessageSquare } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { MessageSquare } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+
 import { chatApi } from '@/api/chat'
 
 const ChatsPage = () => {

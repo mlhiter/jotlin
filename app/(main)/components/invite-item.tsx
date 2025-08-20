@@ -1,24 +1,24 @@
 'use client'
 
-import { CheckCircle, FileIcon, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { CheckCircle, FileIcon, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 import { Spinner } from '@/components/spinner'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
-import { User } from '@/types/user'
-import { userApi } from '@/api/user'
-import { Invitation } from '@/types/invitation'
-import { useSession } from '@/hooks/use-session'
 import { documentApi } from '@/api/document'
 import { invitationApi } from '@/api/invitation'
-import { useInvitationStore } from '@/stores/invitation'
+import { userApi } from '@/api/user'
+import { useSession } from '@/hooks/use-session'
 import { useDocumentStore } from '@/stores/document'
+import { useInvitationStore } from '@/stores/invitation'
+import { Invitation } from '@/types/invitation'
+import { User } from '@/types/user'
 
 type UserInfo = Pick<User, 'name' | 'image'>
 
@@ -78,14 +78,14 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
       // 路由到被邀请的文档
       router.push(`/documents/${documentId}`)
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
   const reject = async () => {
     try {
       await updateInvitation({ id, isAccepted: false })
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

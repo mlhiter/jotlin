@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { formatDistanceToNow } from 'date-fns'
 import {
   Bell,
   Check,
@@ -11,18 +12,19 @@ import {
   Trash2,
   Bot,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
+
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { formatDistanceToNow } from 'date-fns'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { cn } from '@/libs/utils'
-import { useUnifiedNotifications } from '@/hooks/use-unified-notifications'
-import { invitationApi } from '@/api/invitation'
+
 import { chatApi } from '@/api/chat'
-import { useQueryClient } from '@tanstack/react-query'
+import { invitationApi } from '@/api/invitation'
+import { useUnifiedNotifications } from '@/hooks/use-unified-notifications'
+import { cn } from '@/libs/utils'
 import { useDocumentStore } from '@/stores/document'
 
 interface UnifiedNotification {

@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import {
   CheckCircle,
   Clock,
@@ -8,6 +7,8 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+
 import { cn } from '@/libs/utils'
 
 export interface DocumentGenerationProgressProps {

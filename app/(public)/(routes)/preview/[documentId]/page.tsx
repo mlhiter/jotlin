@@ -1,8 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
-import dynamic from 'next/dynamic'
 import { useQuery } from '@tanstack/react-query'
+import dynamic from 'next/dynamic'
+import { useMemo } from 'react'
 
 import Cover from '@/components/cover'
 import Toolbar from '@/components/toolbar'

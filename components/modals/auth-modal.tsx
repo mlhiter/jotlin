@@ -1,5 +1,6 @@
 import { Github } from 'lucide-react'
 
+import AuthSocialButton from '@/components/buttons/auth-social-button'
 import {
   Dialog,
   DialogContent,
@@ -8,10 +9,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 
-import AuthSocialButton from '@/components/buttons/auth-social-button'
-
-import { useAuth } from '@/stores/auth'
 import { useSession } from '@/hooks/use-session'
+import { useAuth } from '@/stores/auth'
 
 const SettingsModal = () => {
   const authModal = useAuth()

@@ -1,13 +1,13 @@
 'use client'
 
-import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 
 import { Spinner } from '@/components/spinner'
 import { Button } from '@/components/ui/button'
 
-import { useAuth } from '@/stores/auth'
 import { useSession } from '@/hooks/use-session'
+import { useAuth } from '@/stores/auth'
 
 const Heading = () => {
   const authModal = useAuth()

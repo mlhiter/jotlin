@@ -1,5 +1,8 @@
-import { TbCode } from 'react-icons/tb'
 import { createReactBlockSpec } from '@blocknote/react'
+import Prism, { highlight } from 'prismjs'
+import { TbCode } from 'react-icons/tb'
+import Editor from 'react-simple-code-editor'
+
 import {
   Select,
   SelectContent,
@@ -9,9 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+
 import { blockSchema } from './index'
-import Editor from 'react-simple-code-editor'
-import Prism, { highlight } from 'prismjs'
 import 'prismjs/themes/prism.css'
 
 const languageOptions = [
@@ -26,15 +28,12 @@ const languageOptions = [
   'java',
 ]
 
+// TODO: there do not load in time
 languageOptions.forEach((lang) => {
   if (lang === 'js' || lang === 'html' || lang === 'css') return
-  import(`prismjs/components/prism-${lang}`)
-    .then(() => {
-      console.log(`Prism language component for ${lang} loaded.`)
-    })
-    .catch((err) => {
-      console.error(`Failed to load Prism language component for ${lang}:`, err)
-    })
+  import(`prismjs/components/prism-${lang}`).catch((err) => {
+    console.error(`Failed to load Prism language component for ${lang}:`, err)
+  })
 })
 
 const fencedCodeBlock = createReactBlockSpec(

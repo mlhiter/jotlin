@@ -1,6 +1,7 @@
-import { prisma } from '@/libs/prisma'
 import { NextResponse } from 'next/server'
+
 import { auth } from '@/libs/auth'
+import { prisma } from '@/libs/prisma'
 
 export async function DELETE(
   req: Request,
@@ -47,7 +48,6 @@ export async function DELETE(
 
     return NextResponse.json(document)
   } catch (error) {
-    console.log('[DOCUMENT_COVER_IMAGE_DELETE]', error)
     return new NextResponse('Internal Error', { status: 500 })
   }
 }

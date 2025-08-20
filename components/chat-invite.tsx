@@ -1,9 +1,9 @@
 'use client'
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { User } from 'lucide-react'
 import { useState, FormEvent } from 'react'
 import { toast } from 'sonner'
-import { User } from 'lucide-react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -11,8 +11,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { useSession } from '@/hooks/use-session'
+
 import { chatApi } from '@/api/chat'
+import { useSession } from '@/hooks/use-session'
 
 interface ChatInviteProps {
   chatId: string

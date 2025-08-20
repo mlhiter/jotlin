@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 
 import AuthModal from '../modals/auth-modal'
-import SettingsModal from '../modals/settings-modal'
 import CoverImageModal from '../modals/cover-image-modal'
+import SettingsModal from '../modals/settings-modal'
 
 export const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false)

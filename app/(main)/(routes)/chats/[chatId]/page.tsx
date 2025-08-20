@@ -1,28 +1,29 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
-import { useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Send, Paperclip, Bot, User } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
+
+import ChatExportMenu from '@/components/chat-export-menu'
+import ChatInvite from '@/components/chat-invite'
+import DocumentGenerationProgress from '@/components/document-generation-progress'
+import { RequirementGenerator } from '@/components/requirement-generator'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/textarea'
 
 import { chatApi } from '@/api/chat'
 import { documentApi } from '@/api/document'
+import { useDocumentGeneration } from '@/hooks/use-document-generation'
+import { useSession } from '@/hooks/use-session'
 import { convertMarkdownToBlocks } from '@/libs/markdown-to-blocknote'
+import { cn } from '@/libs/utils'
 import { useChatStore } from '@/stores/chat'
 import { Message } from '@/types/chat'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { cn } from '@/libs/utils'
-import { RequirementGenerator } from '@/components/requirement-generator'
-import DocumentGenerationProgress from '@/components/document-generation-progress'
-import { useDocumentGeneration } from '@/hooks/use-document-generation'
-import ChatExportMenu from '@/components/chat-export-menu'
-import ChatInvite from '@/components/chat-invite'
-import { useSession } from '@/hooks/use-session'
 
 // Helper function to get user initials
 const getInitials = (name: string | null, email: string) => {
@@ -146,7 +147,7 @@ const ChatPage = () => {
 
                   try {
                     const progressData = JSON.parse(signalData)
-                    console.log('Generation progress update:', progressData)
+                    console.info('Generation progress update:', progressData)
                     updateProgress(progressData)
                     displayLine = false // Don't display this line
                   } catch (error) {
@@ -174,7 +175,7 @@ const ChatPage = () => {
 
                   try {
                     const data = JSON.parse(signalData)
-                    console.log('Document generation started:', data)
+                    console.info('Document generation started:', data)
                     // Initialize with analyzing state
                     startGeneration([
                       { title: '正在分析需求...', content: '' },
@@ -203,7 +204,7 @@ const ChatPage = () => {
 
                   try {
                     const documentData = JSON.parse(signalData)
-                    console.log(
+                    console.info(
                       'Successfully parsed document generation signal:',
                       documentData
                     )

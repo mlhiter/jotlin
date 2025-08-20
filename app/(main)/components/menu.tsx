@@ -1,8 +1,11 @@
 'use client'
 
-import { toast } from 'sonner'
+import { useCreateBlockNote } from '@blocknote/react'
+import { useQuery } from '@tanstack/react-query'
 import { MoreHorizontal, Trash, FolderUp, Download } from 'lucide-react'
+import { toast } from 'sonner'
 
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,14 +13,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useCreateBlockNote } from '@blocknote/react'
 
 import { documentApi } from '@/api/document'
-import { useSession } from '@/hooks/use-session'
-import { useQuery } from '@tanstack/react-query'
 import { useDocumentActions } from '@/hooks/use-document-actions'
+import { useSession } from '@/hooks/use-session'
 
 interface MenuProps {
   documentId: string

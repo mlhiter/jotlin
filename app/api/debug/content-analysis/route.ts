@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+
 import { analyzeContent } from '@/libs/content-detector'
 
 export async function POST(req: Request) {

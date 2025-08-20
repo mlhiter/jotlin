@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { auth } from '@/libs/auth'
-import { prisma } from '@/libs/prisma'
 import { convertMarkdownToBlocks } from '@/libs/markdown-to-blocknote'
+import { prisma } from '@/libs/prisma'
 
 export async function POST(req: Request) {
   try {
@@ -48,14 +48,6 @@ export async function POST(req: Request) {
     }
 
     try {
-      // Log the markdown content for debugging
-      console.log('Processing document:', title)
-      console.log('Markdown length:', markdownContent.length)
-      console.log(
-        'Markdown preview:',
-        markdownContent.substring(0, 500) + '...'
-      )
-
       // Check if the "markdown" content is actually already BlockNote JSON
       let content: string
       try {
@@ -65,17 +57,14 @@ export async function POST(req: Request) {
           possibleBlocks.length > 0 &&
           possibleBlocks[0]?.type
         ) {
-          console.log('Input is already BlockNote JSON format, using directly')
           content = markdownContent
         } else {
           throw new Error('Not BlockNote format')
         }
       } catch {
         // Input is actual markdown, convert it
-        console.log('Input is markdown, converting to BlockNote blocks')
         const blocks = await convertMarkdownToBlocks(markdownContent, null)
         content = JSON.stringify(blocks)
-        console.log('Successfully converted to', blocks.length, 'blocks')
       }
 
       // Create the document

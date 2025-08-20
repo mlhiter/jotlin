@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, Trash, Undo } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
-import { Input } from '@/components/ui/input'
-import { Spinner } from '@/components/spinner'
 import ConfirmModal from '@/components/modals/confirm-modal'
+import { Spinner } from '@/components/spinner'
+import { Input } from '@/components/ui/input'
 
 import { documentApi } from '@/api/document'
 import { useDocumentActions } from '@/hooks/use-document-actions'

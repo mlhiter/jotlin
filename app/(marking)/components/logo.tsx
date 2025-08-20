@@ -1,5 +1,5 @@
-import Image from 'next/image'
 import { Poppins } from 'next/font/google'
+import Image from 'next/image'
 
 import { cn } from '@/libs/utils'
 

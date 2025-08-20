@@ -1,8 +1,8 @@
 'use client'
 
-import { toast } from 'sonner'
-import { useState } from 'react'
 import { Check, Copy, Globe } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -11,9 +11,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-import { Doc } from '@/types/document'
-import { useOrigin } from '@/hooks/use-origin'
 import { useDocumentActions } from '@/hooks/use-document-actions'
+import { useOrigin } from '@/hooks/use-origin'
+import { Doc } from '@/types/document'
 
 interface PublishProps {
   initialData: Doc

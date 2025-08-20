@@ -2,13 +2,15 @@
 
 import { MenuIcon } from 'lucide-react'
 
-import Menu from './menu'
-import Title from './title'
+import { DocumentNotificationBell } from '@/components/document-notification-bell'
+
+import { useDocumentStore } from '@/stores/document'
+
 import Banner from './banner'
 import Invite from './invite'
+import Menu from './menu'
 import Publish from './publish'
-import { DocumentNotificationBell } from '@/components/document-notification-bell'
-import { useDocumentStore } from '@/stores/document'
+import Title from './title'
 
 interface NavbarProps {
   isCollapsed: boolean

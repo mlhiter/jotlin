@@ -1,17 +1,17 @@
 'use client'
 
-import { toast } from 'sonner'
-import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { Spinner } from '@/components/spinner'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 
-import { Doc } from '@/types/document'
 import { documentApi } from '@/api/document'
-import { useSession } from '@/hooks/use-session'
 import { userApi } from '@/api/user'
+import { useSession } from '@/hooks/use-session'
+import { Doc } from '@/types/document'
 
 interface InviteUserProps {
   collaborator: string

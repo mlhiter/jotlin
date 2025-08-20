@@ -3,9 +3,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { documentApi } from '@/api/document'
-import { InviteUser } from './invite-user'
 import { userApi } from '@/api/user'
 import { useSession } from '@/hooks/use-session'
+
+import { InviteUser } from './invite-user'
 
 interface UserBoardProps {
   documentId: string

@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import {
   ChevronsLeft,
   MenuIcon,
@@ -9,30 +10,30 @@ import {
   Inbox,
   MessageSquare,
 } from 'lucide-react'
-import { useMediaQuery } from 'usehooks-ts'
-import { ElementRef, useRef, useState, useEffect, useCallback } from 'react'
 import { useParams, usePathname } from 'next/navigation'
-import { useQueryClient } from '@tanstack/react-query'
+import { ElementRef, useRef, useState, useEffect, useCallback } from 'react'
+import { useMediaQuery } from 'usehooks-ts'
 
-import { cn } from '@/libs/utils'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { useSearch } from '@/stores/search'
-import { useSettings } from '@/stores/settings'
+
+import { useDocumentActions } from '@/hooks/use-document-actions'
 import { useSession } from '@/hooks/use-session'
 import { useUnifiedNotifications } from '@/hooks/use-unified-notifications'
+import { cn } from '@/libs/utils'
+import { useSearch } from '@/stores/search'
+import { useSettings } from '@/stores/settings'
 
+import { ChatList } from './chat-list'
+import DocumentList from './document-list'
 import Item from './item'
 import Navbar from './navbar'
 import TrashBox from './trash-box'
-import UserItem from './user-item'
-import DocumentList from './document-list'
 import { UnifiedInboxContent } from './unified-inbox-content'
-import { ChatList } from './chat-list'
-import { useDocumentActions } from '@/hooks/use-document-actions'
+import UserItem from './user-item'
 
 const Navigation = () => {
   const settings = useSettings()

@@ -1,22 +1,22 @@
 'use client'
 
-import Link from 'next/link'
 import { ArrowRightFromLine, Settings } from 'lucide-react'
+import Link from 'next/link'
 
-import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/spinner'
 import { ModeToggle } from '@/components/mode-toggle'
+import { Spinner } from '@/components/spinner'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
 
+import { useScrollTop } from '@/hooks/use-scroll-top'
+import { useSession } from '@/hooks/use-session'
 import { cn } from '@/libs/utils'
 import { useAuth } from '@/stores/auth'
-import { useSession } from '@/hooks/use-session'
-import { useScrollTop } from '@/hooks/use-scroll-top'
 
 import Logo from './logo'
 

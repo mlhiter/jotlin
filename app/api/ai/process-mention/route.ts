@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+
 import { auth } from '@/libs/auth'
 
 export async function POST(req: Request) {

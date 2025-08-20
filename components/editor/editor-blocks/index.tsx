@@ -1,8 +1,8 @@
+import { BlockNoteSchema, defaultBlockSpecs } from '@blocknote/core'
 import {
   DefaultReactSuggestionItem,
   getDefaultReactSlashMenuItems,
 } from '@blocknote/react'
-import { BlockNoteSchema, defaultBlockSpecs } from '@blocknote/core'
 
 import { fencedCodeBlock, insertFencedCodeBlock } from './fenced-code'
 

@@ -1,10 +1,10 @@
 'use client'
 
-import * as React from 'react'
-import Image from 'next/image'
-import { twMerge } from 'tailwind-merge'
 import { UploadCloudIcon, X } from 'lucide-react'
+import Image from 'next/image'
+import * as React from 'react'
 import { useDropzone, type DropzoneOptions } from 'react-dropzone'
+import { twMerge } from 'tailwind-merge'
 
 import { Spinner } from './spinner'
 

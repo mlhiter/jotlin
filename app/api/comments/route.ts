@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 
-import { auth } from '@/libs/auth'
-import { prisma } from '@/libs/prisma'
-import { parseMentions, validateMentions } from '@/libs/mention-parser'
-import { processMentions } from '@/libs/mention-service'
 import {
   processAIMentionDirect,
   applyAIModification,
 } from '@/libs/ai-mention-service'
+import { auth } from '@/libs/auth'
+import { parseMentions, validateMentions } from '@/libs/mention-parser'
+import { processMentions } from '@/libs/mention-service'
+import { prisma } from '@/libs/prisma'
 
 export async function POST(req: Request) {
   try {
@@ -58,16 +58,6 @@ export async function POST(req: Request) {
 
     // 验证@提及
     const validMentions = validateMentions(mentions, allCollaborators)
-    if (validMentions.length > 0) {
-      console.log(
-        '🎯 Found valid mentions:',
-        validMentions.map((m) => ({
-          type: m.type,
-          targetEmail: m.targetEmail,
-          originalText: m.originalText,
-        }))
-      )
-    }
 
     // 计算回复顺序
     let replyOrder = 0
@@ -166,15 +156,6 @@ export async function POST(req: Request) {
           documentTitle: document.title,
         })
 
-        if (result.success) {
-          console.log(
-            '✅ Mentions processed successfully, notifications created:',
-            result.notifications.length
-          )
-        } else {
-          console.error('❌ Mention processing failed:', result.error)
-        }
-
         // 处理AI提及
         const aiMentions = validMentions.filter((m) => m.type === 'ai')
         for (const aiMention of aiMentions) {
@@ -236,7 +217,6 @@ export async function POST(req: Request) {
                   newDocumentContent = result.newContent
                 }
               }
-              console.log('AI处理结果:', result.message)
 
               // AI创建回复评论
               try {
