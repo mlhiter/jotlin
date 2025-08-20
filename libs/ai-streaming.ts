@@ -5,6 +5,7 @@ import { createDocumentsFromRequirements } from '@/libs/requirement-document-gen
 
 export class StreamingChatAgent {
   private llm: ChatOpenAI
+  private intentCache: Map<string, boolean> = new Map()
 
   constructor() {
     this.llm = new ChatOpenAI({
@@ -26,10 +27,11 @@ export class StreamingChatAgent {
   ): AsyncGenerator<string, void, unknown> {
     try {
       // Check if this is a requirement generation trigger
-      const shouldGenerateRequirements = this.isRequirementGenerationTrigger(
-        userMessage,
-        conversationHistory
-      )
+      const shouldGenerateRequirements =
+        await this.isRequirementGenerationTrigger(
+          userMessage,
+          conversationHistory
+        )
 
       const systemPrompt = this.buildSystemPrompt(
         documentContext,
@@ -136,12 +138,12 @@ export class StreamingChatAgent {
   }
 
   /**
-   * Check if the user message indicates they want to create a project/software
+   * Check if the user message indicates they want to create a project/software using AI judgment
    */
-  private isRequirementGenerationTrigger(
+  private async isRequirementGenerationTrigger(
     userMessage: string,
     conversationHistory: BaseMessage[]
-  ): boolean {
+  ): Promise<boolean> {
     // Only trigger on first message or if no previous assistant responses
     const hasAssistantResponse = conversationHistory.some(
       (msg) => msg.constructor.name === 'AIMessage'
@@ -151,6 +153,65 @@ export class StreamingChatAgent {
       return false
     }
 
+    // Check cache first to avoid redundant AI calls
+    const cacheKey = userMessage.trim().toLowerCase()
+    if (this.intentCache.has(cacheKey)) {
+      return this.intentCache.get(cacheKey)!
+    }
+
+    try {
+      // Use AI to judge the intent
+      const judgmentPrompt = `Determine if the user wants to create a software project and needs requirement documents generated.
+
+Criteria for YES:
+✓ Wants to create/build/develop websites, apps, systems, platforms
+✓ Describes specific project features or requirements
+✓ Seeks development solutions or architecture advice
+✓ Expresses intent to build digital products
+
+Criteria for NO:
+✗ Pure technical Q&A or consultation
+✗ Document editing assistance
+✗ Learning tutorials or educational questions
+✗ General technical discussions
+
+User message: "${userMessage}"
+
+Answer only "YES" or "NO":`
+
+      const response = await this.llm.invoke([
+        { role: 'user', content: judgmentPrompt },
+      ])
+
+      const result = response.content.toString().trim().toUpperCase()
+      const needsRequirements = result.includes('YES')
+
+      // Cache the result for future use
+      this.intentCache.set(cacheKey, needsRequirements)
+
+      // Limit cache size to prevent memory leaks
+      if (this.intentCache.size > 100) {
+        const firstKey = this.intentCache.keys().next().value
+        if (firstKey) {
+          this.intentCache.delete(firstKey)
+        }
+      }
+
+      return needsRequirements
+    } catch (error) {
+      console.error('AI判断失败，使用关键词后备方案:', error)
+      // 降级到关键词判断作为后备方案
+      const fallbackResult = this.fallbackKeywordCheck(userMessage)
+      // Cache fallback result as well
+      this.intentCache.set(cacheKey, fallbackResult)
+      return fallbackResult
+    }
+  }
+
+  /**
+   * Fallback keyword-based check for requirement generation trigger
+   */
+  private fallbackKeywordCheck(userMessage: string): boolean {
     const lowerMessage = userMessage.toLowerCase()
 
     // Keywords that indicate project creation intent
@@ -186,6 +247,24 @@ export class StreamingChatAgent {
       'app',
       '应用程序',
       '软件',
+      // English keywords
+      'i want to create',
+      'i want to build',
+      'i want to develop',
+      'i need to create',
+      'i need to build',
+      'help me create',
+      'help me build',
+      'help me develop',
+      'website',
+      'application',
+      'system',
+      'platform',
+      'project',
+      'software',
+      'app',
+      'web app',
+      'mobile app',
     ]
 
     return projectKeywords.some((keyword) => lowerMessage.includes(keyword))
