@@ -1,17 +1,17 @@
 import { HumanMessage, AIMessage } from '@langchain/core/messages'
-import { headers } from 'next/headers'
+import { NextRequest } from 'next/server'
 
 import { streamingChatAgent } from '@/libs/ai-streaming'
 import { auth } from '@/libs/auth'
 import { prisma } from '@/libs/prisma'
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { chatId: string } }
 ) {
   try {
     const session = await auth.api.getSession({
-      headers: headers(),
+      headers: req.headers,
     })
 
     if (!session) {

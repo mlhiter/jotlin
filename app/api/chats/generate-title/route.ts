@@ -1,12 +1,11 @@
-import { headers } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/libs/auth'
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({
-      headers: headers(),
+      headers: req.headers,
     })
 
     if (!session) {

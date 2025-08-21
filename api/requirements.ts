@@ -42,7 +42,7 @@ import axios from 'axios'
 const pythonRequest = axios.create({
   baseURL: PYTHON_BACKEND_URL,
   withCredentials: false,
-  timeout: 120000, // 2 minutes for requirement generation
+  timeout: 60000 * 10, // 10 minutes for requirement generation
 })
 
 pythonRequest.interceptors.response.use((response) => {
