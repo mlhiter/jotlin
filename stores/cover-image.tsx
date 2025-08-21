@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { immer } from 'zustand/middleware/immer'
 
 type CoverImageStore = {
   isOpen: boolean
@@ -8,10 +9,24 @@ type CoverImageStore = {
   onReplace: (url: string) => void
 }
 
-export const useCoverImage = create<CoverImageStore>((set) => ({
-  isOpen: false,
-  url: undefined,
-  onOpen: () => set({ isOpen: true, url: undefined }),
-  onClose: () => set({ isOpen: false, url: undefined }),
-  onReplace: (url: string) => set({ isOpen: true, url }),
-}))
+export const useCoverImage = create(
+  immer<CoverImageStore>((set) => ({
+    isOpen: false,
+    url: undefined,
+    onOpen: () =>
+      set((state) => {
+        state.isOpen = true
+        state.url = undefined
+      }),
+    onClose: () =>
+      set((state) => {
+        state.isOpen = false
+        state.url = undefined
+      }),
+    onReplace: (url: string) =>
+      set((state) => {
+        state.isOpen = true
+        state.url = url
+      }),
+  }))
+)

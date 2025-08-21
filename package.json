@@ -20,6 +20,7 @@
     "@blocknote/core": "^0.34.0",
     "@blocknote/mantine": "^0.34.0",
     "@blocknote/react": "^0.34.0",
+    "@hookform/resolvers": "^5.2.1",
     "@langchain/core": "^0.3.66",
     "@langchain/langgraph": "^0.4.3",
     "@langchain/openai": "^0.6.3",
@@ -68,7 +69,7 @@
     "ws": "^8.18.3",
     "y-webrtc": "^10.3.0",
     "yjs": "^13.6.27",
-    "zod": "^3.22.4",
+    "zod": "^3.25.76",
     "zustand": "^4.4.6"
   },
   "devDependencies": {

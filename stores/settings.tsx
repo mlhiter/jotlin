@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { immer } from 'zustand/middleware/immer'
 
 type SettingsStore = {
   isOpen: boolean
@@ -6,8 +7,16 @@ type SettingsStore = {
   onClose: () => void
 }
 
-export const useSettings = create<SettingsStore>((set) => ({
-  isOpen: false,
-  onOpen: () => set({ isOpen: true }),
-  onClose: () => set({ isOpen: false }),
-}))
+export const useSettings = create(
+  immer<SettingsStore>((set) => ({
+    isOpen: false,
+    onOpen: () =>
+      set((state) => {
+        state.isOpen = true
+      }),
+    onClose: () =>
+      set((state) => {
+        state.isOpen = false
+      }),
+  }))
+)

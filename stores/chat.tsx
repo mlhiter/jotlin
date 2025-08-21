@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { immer } from 'zustand/middleware/immer'
 
 import { Chat, Message } from '@/types/chat'
 
@@ -20,51 +21,78 @@ interface ChatStore {
   setLoading: (loading: boolean) => void
 }
 
-export const useChatStore = create<ChatStore>((set) => ({
-  chats: [],
-  activeChat: null,
-  messages: [],
-  isLoading: false,
+export const useChatStore = create(
+  immer<ChatStore>((set) => ({
+    chats: [],
+    activeChat: null,
+    messages: [],
+    isLoading: false,
 
-  setChats: (chats) => set({ chats }),
+    setChats: (chats) =>
+      set((state) => {
+        state.chats = chats
+      }),
 
-  setActiveChat: (chat) => set({ activeChat: chat }),
+    setActiveChat: (chat) =>
+      set((state) => {
+        state.activeChat = chat
+      }),
 
-  setMessages: (messages) => set({ messages }),
+    setMessages: (messages) =>
+      set((state) => {
+        state.messages = messages
+      }),
 
-  addMessage: (message) =>
-    set((state) => ({
-      messages: [...state.messages, message],
-    })),
+    addMessage: (message) =>
+      set((state) => {
+        state.messages.push(message)
+      }),
 
-  updateMessage: (messageId, updates) =>
-    set((state) => ({
-      messages: state.messages.map((msg) =>
-        msg.id === messageId ? { ...msg, ...updates } : msg
-      ),
-    })),
+    updateMessage: (messageId, updates) =>
+      set((state) => {
+        const messageIndex = state.messages.findIndex(
+          (msg) => msg.id === messageId
+        )
+        if (messageIndex !== -1) {
+          Object.assign(state.messages[messageIndex], updates)
+        }
+      }),
 
-  removeMessage: (messageId) =>
-    set((state) => ({
-      messages: state.messages.filter((msg) => msg.id !== messageId),
-    })),
+    removeMessage: (messageId) =>
+      set((state) => {
+        const messageIndex = state.messages.findIndex(
+          (msg) => msg.id === messageId
+        )
+        if (messageIndex !== -1) {
+          state.messages.splice(messageIndex, 1)
+        }
+      }),
 
-  updateChat: (chatId, updates) =>
-    set((state) => ({
-      chats: state.chats.map((chat) =>
-        chat.id === chatId ? { ...chat, ...updates } : chat
-      ),
-      activeChat:
-        state.activeChat?.id === chatId
-          ? { ...state.activeChat, ...updates }
-          : state.activeChat,
-    })),
+    updateChat: (chatId, updates) =>
+      set((state) => {
+        const chatIndex = state.chats.findIndex((chat) => chat.id === chatId)
+        if (chatIndex !== -1) {
+          Object.assign(state.chats[chatIndex], updates)
+        }
+        if (state.activeChat?.id === chatId) {
+          Object.assign(state.activeChat, updates)
+        }
+      }),
 
-  removeChat: (chatId) =>
-    set((state) => ({
-      chats: state.chats.filter((chat) => chat.id !== chatId),
-      activeChat: state.activeChat?.id === chatId ? null : state.activeChat,
-    })),
+    removeChat: (chatId) =>
+      set((state) => {
+        const chatIndex = state.chats.findIndex((chat) => chat.id === chatId)
+        if (chatIndex !== -1) {
+          state.chats.splice(chatIndex, 1)
+        }
+        if (state.activeChat?.id === chatId) {
+          state.activeChat = null
+        }
+      }),
 
-  setLoading: (loading) => set({ isLoading: loading }),
-}))
+    setLoading: (loading) =>
+      set((state) => {
+        state.isLoading = loading
+      }),
+  }))
+)
