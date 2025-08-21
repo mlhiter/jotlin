@@ -1,5 +1,5 @@
-import { ParsedMention } from '@/libs/mention-parser'
 import { prisma } from '@/libs/prisma'
+import { ParsedMention } from '@/libs/mention-parser'
 
 export interface MentionProcessingResult {
   success: boolean
@@ -24,6 +24,11 @@ export async function processMentions({
   documentTitle: string
 }): Promise<MentionProcessingResult> {
   try {
+    console.log(
+      '📧 Processing mentions:',
+      mentions.map((m) => `${m.type}:${m.targetEmail || 'AI'}`).join(', ')
+    )
+
     const notifications = []
 
     for (const mention of mentions) {
@@ -57,7 +62,10 @@ export async function processMentions({
             },
           })
 
+          console.log(`✅ Created notification for ${targetUser.email}`)
           notifications.push(notification)
+        } else {
+          console.log(`❌ User not found: ${mention.targetEmail}`)
         }
       } else if (mention.type === 'ai') {
         // 创建AI提及记录

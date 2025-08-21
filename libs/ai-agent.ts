@@ -1,5 +1,5 @@
-import { ChatOpenAI } from '@langchain/openai'
 import { BaseMessage } from '@langchain/core/messages'
+import { ChatOpenAI } from '@langchain/openai'
 
 class DocumentChatAgent {
   private llm: ChatOpenAI
