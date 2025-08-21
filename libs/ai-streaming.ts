@@ -77,8 +77,10 @@ export class StreamingChatAgent {
           let isCompleted = false
           let lastProgress = 0
           let results: any = null
+          let pollCount = 0
+          const maxPollAttempts = 300 // Maximum 5 minutes of polling (300 * 1000ms)
 
-          while (!isCompleted) {
+          while (!isCompleted && pollCount < maxPollAttempts) {
             try {
               const status = await requirementApi.getGenerationStatus(
                 response.task_id
@@ -96,9 +98,24 @@ export class StreamingChatAgent {
 
               if (status.status === 'completed') {
                 isCompleted = true
-                results = await requirementApi.getFormattedResults(
-                  response.task_id
-                )
+                try {
+                  results = await requirementApi.getFormattedResults(
+                    response.task_id
+                  )
+                  // Validate that we actually got results
+                  if (!results || (!results.documents && !results.summary)) {
+                    throw new Error('Completed task returned no valid results')
+                  }
+                } catch (resultError) {
+                  console.error(
+                    'Error fetching results for completed task:',
+                    resultError
+                  )
+                  throw new Error(
+                    'Failed to retrieve results from completed task: ' +
+                      (resultError as Error).message
+                  )
+                }
               } else if (status.status === 'failed') {
                 throw new Error(
                   status.message || 'Requirement generation failed'
@@ -107,12 +124,31 @@ export class StreamingChatAgent {
 
               // Wait before next poll if not completed
               if (!isCompleted) {
+                pollCount++
                 await new Promise((resolve) => setTimeout(resolve, 1000))
               }
             } catch (error) {
               console.error('Error polling status:', error)
-              throw error
+              // Implement exponential backoff for error recovery
+              const backoffDelay = Math.min(
+                1000 * Math.pow(2, pollCount % 5),
+                10000
+              )
+              await new Promise((resolve) => setTimeout(resolve, backoffDelay))
+              pollCount++
+
+              // If we've had too many consecutive errors, break
+              if (pollCount >= maxPollAttempts) {
+                throw new Error('Polling timeout: Maximum attempts reached')
+              }
             }
+          }
+
+          // Check if we timed out
+          if (!isCompleted && pollCount >= maxPollAttempts) {
+            throw new Error(
+              'Requirement generation timeout: Process took too long'
+            )
           }
 
           if (results.documents && results.documents.length > 0) {

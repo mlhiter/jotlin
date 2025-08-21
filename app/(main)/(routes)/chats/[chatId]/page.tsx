@@ -212,10 +212,19 @@ const ChatPage = () => {
                     // Replace placeholder with real documents
                     startGeneration(documentData.documents)
 
-                    await handleDocumentGeneration(
-                      documentData.documents,
-                      documentData.chatId
-                    )
+                    try {
+                      await handleDocumentGeneration(
+                        documentData.documents,
+                        documentData.chatId
+                      )
+                    } catch (docError) {
+                      console.error('Document generation failed:', docError)
+                      setGenerationError(
+                        'Failed to create documents: ' +
+                          (docError as Error).message
+                      )
+                      toast.error('Failed to create documents')
+                    }
                     displayLine = false // Don't display this line
                   } catch (error) {
                     console.error(

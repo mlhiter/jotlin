@@ -84,12 +84,26 @@ export const requirementApi = {
   pollForCompletion: async (
     taskId: string,
     onProgress?: (status: RequirementGenerationStatus) => void,
-    pollInterval: number = 2000
+    pollInterval: number = 2000,
+    maxAttempts: number = 300 // 10 minutes maximum
   ): Promise<FormattedRequirementResults> => {
     return new Promise((resolve, reject) => {
+      let attemptCount = 0
+      let consecutiveErrors = 0
+      const maxConsecutiveErrors = 5
+
       const poll = async () => {
         try {
+          attemptCount++
+
+          // Check if we've exceeded maximum attempts
+          if (attemptCount > maxAttempts) {
+            reject(new Error('Polling timeout: Maximum attempts reached'))
+            return
+          }
+
           const status = await requirementApi.getGenerationStatus(taskId)
+          consecutiveErrors = 0 // Reset error counter on success
 
           if (onProgress) {
             onProgress(status)
@@ -105,7 +119,24 @@ export const requirementApi = {
             setTimeout(poll, pollInterval)
           }
         } catch (error) {
-          reject(error)
+          consecutiveErrors++
+          console.error(`Polling error (attempt ${attemptCount}):`, error)
+
+          if (consecutiveErrors >= maxConsecutiveErrors) {
+            reject(
+              new Error(
+                `Polling failed after ${maxConsecutiveErrors} consecutive errors`
+              )
+            )
+            return
+          }
+
+          // Exponential backoff for error recovery
+          const backoffDelay = Math.min(
+            pollInterval * Math.pow(2, consecutiveErrors),
+            10000
+          )
+          setTimeout(poll, backoffDelay)
         }
       }
 
