@@ -7,11 +7,11 @@ export const config = {
   // 超时配置
   timeouts: {
     documentGeneration: parseInt(process.env.DOCUMENT_GENERATION_TIMEOUT || '1800000'), // 30分钟 - 增加到更合理的时间
-    aiResponse: parseInt(process.env.AI_RESPONSE_TIMEOUT || '300000'), // 5分钟
+    aiResponse: parseInt(process.env.AI_RESPONSE_TIMEOUT || '600000'), // 5分钟
     progressUpdate: 100, // 进度更新延迟
     stateSync: 200, // 状态同步延迟
     analysisPhase: parseInt(process.env.ANALYSIS_PHASE_TIMEOUT || '900000'), // 15分钟 - 分析阶段超时
-    documentCreation: parseInt(process.env.DOCUMENT_CREATION_TIMEOUT || '600000'), // 10分钟 - 文档创建阶段超时
+    documentCreation: parseInt(process.env.DOCUMENT_CREATION_TIMEOUT || '900000'), // 10分钟 - 文档创建阶段超时
   },
 
   // 调试配置
