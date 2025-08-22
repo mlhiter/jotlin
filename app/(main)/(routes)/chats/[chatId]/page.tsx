@@ -77,10 +77,15 @@ const ChatPage = () => {
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null
 
-    if (documentGenerationState.isGenerating && documentGenerationState.documents.length > 0) {
+    if (
+      documentGenerationState.isGenerating &&
+      documentGenerationState.documents.length > 0
+    ) {
       // 使用配置的超时时间
       timeoutId = setTimeout(() => {
-        logger.warn('Document generation global timeout detected, forcing completion')
+        logger.warn(
+          'Document generation global timeout detected, forcing completion'
+        )
         forceComplete()
         toast.error('文档生成超时，已强制完成')
       }, config.timeouts.documentGeneration)
@@ -91,7 +96,11 @@ const ChatPage = () => {
         clearTimeout(timeoutId)
       }
     }
-  }, [documentGenerationState.isGenerating, documentGenerationState.documents.length, forceComplete])
+  }, [
+    documentGenerationState.isGenerating,
+    documentGenerationState.documents.length,
+    forceComplete,
+  ])
 
   // 添加错误恢复机制
   useEffect(() => {
@@ -173,7 +182,7 @@ const ChatPage = () => {
               for (const line of lines) {
                 let displayLine = true
 
-                                // Check for generation progress signal
+                // Check for generation progress signal
                 if (line.includes('__GENERATION_PROGRESS__:')) {
                   const signalStart = line.indexOf('__GENERATION_PROGRESS__:')
                   const signalData = line
@@ -189,77 +198,247 @@ const ChatPage = () => {
                     if (progressData.progress <= 30) {
                       // 初始化阶段：识别最终用户和利益相关者
                       updateDocuments([
-                        { title: '识别最终用户和利益相关者...', content: '', progress: progressData.progress },
-                        { title: '进行用户访谈和收集需求...', content: '', progress: 0 },
-                        { title: '分析部署环境和约束...', content: '', progress: 0 },
-                        { title: '分析需求并生成用例模型...', content: '', progress: 0 },
-                        { title: '生成IEEE 29148兼容的SRS文档...', content: '', progress: 0 },
-                        { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                        {
+                          title: '识别最终用户和利益相关者...',
+                          content: '',
+                          progress: progressData.progress,
+                        },
+                        {
+                          title: '进行用户访谈和收集需求...',
+                          content: '',
+                          progress: 0,
+                        },
+                        {
+                          title: '分析部署环境和约束...',
+                          content: '',
+                          progress: 0,
+                        },
+                        {
+                          title: '分析需求并生成用例模型...',
+                          content: '',
+                          progress: 0,
+                        },
+                        {
+                          title: '生成IEEE 29148兼容的SRS文档...',
+                          content: '',
+                          progress: 0,
+                        },
+                        {
+                          title: '进行SRS文档质量审查...',
+                          content: '',
+                          progress: 0,
+                        },
                       ])
                     } else if (progressData.progress <= 50) {
                       // 需求收集阶段
                       updateDocuments([
-                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
-                        { title: progressData.message, content: '', progress: progressData.progress },
-                        { title: '分析部署环境和约束...', content: '', progress: 0 },
-                        { title: '分析需求并生成用例模型...', content: '', progress: 0 },
-                        { title: '生成IEEE 29148兼容的SRS文档...', content: '', progress: 0 },
-                        { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                        {
+                          title: '✓ 识别最终用户和利益相关者',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: progressData.message,
+                          content: '',
+                          progress: progressData.progress,
+                        },
+                        {
+                          title: '分析部署环境和约束...',
+                          content: '',
+                          progress: 0,
+                        },
+                        {
+                          title: '分析需求并生成用例模型...',
+                          content: '',
+                          progress: 0,
+                        },
+                        {
+                          title: '生成IEEE 29148兼容的SRS文档...',
+                          content: '',
+                          progress: 0,
+                        },
+                        {
+                          title: '进行SRS文档质量审查...',
+                          content: '',
+                          progress: 0,
+                        },
                       ])
                     } else if (progressData.progress <= 70) {
                       // 环境分析阶段
                       updateDocuments([
-                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
-                        { title: '✓ 进行用户访谈和收集需求', content: '', progress: 100 },
-                        { title: progressData.message, content: '', progress: progressData.progress },
-                        { title: '分析需求并生成用例模型...', content: '', progress: 0 },
-                        { title: '生成IEEE 29148兼容的SRS文档...', content: '', progress: 0 },
-                        { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                        {
+                          title: '✓ 识别最终用户和利益相关者',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 进行用户访谈和收集需求',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: progressData.message,
+                          content: '',
+                          progress: progressData.progress,
+                        },
+                        {
+                          title: '分析需求并生成用例模型...',
+                          content: '',
+                          progress: 0,
+                        },
+                        {
+                          title: '生成IEEE 29148兼容的SRS文档...',
+                          content: '',
+                          progress: 0,
+                        },
+                        {
+                          title: '进行SRS文档质量审查...',
+                          content: '',
+                          progress: 0,
+                        },
                       ])
                     } else if (progressData.progress <= 80) {
                       // 需求分析阶段
                       updateDocuments([
-                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
-                        { title: '✓ 进行用户访谈和收集需求', content: '', progress: 100 },
-                        { title: '✓ 分析部署环境和约束', content: '', progress: 100 },
-                        { title: progressData.message, content: '', progress: progressData.progress },
-                        { title: '生成IEEE 29148兼容的SRS文档...', content: '', progress: 0 },
-                        { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                        {
+                          title: '✓ 识别最终用户和利益相关者',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 进行用户访谈和收集需求',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 分析部署环境和约束',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: progressData.message,
+                          content: '',
+                          progress: progressData.progress,
+                        },
+                        {
+                          title: '生成IEEE 29148兼容的SRS文档...',
+                          content: '',
+                          progress: 0,
+                        },
+                        {
+                          title: '进行SRS文档质量审查...',
+                          content: '',
+                          progress: 0,
+                        },
                       ])
                     } else if (progressData.progress <= 90) {
                       // 文档生成阶段
                       updateDocuments([
-                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
-                        { title: '✓ 进行用户访谈和收集需求', content: '', progress: 100 },
-                        { title: '✓ 分析部署环境和约束', content: '', progress: 100 },
-                        { title: '✓ 分析需求并生成用例模型', content: '', progress: 100 },
-                        { title: progressData.message, content: '', progress: progressData.progress },
-                        { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                        {
+                          title: '✓ 识别最终用户和利益相关者',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 进行用户访谈和收集需求',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 分析部署环境和约束',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 分析需求并生成用例模型',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: progressData.message,
+                          content: '',
+                          progress: progressData.progress,
+                        },
+                        {
+                          title: '进行SRS文档质量审查...',
+                          content: '',
+                          progress: 0,
+                        },
                       ])
                     } else if (progressData.progress < 100) {
                       // 质量审查阶段（进行中）
                       updateDocuments([
-                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
-                        { title: '✓ 进行用户访谈和收集需求', content: '', progress: 100 },
-                        { title: '✓ 分析部署环境和约束', content: '', progress: 100 },
-                        { title: '✓ 分析需求并生成用例模型', content: '', progress: 100 },
-                        { title: '✓ 生成IEEE 29148兼容的SRS文档', content: '', progress: 100 },
-                        { title: progressData.message, content: '', progress: progressData.progress },
+                        {
+                          title: '✓ 识别最终用户和利益相关者',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 进行用户访谈和收集需求',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 分析部署环境和约束',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 分析需求并生成用例模型',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 生成IEEE 29148兼容的SRS文档',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: progressData.message,
+                          content: '',
+                          progress: progressData.progress,
+                        },
                       ])
-                                        } else if (progressData.progress >= 100) {
+                    } else if (progressData.progress >= 100) {
                       // 分析阶段完成，准备进入文档创建阶段
                       updateDocuments([
-                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
-                        { title: '✓ 进行用户访谈和收集需求', content: '', progress: 100 },
-                        { title: '✓ 分析部署环境和约束', content: '', progress: 100 },
-                        { title: '✓ 分析需求并生成用例模型', content: '', progress: 100 },
-                        { title: '✓ 生成IEEE 29148兼容的SRS文档', content: '', progress: 100 },
-                        { title: '✓ 进行SRS文档质量审查', content: '', progress: 100 },
+                        {
+                          title: '✓ 识别最终用户和利益相关者',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 进行用户访谈和收集需求',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 分析部署环境和约束',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 分析需求并生成用例模型',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 生成IEEE 29148兼容的SRS文档',
+                          content: '',
+                          progress: 100,
+                        },
+                        {
+                          title: '✓ 进行SRS文档质量审查',
+                          content: '',
+                          progress: 100,
+                        },
                       ])
 
                       // 暂时完成分析阶段，等待文档生成信号
                       completeGeneration()
-                      console.info('Analysis phase completed, waiting for document generation signal...')
+                      console.info(
+                        'Analysis phase completed, waiting for document generation signal...'
+                      )
                     }
 
                     displayLine = false // Don't display this line
@@ -291,12 +470,36 @@ const ChatPage = () => {
                     console.info('Document generation started:', data)
                     // Initialize with analyzing state
                     startGeneration([
-                      { title: '识别最终用户和利益相关者...', content: '', progress: 0 },
-                      { title: '进行用户访谈和收集需求...', content: '', progress: 0 },
-                      { title: '分析部署环境和约束...', content: '', progress: 0 },
-                      { title: '分析需求并生成用例模型...', content: '', progress: 0 },
-                      { title: '生成IEEE 29148兼容的SRS文档...', content: '', progress: 0 },
-                      { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                      {
+                        title: '识别最终用户和利益相关者...',
+                        content: '',
+                        progress: 0,
+                      },
+                      {
+                        title: '进行用户访谈和收集需求...',
+                        content: '',
+                        progress: 0,
+                      },
+                      {
+                        title: '分析部署环境和约束...',
+                        content: '',
+                        progress: 0,
+                      },
+                      {
+                        title: '分析需求并生成用例模型...',
+                        content: '',
+                        progress: 0,
+                      },
+                      {
+                        title: '生成IEEE 29148兼容的SRS文档...',
+                        content: '',
+                        progress: 0,
+                      },
+                      {
+                        title: '进行SRS文档质量审查...',
+                        content: '',
+                        progress: 0,
+                      },
                     ])
                     displayLine = false // Don't display this line
                   } catch (error) {
@@ -558,7 +761,10 @@ const ChatPage = () => {
   ])
 
   const handleDocumentGeneration = async (documents: any[], chatId: string) => {
-    logger.info('Starting document generation', { documentCount: documents.length, chatId })
+    logger.info('Starting document generation', {
+      documentCount: documents.length,
+      chatId,
+    })
 
     try {
       let createdCount = 0
@@ -567,7 +773,9 @@ const ChatPage = () => {
       // 确保状态正确初始化
       if (documents.length > 0) {
         startGeneration(documents)
-        logger.debug('Document generation state initialized', { documents: documents.length })
+        logger.debug('Document generation state initialized', {
+          documents: documents.length,
+        })
       }
       for (let i = 0; i < documents.length; i++) {
         const doc = documents[i]
@@ -578,67 +786,64 @@ const ChatPage = () => {
           updateProgress({
             progress: Math.round(((i + 1) / documents.length) * 100),
             message: `正在创建文档: ${doc.title}`,
-            status: 'creating'
+            status: 'creating',
           })
 
-          // Convert markdown content to BlockNote format
-          const blocks = await convertMarkdownToBlocks(doc.content)
-          logger.debug('Markdown converted to blocks', { title: doc.title })
-
-          // Create document with BlockNote content
-          const documentId = await documentApi.create({
+          // Create document with content directly using createFromMarkdown
+          const documentResult = await documentApi.createFromMarkdown({
             title: doc.title,
+            markdownContent: doc.content,
             parentDocument: null,
+            chatId: chatId,
           })
-          logger.debug('Document created', { documentId, title: doc.title })
-
-          // Update document content after creation
-          await fetch(`/api/documents/${documentId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              id: documentId,
-              title: doc.title,
-              content: JSON.stringify(blocks),
-              chatId: chatId,
-            }),
+          logger.debug('Document created', {
+            documentId: documentResult.id,
+            title: doc.title,
           })
-          logger.debug('Document content updated', { documentId, title: doc.title })
 
           createdCount++
 
-          // 使用配置的延迟更新进度
-          setTimeout(() => {
-            nextDocument()
-            logger.debug('Progress updated', { currentIndex: i + 1, total: documents.length })
-          }, config.timeouts.progressUpdate)
+          // 使用同步的进度更新
+          nextDocument()
+          logger.debug('Progress updated', {
+            currentIndex: i + 1,
+            total: documents.length,
+          })
 
+          // 添加短暂延迟以便UI更新
+          await new Promise((resolve) =>
+            setTimeout(resolve, config.timeouts.progressUpdate)
+          )
         } catch (error) {
           logger.error(`Failed to create document "${doc.title}"`, error)
           failedCount++
 
           // 即使失败也要更新进度，避免卡住
-          setTimeout(() => {
-            nextDocument()
-            logger.warn('Progress updated after failure', { currentIndex: i + 1, total: documents.length })
-          }, config.timeouts.progressUpdate)
+          nextDocument()
+          logger.warn('Progress updated after failure', {
+            currentIndex: i + 1,
+            total: documents.length,
+          })
+
+          // 添加短暂延迟以便UI更新
+          await new Promise((resolve) =>
+            setTimeout(resolve, config.timeouts.progressUpdate)
+          )
         }
       }
 
       // 等待所有进度更新完成
-      await new Promise(resolve => setTimeout(resolve, config.timeouts.stateSync))
+      await new Promise((resolve) =>
+        setTimeout(resolve, config.timeouts.stateSync)
+      )
       logger.debug('All progress updates completed')
 
       if (createdCount > 0) {
-        // 确保状态完全更新后再完成
-        setTimeout(() => {
-          completeGeneration()
-          logger.info('Document generation completed successfully', { createdCount, failedCount })
-        }, config.timeouts.progressUpdate)
-
         toast.success(`Success to create ${createdCount} documents`)
+        logger.info('Document generation completed successfully', {
+          createdCount,
+          failedCount,
+        })
 
         // Refresh queries
         queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
