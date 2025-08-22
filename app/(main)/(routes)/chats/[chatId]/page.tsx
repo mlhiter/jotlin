@@ -66,16 +66,27 @@ const ChatPage = () => {
     })
   }, [setSignalCallbacks, handleProgressUpdate, handleGenerationStart, handleDocumentsGenerated])
 
-  // Global timeout protection for document generation
+  // Smart timeout protection for document generation
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null
 
-    if (documentGenerationState.isGenerating && documentGenerationState.documents.length > 0) {
+    if (documentGenerationState.isGenerating) {
+      // Use different timeouts for different phases
+      const isAnalysisPhase = documentGenerationState.documents.some(doc => 
+        doc.title.includes('识别最终用户') || doc.title.includes('进行用户访谈') || doc.title.includes('分析部署环境')
+      )
+      
+      const timeoutDuration = isAnalysisPhase 
+        ? config.timeouts.analysisPhase 
+        : config.timeouts.documentCreation
+
+      logger.info(`Setting timeout for ${isAnalysisPhase ? 'analysis' : 'document creation'} phase: ${timeoutDuration}ms`)
+
       timeoutId = setTimeout(() => {
-        logger.warn('Document generation global timeout detected, forcing completion')
+        logger.warn(`Document generation timeout detected (${isAnalysisPhase ? 'analysis' : 'creation'} phase), forcing completion`)
         forceComplete()
-        toast.error('文档生成超时，已强制完成')
-      }, config.timeouts.documentGeneration)
+        toast.error(`文档生成超时（${isAnalysisPhase ? '分析阶段' : '创建阶段'}），已强制完成`)
+      }, timeoutDuration)
     }
 
     return () => {
@@ -83,7 +94,7 @@ const ChatPage = () => {
         clearTimeout(timeoutId)
       }
     }
-  }, [documentGenerationState.isGenerating, documentGenerationState.documents.length, forceComplete])
+  }, [documentGenerationState.isGenerating, documentGenerationState.documents, forceComplete])
 
   // Error recovery mechanism
   useEffect(() => {

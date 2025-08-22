@@ -61,6 +61,14 @@ export const useDocumentGenerationHandler = () => {
     async (documentData: DocumentData) => {
       logger.info('Documents generated, starting creation process:', documentData)
 
+      // Validate document data
+      if (!documentData.documents || documentData.documents.length === 0) {
+        logger.error('No documents received in generation signal')
+        setGenerationError('未收到文档数据，生成失败')
+        toast.error('未收到文档数据，生成失败')
+        return
+      }
+
       // Replace placeholder with real documents
       startGeneration(documentData.documents)
 
@@ -68,11 +76,12 @@ export const useDocumentGenerationHandler = () => {
         await handleDocumentGeneration(documentData.documents, documentData.chatId)
       } catch (docError) {
         logger.error('Document generation failed:', docError)
-        setGenerationError('Failed to create documents: ' + (docError as Error).message)
-        toast.error('Failed to create documents')
+        const errorMessage = docError instanceof Error ? docError.message : '未知错误'
+        setGenerationError('文档创建失败: ' + errorMessage)
+        toast.error('文档创建失败: ' + errorMessage)
       }
     },
-    [startGeneration]
+    [startGeneration, setGenerationError]
   )
 
   const handleDocumentGeneration = useCallback(
@@ -152,8 +161,12 @@ export const useDocumentGenerationHandler = () => {
         await new Promise((resolve) => setTimeout(resolve, config.timeouts.stateSync))
         logger.debug('All progress updates completed')
 
+        // Complete generation regardless of success/failure count
+        completeGeneration()
+
         if (createdCount > 0) {
-          toast.success(`Success to create ${createdCount} documents`)
+          const successMsg = `成功创建了 ${createdCount} 个文档${failedCount > 0 ? `，${failedCount} 个失败` : ''}`
+          toast.success(successMsg)
           logger.info('Document generation completed successfully', {
             createdCount,
             failedCount,
@@ -164,7 +177,7 @@ export const useDocumentGenerationHandler = () => {
           queryClient.invalidateQueries({ queryKey: ['documents'] })
           queryClient.invalidateQueries({ queryKey: ['chats'] })
         } else {
-          const errorMsg = 'Create documents failed'
+          const errorMsg = `文档创建失败，没有成功创建任何文档${failedCount > 0 ? `（${failedCount} 个失败）` : ''}`
           logger.error(errorMsg, { createdCount, failedCount })
           setGenerationError(errorMsg)
           toast.error(errorMsg)
@@ -179,6 +192,7 @@ export const useDocumentGenerationHandler = () => {
       startGeneration,
       updateProgress,
       nextDocument,
+      completeGeneration,
       incrementCreatedCount,
       incrementFailedCount,
       setGenerationError,

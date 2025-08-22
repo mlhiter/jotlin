@@ -29,7 +29,6 @@ const DocumentGenerationProgress = ({
   failedDocumentCount = 0,
 }: DocumentGenerationProgressProps) => {
   const [animatedIndex, setAnimatedIndex] = useState(-1)
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (currentDocumentIndex >= 0 && currentDocumentIndex < documents.length) {
@@ -40,36 +39,7 @@ const DocumentGenerationProgress = ({
     }
   }, [currentDocumentIndex, documents.length])
 
-  // 添加超时保护，防止进度卡住
-  useEffect(() => {
-    if (isGenerating && documents.length > 0) {
-      // 设置5分钟超时
-      const timeout = setTimeout(
-        () => {
-          console.warn('Document generation timeout detected, forcing completion')
-          // 这里可以触发一个回调来强制完成
-        },
-        5 * 60 * 1000
-      )
-
-      setTimeoutId(timeout)
-
-      return () => {
-        if (timeoutId) {
-          clearTimeout(timeoutId)
-        }
-      }
-    }
-  }, [isGenerating, documents.length])
-
-  // 清理超时定时器
-  useEffect(() => {
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
-    }
-  }, [timeoutId])
+  // 移除重复的超时逻辑，现在由主页面统一管理
 
   if (documents.length === 0) return null
 
@@ -267,13 +237,6 @@ const DocumentGenerationProgress = ({
         </div>
       )}
 
-      {/* Timeout Warning */}
-      {timeoutId && isGenerating && (
-        <div className="flex items-center gap-2 rounded-lg border border-yellow-200/50 bg-gradient-to-r from-yellow-50 to-yellow-100 p-3 text-sm text-yellow-700 dark:border-yellow-800/50 dark:from-yellow-950/40 dark:to-yellow-900/40 dark:text-yellow-300">
-          <AlertCircle className="h-4 w-4 flex-shrink-0" />
-          <span className="font-medium">文档生成时间较长，请耐心等待...</span>
-        </div>
-      )}
     </div>
   )
 }
