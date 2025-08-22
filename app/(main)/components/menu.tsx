@@ -91,11 +91,7 @@ const Menu = ({ documentId }: MenuProps) => {
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-60"
-        align="end"
-        alignOffset={8}
-        forceMount>
+      <DropdownMenuContent className="w-60" align="end" alignOffset={8} forceMount>
         <DropdownMenuItem onClick={onImport}>
           <FolderUp className="mr-2 h-4 w-4" />
           Import from md file
@@ -111,9 +107,7 @@ const Menu = ({ documentId }: MenuProps) => {
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <div className="p-2 text-xs text-muted-foreground">
-          Last edited by:{user?.name}
-        </div>
+        <div className="p-2 text-xs text-muted-foreground">Last edited by:{user?.name}</div>
       </DropdownMenuContent>
     </DropdownMenu>
   )

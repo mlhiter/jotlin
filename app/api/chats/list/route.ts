@@ -77,15 +77,10 @@ export async function GET(req: NextRequest) {
 
     // Combine and deduplicate chats
     const allChats = [...ownedChats, ...collaboratedChats]
-    const uniqueChats = allChats.filter(
-      (chat, index, self) => index === self.findIndex((c) => c.id === chat.id)
-    )
+    const uniqueChats = allChats.filter((chat, index, self) => index === self.findIndex((c) => c.id === chat.id))
 
     // Sort by updatedAt desc
-    const chats = uniqueChats.sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    )
+    const chats = uniqueChats.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 
     return NextResponse.json(chats)
   } catch (error) {

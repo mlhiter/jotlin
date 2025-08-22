@@ -28,12 +28,7 @@ const Cover = ({ url, preview }: CoverImageProps) => {
     await removeCoverImage(params.documentId as string)
   }
   return (
-    <div
-      className={cn(
-        'group relative h-[35vh] w-full',
-        !url && 'h-[12vh]',
-        url && 'bg-muted'
-      )}>
+    <div className={cn('group relative h-[35vh] w-full', !url && 'h-[12vh]', url && 'bg-muted')}>
       {!!url && <Image src={url} fill alt="Cover" className=" object-cover" />}
       {url && !preview && (
         <div
@@ -47,11 +42,7 @@ const Cover = ({ url, preview }: CoverImageProps) => {
             <ImageIcon className="mr-2 h-4 w-4" />
             Change cover
           </Button>
-          <Button
-            onClick={onRemove}
-            className="text-xs text-muted-foreground"
-            variant="outline"
-            size="sm">
+          <Button onClick={onRemove} className="text-xs text-muted-foreground" variant="outline" size="sm">
             <X className="mr-2 h-4 w-4" />
             Remove
           </Button>

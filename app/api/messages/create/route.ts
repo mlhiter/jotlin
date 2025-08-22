@@ -39,9 +39,7 @@ export async function POST(req: NextRequest) {
 
     // Check if user has access to this chat (owner or collaborator)
     const isOwner = chat.userId === session.user.id
-    const isCollaborator = chat.collaborators.some(
-      (collaborator) => collaborator.userEmail === session.user.email
-    )
+    const isCollaborator = chat.collaborators.some((collaborator) => collaborator.userEmail === session.user.email)
 
     if (!isOwner && !isCollaborator) {
       return new NextResponse('Unauthorized', { status: 401 })

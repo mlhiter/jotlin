@@ -22,10 +22,7 @@ export const formattingToolbar = () => (
 
     <BasicTextStyleButton basicTextStyle={'bold'} key={'boldStyleButton'} />
     <BasicTextStyleButton basicTextStyle={'italic'} key={'italicStyleButton'} />
-    <BasicTextStyleButton
-      basicTextStyle={'underline'}
-      key={'underlineStyleButton'}
-    />
+    <BasicTextStyleButton basicTextStyle={'underline'} key={'underlineStyleButton'} />
     <BasicTextStyleButton basicTextStyle={'strike'} key={'strikeStyleButton'} />
     <BasicTextStyleButton basicTextStyle={'code'} key={'codeStyleButton'} />
 

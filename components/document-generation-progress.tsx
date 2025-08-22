@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  CheckCircle,
-  Clock,
-  FileText,
-  Loader2,
-  AlertCircle,
-} from 'lucide-react'
+import { CheckCircle, Clock, FileText, Loader2, AlertCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { cn } from '@/libs/utils'
@@ -21,6 +15,8 @@ export interface DocumentGenerationProgressProps {
     message: string
     status: string
   }
+  createdDocumentCount?: number
+  failedDocumentCount?: number
 }
 
 const DocumentGenerationProgress = ({
@@ -29,6 +25,8 @@ const DocumentGenerationProgress = ({
   isGenerating,
   error,
   overallProgress,
+  createdDocumentCount = 0,
+  failedDocumentCount = 0,
 }: DocumentGenerationProgressProps) => {
   const [animatedIndex, setAnimatedIndex] = useState(-1)
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null)
@@ -46,10 +44,13 @@ const DocumentGenerationProgress = ({
   useEffect(() => {
     if (isGenerating && documents.length > 0) {
       // 设置5分钟超时
-      const timeout = setTimeout(() => {
-        console.warn('Document generation timeout detected, forcing completion')
-        // 这里可以触发一个回调来强制完成
-      }, 5 * 60 * 1000)
+      const timeout = setTimeout(
+        () => {
+          console.warn('Document generation timeout detected, forcing completion')
+          // 这里可以触发一个回调来强制完成
+        },
+        5 * 60 * 1000
+      )
 
       setTimeoutId(timeout)
 
@@ -84,31 +85,27 @@ const DocumentGenerationProgress = ({
   )
 
   // 计算实际进度百分比
-  const actualProgress = documents.length > 0
-    ? Math.round((currentDocumentIndex / documents.length) * 100)
-    : 0
+  const actualProgress = documents.length > 0 ? Math.round((currentDocumentIndex / documents.length) * 100) : 0
 
   return (
-    <div className="space-y-4 rounded-xl border border-blue-200/50 dark:border-blue-800/50 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-blue-950/30 dark:via-gray-950 dark:to-purple-950/30 p-5 shadow-sm">
+    <div className="space-y-4 rounded-xl border border-blue-200/50 bg-gradient-to-br from-blue-50 via-white to-purple-50 p-5 shadow-sm dark:border-blue-800/50 dark:from-blue-950/30 dark:via-gray-950 dark:to-purple-950/30">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
+          <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/50">
             <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
-          <h3 className="font-semibold text-blue-900 dark:text-blue-100 text-lg">
-            文档生成进度
-          </h3>
+          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">文档生成进度</h3>
         </div>
-        <div className="text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-3 py-1 rounded-full">
+        <div className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
           {actualProgress}% ({currentDocumentIndex}/{documents.length})
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-blue-200/50 dark:bg-blue-800/50 rounded-full h-3 overflow-hidden">
+      <div className="h-3 w-full overflow-hidden rounded-full bg-blue-200/50 dark:bg-blue-800/50">
         <div
-          className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 h-3 rounded-full transition-all duration-700 ease-out shadow-sm"
+          className="h-3 rounded-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 shadow-sm transition-all duration-700 ease-out"
           style={{ width: `${actualProgress}%` }}
         />
       </div>
@@ -117,33 +114,33 @@ const DocumentGenerationProgress = ({
       {overallProgress && (
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-blue-800 dark:text-blue-200">
-              整体进度
-            </span>
-            <span className="text-blue-600 dark:text-blue-400 font-medium">
-              {overallProgress.progress}%
-            </span>
+            <span className="font-medium text-blue-800 dark:text-blue-200">整体进度</span>
+            <span className="font-medium text-blue-600 dark:text-blue-400">{overallProgress.progress}%</span>
           </div>
-          <div className="w-full bg-blue-200/50 dark:bg-blue-800/50 rounded-full h-2 overflow-hidden">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-blue-200/50 dark:bg-blue-800/50">
             <div
-              className="bg-gradient-to-r from-blue-400 to-blue-500 h-2 rounded-full transition-all duration-500 ease-out"
+              className="h-2 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 transition-all duration-500 ease-out"
               style={{ width: `${overallProgress.progress}%` }}
             />
           </div>
-          <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-            {overallProgress.message}
-          </p>
+          <p className="text-xs font-medium text-blue-600 dark:text-blue-400">{overallProgress.message}</p>
           <div className="flex items-center gap-2">
-            <div className={cn(
-              'w-2 h-2 rounded-full',
-              overallProgress.status === 'running' && 'bg-blue-500 animate-pulse',
-              overallProgress.status === 'completed' && 'bg-green-500',
-              overallProgress.status === 'failed' && 'bg-red-500'
-            )} />
-            <span className="text-xs text-blue-600 dark:text-blue-400 capitalize">
-              {overallProgress.status === 'running' ? '进行中' :
-               overallProgress.status === 'completed' ? '已完成' :
-               overallProgress.status === 'failed' ? '失败' : overallProgress.status}
+            <div
+              className={cn(
+                'h-2 w-2 rounded-full',
+                overallProgress.status === 'running' && 'animate-pulse bg-blue-500',
+                overallProgress.status === 'completed' && 'bg-green-500',
+                overallProgress.status === 'failed' && 'bg-red-500'
+              )}
+            />
+            <span className="text-xs capitalize text-blue-600 dark:text-blue-400">
+              {overallProgress.status === 'running'
+                ? '进行中'
+                : overallProgress.status === 'completed'
+                  ? '已完成'
+                  : overallProgress.status === 'failed'
+                    ? '失败'
+                    : overallProgress.status}
             </span>
           </div>
         </div>
@@ -155,8 +152,8 @@ const DocumentGenerationProgress = ({
           {documents.map((doc, index) => (
             <div
               key={index}
-              className="flex items-start gap-3 rounded-lg p-3 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/40 border border-blue-200/50 dark:border-blue-800/50">
-              <div className="flex-shrink-0 mt-0.5">
+              className="flex items-start gap-3 rounded-lg border border-blue-200/50 bg-gradient-to-r from-blue-50 to-blue-100 p-3 dark:border-blue-800/50 dark:from-blue-950/40 dark:to-blue-900/40">
+              <div className="mt-0.5 flex-shrink-0">
                 {doc.progress && doc.progress >= 100 ? (
                   <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                 ) : (
@@ -164,24 +161,20 @@ const DocumentGenerationProgress = ({
                 )}
               </div>
               <div className="min-w-0 flex-1 space-y-2">
-                <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  {doc.title}
-                </p>
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-200">{doc.title}</p>
                 {doc.progress !== undefined && doc.progress > 0 && doc.progress < 100 && (
                   <div className="space-y-1">
-                    <div className="w-full bg-blue-200/50 dark:bg-blue-800/50 rounded-full h-2">
+                    <div className="h-2 w-full rounded-full bg-blue-200/50 dark:bg-blue-800/50">
                       <div
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500 ease-out shadow-sm"
+                        className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm transition-all duration-500 ease-out"
                         style={{ width: `${doc.progress}%` }}
                       />
                     </div>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                      {doc.progress}% 完成
-                    </p>
+                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">{doc.progress}% 完成</p>
                   </div>
                 )}
                 {doc.progress === 100 && (
-                  <p className="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                  <p className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400">
                     <CheckCircle className="h-3 w-3" />
                     已完成
                   </p>
@@ -204,18 +197,17 @@ const DocumentGenerationProgress = ({
               <div
                 key={index}
                 className={cn(
-                  'flex items-start gap-3 rounded-lg p-3 transition-all duration-300 border',
-                  isCompleted && 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/40 border-green-200/50 dark:border-green-800/50',
-                  isCurrent && 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/40 border-blue-200/50 dark:border-blue-800/50',
-                  isPending && 'bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-950/40 dark:to-gray-900/40 border-gray-200/50 dark:border-gray-800/50'
+                  'flex items-start gap-3 rounded-lg border p-3 transition-all duration-300',
+                  isCompleted &&
+                    'border-green-200/50 bg-gradient-to-r from-green-50 to-green-100 dark:border-green-800/50 dark:from-green-950/40 dark:to-green-900/40',
+                  isCurrent &&
+                    'border-blue-200/50 bg-gradient-to-r from-blue-50 to-blue-100 dark:border-blue-800/50 dark:from-blue-950/40 dark:to-blue-900/40',
+                  isPending &&
+                    'border-gray-200/50 bg-gradient-to-r from-gray-50 to-gray-100 dark:border-gray-800/50 dark:from-gray-950/40 dark:to-gray-900/40'
                 )}>
-                <div className="flex-shrink-0 mt-0.5">
-                  {isCompleted && (
-                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  )}
-                  {isCurrent && (
-                    <Loader2 className="h-4 w-4 animate-spin text-blue-600 dark:text-blue-400" />
-                  )}
+                <div className="mt-0.5 flex-shrink-0">
+                  {isCompleted && <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />}
+                  {isCurrent && <Loader2 className="h-4 w-4 animate-spin text-blue-600 dark:text-blue-400" />}
                   {isPending && <Clock className="h-4 w-4 text-gray-400" />}
                 </div>
 
@@ -229,13 +221,9 @@ const DocumentGenerationProgress = ({
                     )}>
                     {doc.title}
                   </p>
-                  {isCurrent && (
-                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                      正在创建文档...
-                    </p>
-                  )}
+                  {isCurrent && <p className="text-xs font-medium text-blue-600 dark:text-blue-400">正在创建文档...</p>}
                   {isCompleted && (
-                    <p className="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                    <p className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400">
                       <CheckCircle className="h-3 w-3" />
                       已创建
                     </p>
@@ -249,23 +237,39 @@ const DocumentGenerationProgress = ({
 
       {/* Error Display */}
       {error && (
-        <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-red-50 to-red-100 dark:from-red-950/40 dark:to-red-900/40 p-3 text-sm text-red-700 dark:text-red-300 border border-red-200/50 dark:border-red-800/50">
+        <div className="flex items-center gap-2 rounded-lg border border-red-200/50 bg-gradient-to-r from-red-50 to-red-100 p-3 text-sm text-red-700 dark:border-red-800/50 dark:from-red-950/40 dark:to-red-900/40 dark:text-red-300">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           <span className="font-medium">{error}</span>
         </div>
       )}
 
-      {/* Success Message */}
+      {/* Success/Completion Message */}
       {!isGenerating && !error && currentDocumentIndex >= documents.length && (
-        <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/40 p-3 text-sm text-green-700 dark:text-green-300 border border-green-200/50 dark:border-green-800/50">
-          <CheckCircle className="h-4 w-4 flex-shrink-0" />
-          <span className="font-medium">所有文档已成功创建！点击侧边栏查看</span>
+        <div>
+          {createdDocumentCount > 0 && (
+            <div className="mb-2 flex items-center gap-2 rounded-lg border border-green-200/50 bg-gradient-to-r from-green-50 to-green-100 p-3 text-sm text-green-700 dark:border-green-800/50 dark:from-green-950/40 dark:to-green-900/40 dark:text-green-300">
+              <CheckCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium">已成功创建 {createdDocumentCount} 个文档！点击侧边栏查看</span>
+            </div>
+          )}
+          {failedDocumentCount > 0 && (
+            <div className="flex items-center gap-2 rounded-lg border border-yellow-200/50 bg-gradient-to-r from-yellow-50 to-yellow-100 p-3 text-sm text-yellow-700 dark:border-yellow-800/50 dark:from-yellow-950/40 dark:to-yellow-900/40 dark:text-yellow-300">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium">{failedDocumentCount} 个文档创建失败，请检查日志或重试</span>
+            </div>
+          )}
+          {createdDocumentCount === 0 && failedDocumentCount === 0 && (
+            <div className="flex items-center gap-2 rounded-lg border border-red-200/50 bg-gradient-to-r from-red-50 to-red-100 p-3 text-sm text-red-700 dark:border-red-800/50 dark:from-red-950/40 dark:to-red-900/40 dark:text-red-300">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium">文档创建失败，没有成功创建任何文档</span>
+            </div>
+          )}
         </div>
       )}
 
       {/* Timeout Warning */}
       {timeoutId && isGenerating && (
-        <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-950/40 dark:to-yellow-900/40 p-3 text-sm text-yellow-700 dark:text-yellow-300 border border-yellow-200/50 dark:border-yellow-800/50">
+        <div className="flex items-center gap-2 rounded-lg border border-yellow-200/50 bg-gradient-to-r from-yellow-50 to-yellow-100 p-3 text-sm text-yellow-700 dark:border-yellow-800/50 dark:from-yellow-950/40 dark:to-yellow-900/40 dark:text-yellow-300">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           <span className="font-medium">文档生成时间较长，请耐心等待...</span>
         </div>

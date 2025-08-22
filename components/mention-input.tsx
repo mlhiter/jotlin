@@ -77,11 +77,7 @@ export function MentionInput({
     const suggestions: MentionSuggestion[] = []
 
     // AI助手选项
-    if (
-      'ai'.includes(query.toLowerCase()) ||
-      'AI'.includes(query) ||
-      query === ''
-    ) {
+    if ('ai'.includes(query.toLowerCase()) || 'AI'.includes(query) || query === '') {
       suggestions.push({
         type: 'ai',
         display: 'AI助手',
@@ -144,18 +140,14 @@ export function MentionInput({
   }
 
   // 键盘事件处理
-  const handleKeyDown = (
-    e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (showSuggestions) {
       if (e.key === 'ArrowDown') {
         e.preventDefault()
         setSelectedIndex((prev) => (prev + 1) % suggestions.length)
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
-        setSelectedIndex(
-          (prev) => (prev - 1 + suggestions.length) % suggestions.length
-        )
+        setSelectedIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length)
       } else if (e.key === 'Enter') {
         e.preventDefault()
         if (suggestions[selectedIndex]) {
@@ -225,20 +217,12 @@ export function MentionInput({
               ) : (
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={suggestion.avatar || undefined} />
-                  <AvatarFallback>
-                    {suggestion.display.charAt(0).toUpperCase()}
-                  </AvatarFallback>
+                  <AvatarFallback>{suggestion.display.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
               )}
               <div className="flex-1">
-                <div className="text-sm font-medium">
-                  {suggestion.type === 'ai' ? 'AI助手' : suggestion.display}
-                </div>
-                {suggestion.email && (
-                  <div className="text-xs text-gray-500">
-                    {suggestion.email}
-                  </div>
-                )}
+                <div className="text-sm font-medium">{suggestion.type === 'ai' ? 'AI助手' : suggestion.display}</div>
+                {suggestion.email && <div className="text-xs text-gray-500">{suggestion.email}</div>}
               </div>
             </div>
           ))}

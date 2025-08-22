@@ -20,8 +20,7 @@ interface DocumentIdPageProps {
 }
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-  const { setCurrentDocument, currentDocument, clearCurrentDocument } =
-    useDocumentStore()
+  const { setCurrentDocument, currentDocument, clearCurrentDocument } = useDocumentStore()
   const queryClient = useQueryClient()
 
   useEffect(() => {
@@ -82,8 +81,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     // 分析内容但不再作为依赖
     const analysis = analyzeContent(currentDocument.content)
     const shouldTreatAsMarkdown =
-      analysis.type === 'markdown' ||
-      (analysis.type === 'unknown' && analysis.confidence < 50)
+      analysis.type === 'markdown' || (analysis.type === 'unknown' && analysis.confidence < 50)
 
     return {
       onChange: debounceOnChange,

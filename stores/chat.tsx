@@ -50,9 +50,7 @@ export const useChatStore = create(
 
     updateMessage: (messageId, updates) =>
       set((state) => {
-        const messageIndex = state.messages.findIndex(
-          (msg) => msg.id === messageId
-        )
+        const messageIndex = state.messages.findIndex((msg) => msg.id === messageId)
         if (messageIndex !== -1) {
           Object.assign(state.messages[messageIndex], updates)
         }
@@ -60,9 +58,7 @@ export const useChatStore = create(
 
     removeMessage: (messageId) =>
       set((state) => {
-        const messageIndex = state.messages.findIndex(
-          (msg) => msg.id === messageId
-        )
+        const messageIndex = state.messages.findIndex((msg) => msg.id === messageId)
         if (messageIndex !== -1) {
           state.messages.splice(messageIndex, 1)
         }

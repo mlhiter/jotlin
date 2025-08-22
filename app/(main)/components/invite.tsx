@@ -4,11 +4,7 @@ import { FormEvent, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 import { invitationApi } from '@/api/invitation'
 import { useSession } from '@/hooks/use-session'
@@ -62,11 +58,7 @@ const Invite = ({ documentId }: InviteProps) => {
             placeholder="Enter collaborator email..."
             className="h-8 flex-1 truncate rounded-md border bg-muted px-2 text-xs focus-within:ring-transparent"
           />
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="h-8 text-xs"
-            size="sm">
+          <Button type="submit" disabled={isSubmitting} className="h-8 text-xs" size="sm">
             Submit
           </Button>
         </form>

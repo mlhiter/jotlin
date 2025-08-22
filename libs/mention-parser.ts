@@ -27,8 +27,7 @@ export function parseMentions(content: string): MentionMatch[] {
 
   // 正则表达式匹配 @email 或 @AI 或 @username
   // 优先匹配完整邮箱格式，然后匹配AI，最后匹配普通用户名
-  const mentionRegex =
-    /@([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|AI|ai|[\w\u4e00-\u9fa5]+)/g
+  const mentionRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|AI|ai|[\w\u4e00-\u9fa5]+)/g
 
   let match
   while ((match = mentionRegex.exec(content)) !== null) {
@@ -81,9 +80,7 @@ export function formatMentionsInText(
       let displayName = mention.identifier
       if (collaborators) {
         // 首先尝试直接匹配邮箱
-        let collaborator = collaborators.find(
-          (c) => c.userEmail === mention.identifier
-        )
+        let collaborator = collaborators.find((c) => c.userEmail === mention.identifier)
 
         // 如果没找到，尝试匹配邮箱前缀（向后兼容）
         if (!collaborator) {

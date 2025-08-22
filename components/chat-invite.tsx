@@ -6,11 +6,7 @@ import { useState, FormEvent } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 import { chatApi } from '@/api/chat'
 import { useSession } from '@/hooks/use-session'
@@ -32,8 +28,7 @@ const ChatInvite = ({ chatId }: ChatInviteProps) => {
   })
 
   const inviteMutation = useMutation({
-    mutationFn: (collaboratorEmail: string) =>
-      chatApi.createInvitation(chatId, { collaboratorEmail }),
+    mutationFn: (collaboratorEmail: string) => chatApi.createInvitation(chatId, { collaboratorEmail }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['chat-collaborators', chatId],
@@ -49,8 +44,7 @@ const ChatInvite = ({ chatId }: ChatInviteProps) => {
   })
 
   const removeMutation = useMutation({
-    mutationFn: (collaboratorEmail: string) =>
-      chatApi.removeCollaborator(chatId, collaboratorEmail),
+    mutationFn: (collaboratorEmail: string) => chatApi.removeCollaborator(chatId, collaboratorEmail),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['chat-collaborators', chatId],
@@ -97,8 +91,7 @@ const ChatInvite = ({ chatId }: ChatInviteProps) => {
           <div>
             <h3 className="font-medium">Invite Collaborators</h3>
             <p className="text-sm text-muted-foreground">
-              Collaborators can view and continue this chat, and access all
-              linked documents.
+              Collaborators can view and continue this chat, and access all linked documents.
             </p>
           </div>
 
@@ -112,11 +105,7 @@ const ChatInvite = ({ chatId }: ChatInviteProps) => {
               placeholder="Enter collaborator email..."
               className="h-8 flex-1 truncate rounded-md border bg-muted px-2 text-xs focus-within:ring-transparent"
             />
-            <Button
-              type="submit"
-              disabled={isSubmitting || inviteMutation.isPending}
-              className="h-8 text-xs"
-              size="sm">
+            <Button type="submit" disabled={isSubmitting || inviteMutation.isPending} className="h-8 text-xs" size="sm">
               Invite
             </Button>
           </form>
@@ -126,36 +115,29 @@ const ChatInvite = ({ chatId }: ChatInviteProps) => {
               <h4 className="text-sm font-medium">Current Collaborators</h4>
               <div className="space-y-1">
                 {collaborators.map((collaborator: any) => (
-                  <div
-                    key={collaborator.userEmail}
-                    className="flex items-center justify-between text-sm">
+                  <div key={collaborator.userEmail} className="flex items-center justify-between text-sm">
                     <div className="flex items-center space-x-2">
                       <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
                         <User className="h-3 w-3" />
                       </div>
                       <div>
-                        <div className="font-medium">
-                          {collaborator.user?.name || collaborator.userEmail}
-                        </div>
+                        <div className="font-medium">{collaborator.user?.name || collaborator.userEmail}</div>
                         <div className="text-xs text-muted-foreground">
                           {collaborator.userEmail}
                           {collaborator.isOwner && ' (Owner)'}
                         </div>
                       </div>
                     </div>
-                    {!collaborator.isOwner &&
-                      user?.email !== collaborator.userEmail && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() =>
-                            handleRemoveCollaborator(collaborator.userEmail)
-                          }
-                          disabled={removeMutation.isPending}
-                          className="h-6 w-6 p-0 text-destructive hover:text-destructive">
-                          ×
-                        </Button>
-                      )}
+                    {!collaborator.isOwner && user?.email !== collaborator.userEmail && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRemoveCollaborator(collaborator.userEmail)}
+                        disabled={removeMutation.isPending}
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive">
+                        ×
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>

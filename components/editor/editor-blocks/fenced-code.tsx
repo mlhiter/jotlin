@@ -16,17 +16,7 @@ import {
 import { blockSchema } from './index'
 import 'prismjs/themes/prism.css'
 
-const languageOptions = [
-  'js',
-  'html',
-  'css',
-  'go',
-  'c',
-  'cpp',
-  'rust',
-  'python',
-  'java',
-]
+const languageOptions = ['js', 'html', 'css', 'go', 'c', 'cpp', 'rust', 'python', 'java']
 
 // TODO: there do not load in time
 languageOptions.forEach((lang) => {
@@ -75,9 +65,7 @@ const fencedCodeBlock = createReactBlockSpec(
             onValueChange={(code) => {
               editor.updateBlock(block, { props: { code } })
             }}
-            highlight={(code) =>
-              highlight(code, Prism.languages[language], language)
-            }
+            highlight={(code) => highlight(code, Prism.languages[language], language)}
             padding={20}
             style={{
               fontSize: 16,
@@ -88,11 +76,7 @@ const fencedCodeBlock = createReactBlockSpec(
       )
     },
     parse: (element) => {
-      if (
-        element.tagName === 'PRE' &&
-        element.children.length === 1 &&
-        element.children[0].tagName === 'CODE'
-      ) {
+      if (element.tagName === 'PRE' && element.children.length === 1 && element.children[0].tagName === 'CODE') {
         const classList = element.children[0].className.split(' ')
         let language = ''
         classList.forEach((className) => {
@@ -102,9 +86,7 @@ const fencedCodeBlock = createReactBlockSpec(
         })
         return {
           language: language ? language : 'js',
-          code: element.children[0].textContent
-            ? element.children[0].textContent
-            : '',
+          code: element.children[0].textContent ? element.children[0].textContent : '',
         }
       }
     },

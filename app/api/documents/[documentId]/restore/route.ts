@@ -6,10 +6,7 @@ import { prisma } from '@/libs/prisma'
 // 告诉 Next.js 这个路由是动态的
 export const dynamic = 'force-dynamic'
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { documentId: string } }
-) {
+export async function PUT(req: Request, { params }: { params: { documentId: string } }) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session?.user?.email) {
@@ -42,9 +39,7 @@ export async function PUT(
     }
 
     const isOwner = document.userId === session.user.id
-    const isCollaborator = document.collaborators.some(
-      (collaborator) => collaborator.userEmail === session.user.email
-    )
+    const isCollaborator = document.collaborators.some((collaborator) => collaborator.userEmail === session.user.email)
 
     if (!isOwner && !isCollaborator) {
       return new NextResponse('Unauthorized', { status: 401 })

@@ -59,19 +59,12 @@ export function useUnifiedNotifications() {
   // 标记单个通知为已读
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      const response = await fetch(
-        `/api/notifications/unified?id=${notificationId}`,
-        {
-          method: 'PATCH',
-        }
-      )
+      const response = await fetch(`/api/notifications/unified?id=${notificationId}`, {
+        method: 'PATCH',
+      })
 
       if (response.ok) {
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === notificationId ? { ...n, isRead: true } : n
-          )
-        )
+        setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n)))
         setUnreadCount((prev) => Math.max(0, prev - 1))
         return true
       }
@@ -86,12 +79,9 @@ export function useUnifiedNotifications() {
   const markAllAsRead = useCallback(async () => {
     try {
       setIsLoading(true)
-      const response = await fetch(
-        '/api/notifications/unified?markAllAsRead=true',
-        {
-          method: 'PATCH',
-        }
-      )
+      const response = await fetch('/api/notifications/unified?markAllAsRead=true', {
+        method: 'PATCH',
+      })
 
       if (response.ok) {
         setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))

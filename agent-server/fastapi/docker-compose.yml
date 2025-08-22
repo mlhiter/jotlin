@@ -15,8 +15,7 @@ services:
       - postgres
     volumes:
       - .:/app
-    command:
-      ['uvicorn', 'main:app', '--host', '0.0.0.0', '--port', '8000', '--reload']
+    command: ['uvicorn', 'main:app', '--host', '0.0.0.0', '--port', '8000', '--reload']
 
   postgres:
     image: postgres:15

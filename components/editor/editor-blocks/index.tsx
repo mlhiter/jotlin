@@ -1,8 +1,5 @@
 import { BlockNoteSchema, defaultBlockSpecs } from '@blocknote/core'
-import {
-  DefaultReactSuggestionItem,
-  getDefaultReactSlashMenuItems,
-} from '@blocknote/react'
+import { DefaultReactSuggestionItem, getDefaultReactSlashMenuItems } from '@blocknote/react'
 
 import { fencedCodeBlock, insertFencedCodeBlock } from './fenced-code'
 
@@ -13,14 +10,10 @@ const blockSchema = BlockNoteSchema.create({
   },
 })
 
-const getCustomSlashMenuItems = (
-  editor: typeof blockSchema.BlockNoteEditor
-): DefaultReactSuggestionItem[] => {
+const getCustomSlashMenuItems = (editor: typeof blockSchema.BlockNoteEditor): DefaultReactSuggestionItem[] => {
   const defaultItems = getDefaultReactSlashMenuItems(editor)
   // Filter out the default code block item
-  const filteredItems = defaultItems.filter(
-    (item) => item.title !== 'Code Block'
-  )
+  const filteredItems = defaultItems.filter((item) => item.title !== 'Code Block')
 
   return [...filteredItems, insertFencedCodeBlock(editor)]
 }

@@ -11,12 +11,7 @@ import { MentionInput } from '@/components/mention-input'
 import { Spinner } from '@/components/spinner'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 import { useRealtimeComments } from '@/hooks/use-realtime-comments'
 import { useSession } from '@/hooks/use-session'
@@ -83,10 +78,7 @@ interface CommentItemProps {
 }
 
 // 获取块内容的辅助函数
-const getBlockContent = (
-  editor: BlockNoteEditor<any, any>,
-  blockId: string
-): string => {
+const getBlockContent = (editor: BlockNoteEditor<any, any>, blockId: string): string => {
   try {
     const block = editor.getBlock(blockId)
     if (block && block.content) {
@@ -113,9 +105,7 @@ const calculateCommentPosition = (
   sidebarContainer: HTMLElement,
   editorContainer: HTMLElement
 ): number => {
-  const blockElement = document.querySelector(
-    `[data-id="${blockId}"]`
-  ) as HTMLElement
+  const blockElement = document.querySelector(`[data-id="${blockId}"]`) as HTMLElement
   if (!blockElement) return 0
 
   const blockRect = blockElement.getBoundingClientRect()
@@ -193,19 +183,13 @@ const CommentItem = ({
   return (
     <div
       className={`group relative p-3 transition-all duration-500 hover:bg-muted/30 ${
-        isNewlyAdded
-          ? 'border-l-4 border-l-blue-500 bg-blue-50 animate-in slide-in-from-right-5'
-          : ''
+        isNewlyAdded ? 'border-l-4 border-l-blue-500 bg-blue-50 animate-in slide-in-from-right-5' : ''
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}>
       <div className="flex items-start gap-3">
-        <Avatar
-          className={`h-8 w-8 flex-shrink-0 ${isAI ? 'ring-2 ring-blue-500' : ''}`}>
-          <AvatarImage
-            src={comment.user.image || (isAI ? '/logo.svg' : '')}
-            alt={comment.user.name}
-          />
+        <Avatar className={`h-8 w-8 flex-shrink-0 ${isAI ? 'ring-2 ring-blue-500' : ''}`}>
+          <AvatarImage src={comment.user.image || (isAI ? '/logo.svg' : '')} alt={comment.user.name} />
         </Avatar>
 
         <div className="min-w-0 flex-1 space-y-2">
@@ -214,13 +198,10 @@ const CommentItem = ({
               <span className="text-sm font-medium">
                 {/* 显示回复关系 */}
                 {comment.user.name}
-                {isAI && (
-                  <span className="ml-1 text-xs text-blue-500">[AI]</span>
-                )}
+                {isAI && <span className="ml-1 text-xs text-blue-500">[AI]</span>}
               </span>
               <span className="text-xs text-muted-foreground">
-                {comment.updatedAt &&
-                comment.updatedAt !== comment.createdAt ? (
+                {comment.updatedAt && comment.updatedAt !== comment.createdAt ? (
                   <>
                     {formatDistanceToNow(new Date(comment.updatedAt), {
                       addSuffix: true,
@@ -285,18 +266,10 @@ const CommentItem = ({
                 rows={2}
               />
               <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onSaveEdit(comment.id)}
-                  className="text-xs">
+                <Button variant="ghost" size="sm" onClick={() => onSaveEdit(comment.id)} className="text-xs">
                   保存
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onCancelEdit}
-                  className="text-xs">
+                <Button variant="ghost" size="sm" onClick={onCancelEdit} className="text-xs">
                   取消
                 </Button>
               </div>
@@ -353,11 +326,7 @@ const CommentItem = ({
                   className="text-xs">
                   发布回复
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onCancelReply}
-                  className="text-xs">
+                <Button variant="ghost" size="sm" onClick={onCancelReply} className="text-xs">
                   取消
                 </Button>
               </div>
@@ -432,9 +401,7 @@ const CommentBlock = ({
       {blockContent && (
         <div className="border-b border-border p-3">
           <div className="text-xs text-muted-foreground">原文</div>
-          <div className="mt-1 truncate text-sm text-foreground">
-            {blockContent}
-          </div>
+          <div className="mt-1 truncate text-sm text-foreground">{blockContent}</div>
         </div>
       )}
 
@@ -504,9 +471,7 @@ export function PositionedCommentList({
   const recentlyCreatedCommentIds = useRef<Set<string>>(new Set())
 
   // 追踪新添加的评论ID（用于高亮显示）
-  const [newlyAddedCommentIds, setNewlyAddedCommentIds] = useState<Set<string>>(
-    new Set()
-  )
+  const [newlyAddedCommentIds, setNewlyAddedCommentIds] = useState<Set<string>>(new Set())
 
   // 提取fetchComments函数使其可重用
   const fetchComments = useCallback(
@@ -517,9 +482,7 @@ export function PositionedCommentList({
           setIsLoading(true)
         }
 
-        const response = await fetch(
-          `/api/comments?documentId=${params.documentId}`
-        )
+        const response = await fetch(`/api/comments?documentId=${params.documentId}`)
         if (!response.ok) {
           throw new Error('Failed to fetch comments')
         }
@@ -554,15 +517,11 @@ export function PositionedCommentList({
             // 获取完成后，对比新旧评论列表找出真正的新评论
             setTimeout(() => {
               setComments((latestComments) => {
-                const realNewComments = latestComments.filter(
-                  (c) => !currentCommentIds.has(c.id)
-                )
+                const realNewComments = latestComments.filter((c) => !currentCommentIds.has(c.id))
 
                 if (realNewComments.length > 0) {
                   // 过滤掉最近由当前用户创建的评论，避免重复通知
-                  const commentsToNotify = realNewComments.filter(
-                    (c) => !recentlyCreatedCommentIds.current.has(c.id)
-                  )
+                  const commentsToNotify = realNewComments.filter((c) => !recentlyCreatedCommentIds.current.has(c.id))
 
                   const newCommentIds = realNewComments.map((c) => c.id)
 
@@ -630,19 +589,17 @@ export function PositionedCommentList({
     }
 
     // 按照块在编辑器中的出现顺序对分组进行排序
-    const sortedEntries = Object.entries(grouped).sort(
-      ([blockIdA], [blockIdB]) => {
-        const blockA = document.querySelector(`[data-id="${blockIdA}"]`)
-        const blockB = document.querySelector(`[data-id="${blockIdB}"]`)
+    const sortedEntries = Object.entries(grouped).sort(([blockIdA], [blockIdB]) => {
+      const blockA = document.querySelector(`[data-id="${blockIdA}"]`)
+      const blockB = document.querySelector(`[data-id="${blockIdB}"]`)
 
-        if (!blockA || !blockB) return 0
+      if (!blockA || !blockB) return 0
 
-        const rectA = blockA.getBoundingClientRect()
-        const rectB = blockB.getBoundingClientRect()
+      const rectA = blockA.getBoundingClientRect()
+      const rectB = blockB.getBoundingClientRect()
 
-        return rectA.top - rectB.top
-      }
-    )
+      return rectA.top - rectB.top
+    })
 
     return Object.fromEntries(sortedEntries)
   }, [comments, newCommentBlockId])
@@ -664,9 +621,7 @@ export function PositionedCommentList({
     // 获取每个评论组的实际高度
     Object.entries(commentsByBlock).forEach(([blockId, blockComments]) => {
       // 尝试获取实际渲染的评论元素高度
-      const existingCommentElement = document.querySelector(
-        `[data-comment-block="${blockId}"]`
-      ) as HTMLElement
+      const existingCommentElement = document.querySelector(`[data-comment-block="${blockId}"]`) as HTMLElement
       let actualHeight = 0
 
       if (existingCommentElement) {
@@ -682,9 +637,7 @@ export function PositionedCommentList({
           let estimatedHeight = 0
 
           // 按replyOrder排序评论
-          const sortedComments = blockComments.sort(
-            (a, b) => a.replyOrder - b.replyOrder
-          )
+          const sortedComments = blockComments.sort((a, b) => a.replyOrder - b.replyOrder)
 
           sortedComments.forEach((comment, index) => {
             // 安全检查评论数据
@@ -725,11 +678,7 @@ export function PositionedCommentList({
         }
       }
 
-      const position = calculateCommentPosition(
-        blockId,
-        sidebarRef.current!,
-        editorElement
-      )
+      const position = calculateCommentPosition(blockId, sidebarRef.current!, editorElement)
       commentHeights.push({
         blockId,
         position,
@@ -753,12 +702,8 @@ export function PositionedCommentList({
 
     // 计算所需的总高度
     const maxBottomPosition = commentHeights.reduce((max, comment) => {
-      const adjustedComment = adjustedPositions.find(
-        (p) => p.blockId === comment.blockId
-      )
-      const finalPosition = adjustedComment
-        ? adjustedComment.position
-        : comment.position
+      const adjustedComment = adjustedPositions.find((p) => p.blockId === comment.blockId)
+      const finalPosition = adjustedComment ? adjustedComment.position : comment.position
       return Math.max(max, finalPosition + comment.height)
     }, 0)
 
@@ -770,15 +715,10 @@ export function PositionedCommentList({
     // 只有当位置发生实际变化时才更新状态
     setCommentPositions((prevPositions) => {
       const hasChanges = Object.keys(newPositions).some(
-        (commentId) =>
-          Math.abs((prevPositions[commentId] || 0) - newPositions[commentId]) >
-          1
+        (commentId) => Math.abs((prevPositions[commentId] || 0) - newPositions[commentId]) > 1
       )
 
-      if (
-        !hasChanges &&
-        Object.keys(prevPositions).length === Object.keys(newPositions).length
-      ) {
+      if (!hasChanges && Object.keys(prevPositions).length === Object.keys(newPositions).length) {
         return prevPositions
       }
 
@@ -806,18 +746,12 @@ export function PositionedCommentList({
     setReplyContent('')
   }
 
-  const handleSubmitReply = async (
-    replyToCommentId: string,
-    blockId: string
-  ) => {
+  const handleSubmitReply = async (replyToCommentId: string, blockId: string) => {
     if (!replyContent.trim()) return
 
     try {
       // 标记正在创建评论
-      if (
-        typeof window !== 'undefined' &&
-        (window as any).setCommentCreationFlag
-      ) {
+      if (typeof window !== 'undefined' && (window as any).setCommentCreationFlag) {
         ;(window as any).setCommentCreationFlag(true)
       }
       const response = await fetch('/api/comments', {
@@ -885,11 +819,7 @@ export function PositionedCommentList({
 
             if (instruction.insertAtEnd) {
               // 插入到文档末尾
-              editor.insertBlocks(
-                [newBlock],
-                editor.document[editor.document.length - 1],
-                'after'
-              )
+              editor.insertBlocks([newBlock], editor.document[editor.document.length - 1], 'after')
             } else if (instruction.afterBlockId) {
               // 插入到指定块之后
               const targetBlock = editor.getBlock(instruction.afterBlockId)
@@ -897,19 +827,12 @@ export function PositionedCommentList({
                 editor.insertBlocks([newBlock], targetBlock, 'after')
               } else {
                 // 如果找不到目标块，插入到末尾
-                editor.insertBlocks(
-                  [newBlock],
-                  editor.document[editor.document.length - 1],
-                  'after'
-                )
+                editor.insertBlocks([newBlock], editor.document[editor.document.length - 1], 'after')
               }
             }
 
             toast.info('AI已添加回复内容')
-          } else if (
-            instruction.type === 'modify_block' &&
-            instruction.targetBlockId
-          ) {
+          } else if (instruction.type === 'modify_block' && instruction.targetBlockId) {
             // 修改指定块的内容
             const targetBlock = editor.getBlock(instruction.targetBlockId)
             if (targetBlock) {
@@ -927,10 +850,7 @@ export function PositionedCommentList({
             } else {
               toast.error('找不到要修改的内容块')
             }
-          } else if (
-            instruction.type === 'delete_block' &&
-            instruction.targetBlockId
-          ) {
+          } else if (instruction.type === 'delete_block' && instruction.targetBlockId) {
             // 删除指定块
             const targetBlock = editor.getBlock(instruction.targetBlockId)
             if (targetBlock) {
@@ -994,10 +914,7 @@ export function PositionedCommentList({
       }
 
       // 强制展开评论侧边栏
-      if (
-        typeof window !== 'undefined' &&
-        (window as any).expandCommentSidebar
-      ) {
+      if (typeof window !== 'undefined' && (window as any).expandCommentSidebar) {
         ;(window as any).expandCommentSidebar()
       }
     } catch (error) {
@@ -1005,10 +922,7 @@ export function PositionedCommentList({
       toast.error('Failed to post reply')
     } finally {
       // 评论创建完成，取消标记
-      if (
-        typeof window !== 'undefined' &&
-        (window as any).setCommentCreationFlag
-      ) {
+      if (typeof window !== 'undefined' && (window as any).setCommentCreationFlag) {
         setTimeout(() => {
           ;(window as any).setCommentCreationFlag(false)
         }, 1000) // 给一些缓冲时间
@@ -1070,9 +984,7 @@ export function PositionedCommentList({
       // 通知父组件评论状态变化
       onCommentsChange?.(updatedComments.length > 0)
 
-      const remainingComments = updatedComments.filter(
-        (c) => c.blockId === blockId
-      )
+      const remainingComments = updatedComments.filter((c) => c.blockId === blockId)
       if (remainingComments.length === 0) {
         const block = editor.getBlock(blockId)
         if (block) {
@@ -1192,11 +1104,7 @@ export function PositionedCommentList({
 
             if (instruction.insertAtEnd) {
               // 插入到文档末尾
-              editor.insertBlocks(
-                [newBlock],
-                editor.document[editor.document.length - 1],
-                'after'
-              )
+              editor.insertBlocks([newBlock], editor.document[editor.document.length - 1], 'after')
             } else if (instruction.afterBlockId) {
               // 插入到指定块之后
               const targetBlock = editor.getBlock(instruction.afterBlockId)
@@ -1204,19 +1112,12 @@ export function PositionedCommentList({
                 editor.insertBlocks([newBlock], targetBlock, 'after')
               } else {
                 // 如果找不到目标块，插入到末尾
-                editor.insertBlocks(
-                  [newBlock],
-                  editor.document[editor.document.length - 1],
-                  'after'
-                )
+                editor.insertBlocks([newBlock], editor.document[editor.document.length - 1], 'after')
               }
             }
 
             toast.info('AI已添加回复内容')
-          } else if (
-            instruction.type === 'modify_block' &&
-            instruction.targetBlockId
-          ) {
+          } else if (instruction.type === 'modify_block' && instruction.targetBlockId) {
             // 修改指定块的内容
             const targetBlock = editor.getBlock(instruction.targetBlockId)
             if (targetBlock) {
@@ -1234,10 +1135,7 @@ export function PositionedCommentList({
             } else {
               toast.error('找不到要修改的内容块')
             }
-          } else if (
-            instruction.type === 'delete_block' &&
-            instruction.targetBlockId
-          ) {
+          } else if (instruction.type === 'delete_block' && instruction.targetBlockId) {
             // 删除指定块
             const targetBlock = editor.getBlock(instruction.targetBlockId)
             if (targetBlock) {
@@ -1322,9 +1220,7 @@ export function PositionedCommentList({
   // 获取文档协作者
   const fetchCollaborators = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/documents/${params.documentId}/collaborators`
-      )
+      const response = await fetch(`/api/documents/${params.documentId}/collaborators`)
       if (response.ok) {
         const data = await response.json()
         setCollaborators(data)
@@ -1346,13 +1242,7 @@ export function PositionedCommentList({
     if (comments.length > 0 || newCommentBlockId) {
       updateCommentPositions()
     }
-  }, [
-    comments,
-    editingId,
-    replyingTo,
-    newCommentBlockId,
-    updateCommentPositions,
-  ])
+  }, [comments, editingId, replyingTo, newCommentBlockId, updateCommentPositions])
 
   // 监听滚动和窗口变化，更新评论位置
   useEffect(() => {
@@ -1413,16 +1303,11 @@ export function PositionedCommentList({
   }
 
   return (
-    <div
-      ref={sidebarRef}
-      className="relative w-full p-4"
-      style={{ minHeight: 'calc(100vh - 2rem)' }}>
+    <div ref={sidebarRef} className="relative w-full p-4" style={{ minHeight: 'calc(100vh - 2rem)' }}>
       {/* 实时状态指示器 */}
       {!isInitialLoad && (
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-          <div
-            className={`h-2 w-2 rounded-full ${isPolling ? 'animate-pulse bg-yellow-500' : 'bg-green-500'}`}
-          />
+          <div className={`h-2 w-2 rounded-full ${isPolling ? 'animate-pulse bg-yellow-500' : 'bg-green-500'}`} />
           {isPolling ? '检查新评论中...' : '实时监听中'}
         </div>
       )}
@@ -1434,11 +1319,7 @@ export function PositionedCommentList({
           // 使用统一的位置管理系统
           const position =
             commentPositions[`new-comment-${blockId}`] ||
-            calculateCommentPosition(
-              blockId,
-              sidebarRef.current!,
-              document.querySelector('.bn-editor') as HTMLElement
-            )
+            calculateCommentPosition(blockId, sidebarRef.current!, document.querySelector('.bn-editor') as HTMLElement)
 
           return (
             <div
@@ -1495,16 +1376,11 @@ export function PositionedCommentList({
         }
 
         // 按replyOrder排序评论，确保回复链的顺序正确
-        const sortedComments = blockComments.sort(
-          (a, b) => a.replyOrder - b.replyOrder
-        )
+        const sortedComments = blockComments.sort((a, b) => a.replyOrder - b.replyOrder)
         const rootComment = sortedComments[0] // 第一个评论用于计算位置
 
         if (!rootComment || !rootComment.user) {
-          console.warn(
-            `Skipping invalid comment block ${blockId}:`,
-            rootComment
-          )
+          console.warn(`Skipping invalid comment block ${blockId}:`, rootComment)
           return null
         }
 

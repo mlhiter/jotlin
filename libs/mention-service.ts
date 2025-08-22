@@ -24,10 +24,7 @@ export async function processMentions({
   documentTitle: string
 }): Promise<MentionProcessingResult> {
   try {
-    console.log(
-      '📧 Processing mentions:',
-      mentions.map((m) => `${m.type}:${m.targetEmail || 'AI'}`).join(', ')
-    )
+    console.log('📧 Processing mentions:', mentions.map((m) => `${m.type}:${m.targetEmail || 'AI'}`).join(', '))
 
     const notifications = []
 

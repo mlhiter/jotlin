@@ -12,6 +12,8 @@ export interface DocumentGenerationState {
     message: string
     status: string
   }
+  createdDocumentCount: number
+  failedDocumentCount: number
 }
 
 export const useDocumentGeneration = () => {
@@ -21,56 +23,47 @@ export const useDocumentGeneration = () => {
     currentDocumentIndex: 0,
     error: undefined,
     overallProgress: undefined,
+    createdDocumentCount: 0,
+    failedDocumentCount: 0,
   })
 
-  const startGeneration = useCallback(
-    (documents: { title: string; content: string; progress?: number }[]) => {
-      setState({
-        isGenerating: true,
+  const startGeneration = useCallback((documents: { title: string; content: string; progress?: number }[]) => {
+    setState({
+      isGenerating: true,
+      documents,
+      currentDocumentIndex: 0,
+      error: undefined,
+      overallProgress: undefined,
+      createdDocumentCount: 0,
+      failedDocumentCount: 0,
+    })
+  }, [])
+
+  const updateProgress = useCallback((overallProgress: { progress: number; message: string; status: string }) => {
+    setState((prev) => ({ ...prev, overallProgress }))
+  }, [])
+
+  const updateDocuments = useCallback((documents: { title: string; content: string; progress?: number }[]) => {
+    setState((prev) => {
+      // 计算当前应该激活的文档索引（基于progress字段）
+      let newCurrentIndex = 0
+      for (let i = 0; i < documents.length; i++) {
+        const progress = documents[i].progress
+        if (progress !== undefined && progress > 0 && progress < 100) {
+          newCurrentIndex = i
+          break
+        } else if (progress === 100) {
+          newCurrentIndex = i + 1
+        }
+      }
+
+      return {
+        ...prev,
         documents,
-        currentDocumentIndex: 0,
-        error: undefined,
-        overallProgress: undefined,
-      })
-    },
-    []
-  )
-
-  const updateProgress = useCallback(
-    (overallProgress: {
-      progress: number
-      message: string
-      status: string
-    }) => {
-      setState((prev) => ({ ...prev, overallProgress }))
-    },
-    []
-  )
-
-  const updateDocuments = useCallback(
-    (documents: { title: string; content: string; progress?: number }[]) => {
-      setState((prev) => {
-        // 计算当前应该激活的文档索引（基于progress字段）
-        let newCurrentIndex = 0
-        for (let i = 0; i < documents.length; i++) {
-          const progress = documents[i].progress
-          if (progress !== undefined && progress > 0 && progress < 100) {
-            newCurrentIndex = i
-            break
-          } else if (progress === 100) {
-            newCurrentIndex = i + 1
-          }
-        }
-
-        return {
-          ...prev,
-          documents,
-          currentDocumentIndex: Math.min(newCurrentIndex, documents.length - 1)
-        }
-      })
-    },
-    []
-  )
+        currentDocumentIndex: Math.min(newCurrentIndex, documents.length - 1),
+      }
+    })
+  }, [])
 
   const nextDocument = useCallback(() => {
     setState((prev) => {
@@ -112,6 +105,8 @@ export const useDocumentGeneration = () => {
       currentDocumentIndex: 0,
       error: undefined,
       overallProgress: undefined,
+      createdDocumentCount: 0,
+      failedDocumentCount: 0,
     })
   }, [])
 
@@ -126,6 +121,22 @@ export const useDocumentGeneration = () => {
     }))
   }, [])
 
+  // 记录文档创建成功
+  const incrementCreatedCount = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      createdDocumentCount: prev.createdDocumentCount + 1,
+    }))
+  }, [])
+
+  // 记录文档创建失败
+  const incrementFailedCount = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      failedDocumentCount: prev.failedDocumentCount + 1,
+    }))
+  }, [])
+
   return {
     state,
     startGeneration,
@@ -136,5 +147,7 @@ export const useDocumentGeneration = () => {
     setError,
     reset,
     forceComplete,
+    incrementCreatedCount,
+    incrementFailedCount,
   }
 }

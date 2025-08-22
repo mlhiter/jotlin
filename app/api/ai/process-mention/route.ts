@@ -12,8 +12,7 @@ export async function POST(req: NextRequest) {
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    const { prompt, document_content, document_title, block_id } =
-      await req.json()
+    const { prompt, document_content, document_title, block_id } = await req.json()
 
     if (!prompt) {
       return new NextResponse('Bad Request', { status: 400 })
@@ -24,8 +23,7 @@ export async function POST(req: NextRequest) {
 
     // 调用agent-server处理AI请求
     try {
-      const agentServerUrl =
-        process.env.AGENT_SERVER_URL || 'http://localhost:8000'
+      const agentServerUrl = process.env.AGENT_SERVER_URL || 'http://localhost:8000'
       const aiResponse = await fetch(`${agentServerUrl}/api/process-mention`, {
         method: 'POST',
         headers: {

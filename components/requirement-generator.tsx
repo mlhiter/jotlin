@@ -6,21 +6,11 @@ import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Textarea } from '@/components/ui/textarea'
 
-import {
-  requirementApi,
-  GeneratedDocument,
-  RequirementGenerationStatus,
-} from '@/api/requirements'
+import { requirementApi, GeneratedDocument, RequirementGenerationStatus } from '@/api/requirements'
 import { cn } from '@/libs/utils'
 
 interface RequirementGeneratorProps {
@@ -68,18 +58,13 @@ export function RequirementGenerator({
       toast.success('需求分析已开始，AI agent正在工作...')
 
       // Poll for completion with progress updates
-      const finalResults = await requirementApi.pollForCompletion(
-        response.task_id,
-        (currentStatus) => {
-          setStatus(currentStatus)
-        }
-      )
+      const finalResults = await requirementApi.pollForCompletion(response.task_id, (currentStatus) => {
+        setStatus(currentStatus)
+      })
 
       setResults(finalResults.documents)
       setShowResults(true)
-      toast.success(
-        `需求分析完成！生成了 ${finalResults.documents.length} 个文档`
-      )
+      toast.success(`需求分析完成！生成了 ${finalResults.documents.length} 个文档`)
     } catch (error) {
       console.error('Requirement generation failed:', error)
       toast.error('需求生成失败: ' + (error as Error).message)
@@ -130,9 +115,7 @@ export function RequirementGenerator({
       if (savedDocuments.length === results.length) {
         toast.success(`已成功保存所有 ${results.length} 个文档`)
       } else {
-        toast.success(
-          `已保存 ${savedDocuments.length} / ${results.length} 个文档`
-        )
+        toast.success(`已保存 ${savedDocuments.length} / ${results.length} 个文档`)
       }
 
       if (onDocumentCreated && savedDocuments.length > 0) {
@@ -170,9 +153,7 @@ export function RequirementGenerator({
 
       {/* Input Section */}
       <div className="space-y-2">
-        <label className="text-sm font-medium">
-          {isEmbedded ? '请详细描述您的项目需求' : '需求描述'}
-        </label>
+        <label className="text-sm font-medium">{isEmbedded ? '请详细描述您的项目需求' : '需求描述'}</label>
         <Textarea
           placeholder={
             isEmbedded
@@ -188,15 +169,8 @@ export function RequirementGenerator({
       </div>
 
       {/* Action Button */}
-      <Button
-        onClick={handleGenerate}
-        disabled={isGenerating || !input.trim()}
-        className="w-full">
-        {isGenerating
-          ? '生成中...'
-          : isEmbedded
-            ? '提交需求并开始对话'
-            : '开始生成需求文档'}
+      <Button onClick={handleGenerate} disabled={isGenerating || !input.trim()} className="w-full">
+        {isGenerating ? '生成中...' : isEmbedded ? '提交需求并开始对话' : '开始生成需求文档'}
       </Button>
 
       {/* Progress Section */}
@@ -206,9 +180,7 @@ export function RequirementGenerator({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">生成进度</span>
-                <Badge className={getStatusColor(status.status)}>
-                  {status.status}
-                </Badge>
+                <Badge className={getStatusColor(status.status)}>{status.status}</Badge>
               </div>
               <Progress value={status.progress} className="w-full" />
               <p className="text-sm text-muted-foreground">{status.message}</p>
@@ -228,9 +200,7 @@ export function RequirementGenerator({
                 保存所有文档
               </Button>
             </div>
-            <CardDescription>
-              AI已生成 {results.length} 个需求文档，你可以查看并保存到Jotlin中
-            </CardDescription>
+            <CardDescription>AI已生成 {results.length} 个需求文档，你可以查看并保存到Jotlin中</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -240,9 +210,7 @@ export function RequirementGenerator({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4 className="font-medium">{doc.title}</h4>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          类型: {doc.type}
-                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">类型: {doc.type}</p>
                         <div className="mt-2 rounded-md bg-muted p-3">
                           <pre className="max-h-32 overflow-y-auto whitespace-pre-wrap text-sm">
                             {doc.content.substring(0, 200)}
@@ -251,10 +219,7 @@ export function RequirementGenerator({
                         </div>
                       </div>
                       <div className="ml-4 flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleSaveDocument(doc)}>
+                        <Button size="sm" variant="outline" onClick={() => handleSaveDocument(doc)}>
                           <Save className="h-4 w-4" />
                         </Button>
                       </div>

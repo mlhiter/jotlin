@@ -74,9 +74,7 @@ export function useRealtimeComments({
       // 如果有上次更新时间，只获取该时间之后的评论
       // 减去2秒缓冲时间以避免时间戳精度问题
       if (lastUpdateTimeRef.current) {
-        const bufferTime = new Date(
-          new Date(lastUpdateTimeRef.current).getTime() - 2000
-        )
+        const bufferTime = new Date(new Date(lastUpdateTimeRef.current).getTime() - 2000)
         params.append('since', bufferTime.toISOString())
       }
 

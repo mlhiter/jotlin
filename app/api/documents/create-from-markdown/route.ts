@@ -55,11 +55,7 @@ export async function POST(req: Request) {
       let content: string
       try {
         const possibleBlocks = JSON.parse(markdownContent)
-        if (
-          Array.isArray(possibleBlocks) &&
-          possibleBlocks.length > 0 &&
-          possibleBlocks[0]?.type
-        ) {
+        if (Array.isArray(possibleBlocks) && possibleBlocks.length > 0 && possibleBlocks[0]?.type) {
           content = markdownContent
         } else {
           throw new Error('Not BlockNote format')
@@ -127,8 +123,7 @@ export async function POST(req: Request) {
         id: document.id,
         title: document.title,
         markdownContent,
-        warning:
-          'Document created with fallback parsing due to markdown format issues',
+        warning: 'Document created with fallback parsing due to markdown format issues',
       })
     }
   } catch (error) {

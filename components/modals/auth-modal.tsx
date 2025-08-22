@@ -1,13 +1,7 @@
 import { Github } from 'lucide-react'
 
 import AuthSocialButton from '@/components/buttons/auth-social-button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 import { useSession } from '@/hooks/use-session'
 import { useAuth } from '@/stores/auth'
@@ -25,11 +19,7 @@ const SettingsModal = () => {
           <DialogDescription>to continue to jotlin</DialogDescription>
         </DialogHeader>
         <div className="flex  items-center justify-between">
-          <AuthSocialButton
-            icon={Github}
-            onClick={() => signIn('github')}
-            platform="GitHub"
-          />
+          <AuthSocialButton icon={Github} onClick={() => signIn('github')} platform="GitHub" />
         </div>
       </DialogContent>
     </Dialog>

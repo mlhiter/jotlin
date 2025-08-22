@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import {
-  processAIMentionDirect,
-  applyAIModification,
-} from '@/libs/ai-mention-service'
+import { processAIMentionDirect, applyAIModification } from '@/libs/ai-mention-service'
 import { auth } from '@/libs/auth'
 import { parseMentions, validateMentions } from '@/libs/mention-parser'
 import { processMentions } from '@/libs/mention-service'
@@ -54,10 +51,7 @@ export async function POST(req: NextRequest) {
     const mentions = parseMentions(content)
 
     // 构建协作者列表（包括文档所有者）
-    const allCollaborators = [
-      ...document.collaborators,
-      { userEmail: document.user.email },
-    ]
+    const allCollaborators = [...document.collaborators, { userEmail: document.user.email }]
 
     // 验证@提及
     const validMentions = validateMentions(mentions, allCollaborators)
@@ -204,17 +198,9 @@ export async function POST(req: NextRequest) {
             })
 
             if (aiAction.type !== 'no_action') {
-              const result = await applyAIModification(
-                documentId,
-                aiAction,
-                blockId
-              )
+              const result = await applyAIModification(documentId, aiAction, blockId)
               aiProcessingResults.push(result.message)
-              if (
-                result.success &&
-                (aiAction.type === 'modify_content' ||
-                  aiAction.type === 'add_content')
-              ) {
+              if (result.success && (aiAction.type === 'modify_content' || aiAction.type === 'add_content')) {
                 documentModified = true
                 if (result.newContent) {
                   newDocumentContent = result.newContent
@@ -278,9 +264,7 @@ export async function POST(req: NextRequest) {
         }
       } catch (mentionError) {
         console.error('❌ Error processing mentions:', mentionError)
-        console.error(
-          '❌ Mention processing failed, but comment was still created'
-        )
+        console.error('❌ Mention processing failed, but comment was still created')
         // 提及处理失败不应该影响评论创建
       }
     }

@@ -15,12 +15,7 @@ export interface AIMentionContext {
 }
 
 export interface AIAction {
-  type:
-    | 'modify_content'
-    | 'add_content'
-    | 'suggest_edit'
-    | 'delete_content'
-    | 'no_action'
+  type: 'modify_content' | 'add_content' | 'suggest_edit' | 'delete_content' | 'no_action'
   content?: string | Array<any> | object
   blockId?: string
   suggestion?: string
@@ -40,25 +35,13 @@ export function parseAIInstruction(commentContent: string): {
   const cleanContent = commentContent.replace(/@ai\s*/gi, '').trim()
 
   // 识别不同类型的指令
-  if (
-    content.includes('修改') ||
-    content.includes('更改') ||
-    content.includes('替换')
-  ) {
+  if (content.includes('修改') || content.includes('更改') || content.includes('替换')) {
     return { action: 'modify', instruction: cleanContent }
-  } else if (
-    content.includes('添加') ||
-    content.includes('增加') ||
-    content.includes('插入')
-  ) {
+  } else if (content.includes('添加') || content.includes('增加') || content.includes('插入')) {
     return { action: 'add', instruction: cleanContent }
   } else if (content.includes('删除') || content.includes('移除')) {
     return { action: 'delete', instruction: cleanContent }
-  } else if (
-    content.includes('优化') ||
-    content.includes('改进') ||
-    content.includes('完善')
-  ) {
+  } else if (content.includes('优化') || content.includes('改进') || content.includes('完善')) {
     return { action: 'optimize', instruction: cleanContent }
   } else if (content.includes('翻译') || content.includes('转换')) {
     return { action: 'translate', instruction: cleanContent }
@@ -70,16 +53,13 @@ export function parseAIInstruction(commentContent: string): {
 /**
  * 直接处理AI提及，避免API循环调用
  */
-export async function processAIMentionDirect(
-  context: AIMentionContext
-): Promise<AIAction> {
+export async function processAIMentionDirect(context: AIMentionContext): Promise<AIAction> {
   try {
     // 获取文档内容（在服务器端，我们已经有了文档内容）
     const { action, instruction } = parseAIInstruction(context.commentContent)
 
     // 直接调用agent-server处理
-    const agentServerUrl =
-      process.env.AGENT_SERVER_URL || 'http://localhost:8000'
+    const agentServerUrl = process.env.AGENT_SERVER_URL || 'http://localhost:8000'
 
     try {
       const aiResponse = await fetch(`${agentServerUrl}/api/process-mention`, {
@@ -108,9 +88,7 @@ export async function processAIMentionDirect(
       // 如果agent-server不可用，返回降级响应
       return {
         type: 'suggest_edit',
-        suggestion:
-          'AI服务暂时不可用，请稍后再试。你的指令已收到：' +
-          context.commentContent,
+        suggestion: 'AI服务暂时不可用，请稍后再试。你的指令已收到：' + context.commentContent,
         reasoning: 'agent-server连接失败，使用降级响应',
       }
     }
@@ -126,9 +104,7 @@ export async function processAIMentionDirect(
 /**
  * 处理AI提及，调用AI服务修改文档（保留原函数用于客户端调用）
  */
-export async function processAIMention(
-  context: AIMentionContext
-): Promise<AIAction> {
+export async function processAIMention(context: AIMentionContext): Promise<AIAction> {
   try {
     // 获取文档内容
     const document = await prisma.document.findUnique({
@@ -186,15 +162,7 @@ function buildAIPrompt(params: {
   }>
   isReplyToAI?: boolean
 }): string {
-  const {
-    action,
-    instruction,
-    documentContent,
-    documentTitle,
-    blockId,
-    commentChain,
-    isReplyToAI,
-  } = params
+  const { action, instruction, documentContent, documentTitle, blockId, commentChain, isReplyToAI } = params
 
   let contextSection = ''
   if (commentChain && commentChain.length > 0) {
@@ -332,11 +300,7 @@ export async function applyAIModification(
       }
     }
 
-    if (
-      modification.type === 'add_content' &&
-      modification.content &&
-      commentBlockId
-    ) {
+    if (modification.type === 'add_content' && modification.content && commentBlockId) {
       // 不在这里直接修改文档，而是返回插入指令让前端处理
       return {
         success: true,
@@ -344,9 +308,7 @@ export async function applyAIModification(
         insertInstruction: {
           type: 'add_block',
           content:
-            typeof modification.content === 'string'
-              ? modification.content
-              : JSON.stringify(modification.content),
+            typeof modification.content === 'string' ? modification.content : JSON.stringify(modification.content),
           afterBlockId: commentBlockId,
           insertAtEnd: true, // 建议插入到文档末尾
         },
@@ -362,9 +324,7 @@ export async function applyAIModification(
           insertInstruction: {
             type: 'modify_block',
             content:
-              typeof modification.content === 'string'
-                ? modification.content
-                : JSON.stringify(modification.content),
+              typeof modification.content === 'string' ? modification.content : JSON.stringify(modification.content),
             targetBlockId: modification.blockId,
           },
         }
@@ -374,10 +334,7 @@ export async function applyAIModification(
 
         if (typeof modification.content === 'string') {
           contentToSave = modification.content
-        } else if (
-          Array.isArray(modification.content) ||
-          typeof modification.content === 'object'
-        ) {
+        } else if (Array.isArray(modification.content) || typeof modification.content === 'object') {
           // 如果是数组或对象，转换为JSON字符串
           contentToSave = JSON.stringify(modification.content)
         } else {

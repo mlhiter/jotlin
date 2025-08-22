@@ -18,10 +18,7 @@ interface DocumentIdPageProps {
 }
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-  const Editor = useMemo(
-    () => dynamic(() => import('@/components/editor/editor'), { ssr: false }),
-    []
-  )
+  const Editor = useMemo(() => dynamic(() => import('@/components/editor/editor'), { ssr: false }), [])
   const { updateDocument } = useDocumentActions()
 
   const { data: document } = useQuery({
@@ -58,11 +55,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
       <Cover preview url={document.coverImage} />
       <div className="mx-auto md:max-w-3xl lg:max-w-4xl">
         <Toolbar preview />
-        <Editor
-          editable={false}
-          onChange={onChange}
-          initialContent={document.content}
-        />
+        <Editor editable={false} onChange={onChange} initialContent={document.content} />
       </div>
     </div>
   )

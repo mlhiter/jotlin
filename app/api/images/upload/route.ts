@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { minioClient } from '@/libs/minio'
 
-
 // 告诉 Next.js 这个路由是动态的
 export const dynamic = 'force-dynamic'
 
@@ -20,10 +19,7 @@ export async function POST(req: NextRequest) {
       try {
         const oldFileName = replaceTargetUrl.split('/').pop()
         if (oldFileName) {
-          await minioClient.removeObject(
-            process.env.MINIO_BUCKET_NAME!,
-            oldFileName
-          )
+          await minioClient.removeObject(process.env.MINIO_BUCKET_NAME!, oldFileName)
         }
       } catch (error) {
         console.error('Error removing old file:', error)
@@ -36,15 +32,9 @@ export async function POST(req: NextRequest) {
     const timestamp = Date.now()
     const fileName = `${timestamp}_${file.name}`
 
-    await minioClient.putObject(
-      process.env.MINIO_BUCKET_NAME!,
-      fileName,
-      buffer,
-      file.size,
-      {
-        'Content-Type': file.type,
-      }
-    )
+    await minioClient.putObject(process.env.MINIO_BUCKET_NAME!, fileName, buffer, file.size, {
+      'Content-Type': file.type,
+    })
 
     const fileUrl = `${process.env.MINIO_URL}/${process.env.MINIO_BUCKET_NAME}/${fileName}`
 

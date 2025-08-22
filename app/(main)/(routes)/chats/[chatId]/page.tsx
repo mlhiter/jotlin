@@ -45,13 +45,7 @@ const ChatPage = () => {
   const chatId = params.chatId as string
   const queryClient = useQueryClient()
   const { user } = useSession()
-  const {
-    setActiveChat,
-    setMessages,
-    addMessage,
-    updateMessage,
-    removeMessage,
-  } = useChatStore()
+  const { setActiveChat, setMessages, addMessage, updateMessage, removeMessage } = useChatStore()
 
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -71,21 +65,18 @@ const ChatPage = () => {
     setError: setGenerationError,
     reset: resetGeneration,
     forceComplete,
+    incrementCreatedCount,
+    incrementFailedCount,
   } = useDocumentGeneration()
 
   // 添加全局超时保护
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null
 
-    if (
-      documentGenerationState.isGenerating &&
-      documentGenerationState.documents.length > 0
-    ) {
+    if (documentGenerationState.isGenerating && documentGenerationState.documents.length > 0) {
       // 使用配置的超时时间
       timeoutId = setTimeout(() => {
-        logger.warn(
-          'Document generation global timeout detected, forcing completion'
-        )
+        logger.warn('Document generation global timeout detected, forcing completion')
         forceComplete()
         toast.error('文档生成超时，已强制完成')
       }, config.timeouts.documentGeneration)
@@ -96,11 +87,7 @@ const ChatPage = () => {
         clearTimeout(timeoutId)
       }
     }
-  }, [
-    documentGenerationState.isGenerating,
-    documentGenerationState.documents.length,
-    forceComplete,
-  ])
+  }, [documentGenerationState.isGenerating, documentGenerationState.documents.length, forceComplete])
 
   // 添加错误恢复机制
   useEffect(() => {
@@ -134,19 +121,12 @@ const ChatPage = () => {
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget
-    const isAtBottom =
-      element.scrollHeight - element.scrollTop <= element.clientHeight + 50
+    const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 50
     setUserScrolled(!isAtBottom)
   }
 
   const sendMessageMutation = useMutation({
-    mutationFn: async ({
-      content,
-      tempMessageId,
-    }: {
-      content: string
-      tempMessageId: string
-    }) => {
+    mutationFn: async ({ content, tempMessageId }: { content: string; tempMessageId: string }) => {
       try {
         const userMessage = await chatApi.sendMessage({
           content,
@@ -154,9 +134,7 @@ const ChatPage = () => {
           chatId,
         })
 
-        setLocalMessages((prev) =>
-          prev.map((msg) => (msg.id === tempMessageId ? userMessage : msg))
-        )
+        setLocalMessages((prev) => prev.map((msg) => (msg.id === tempMessageId ? userMessage : msg)))
         updateMessage(tempMessageId, userMessage)
 
         setIsTyping(true)
@@ -185,9 +163,7 @@ const ChatPage = () => {
                 // Check for generation progress signal
                 if (line.includes('__GENERATION_PROGRESS__:')) {
                   const signalStart = line.indexOf('__GENERATION_PROGRESS__:')
-                  const signalData = line
-                    .substring(signalStart + '__GENERATION_PROGRESS__:'.length)
-                    .trim()
+                  const signalData = line.substring(signalStart + '__GENERATION_PROGRESS__:'.length).trim()
 
                   try {
                     const progressData = JSON.parse(signalData)
@@ -436,9 +412,7 @@ const ChatPage = () => {
 
                       // 暂时完成分析阶段，等待文档生成信号
                       completeGeneration()
-                      console.info(
-                        'Analysis phase completed, waiting for document generation signal...'
-                      )
+                      console.info('Analysis phase completed, waiting for document generation signal...')
                     }
 
                     displayLine = false // Don't display this line
@@ -456,14 +430,8 @@ const ChatPage = () => {
 
                 // Check for document generation start signal
                 if (line.includes('__DOCUMENT_GENERATION_START__:')) {
-                  const signalStart = line.indexOf(
-                    '__DOCUMENT_GENERATION_START__:'
-                  )
-                  const signalData = line
-                    .substring(
-                      signalStart + '__DOCUMENT_GENERATION_START__:'.length
-                    )
-                    .trim()
+                  const signalStart = line.indexOf('__DOCUMENT_GENERATION_START__:')
+                  const signalData = line.substring(signalStart + '__DOCUMENT_GENERATION_START__:'.length).trim()
 
                   try {
                     const data = JSON.parse(signalData)
@@ -517,31 +485,20 @@ const ChatPage = () => {
                 // Check for documents generated signal
                 if (line.includes('__DOCUMENTS_GENERATED__:')) {
                   const signalStart = line.indexOf('__DOCUMENTS_GENERATED__:')
-                  const signalData = line
-                    .substring(signalStart + '__DOCUMENTS_GENERATED__:'.length)
-                    .trim()
+                  const signalData = line.substring(signalStart + '__DOCUMENTS_GENERATED__:'.length).trim()
 
                   try {
                     const documentData = JSON.parse(signalData)
-                    console.info(
-                      'Successfully parsed document generation signal:',
-                      documentData
-                    )
+                    console.info('Successfully parsed document generation signal:', documentData)
 
                     // Replace placeholder with real documents
                     startGeneration(documentData.documents)
 
                     try {
-                      await handleDocumentGeneration(
-                        documentData.documents,
-                        documentData.chatId
-                      )
+                      await handleDocumentGeneration(documentData.documents, documentData.chatId)
                     } catch (docError) {
                       console.error('Document generation failed:', docError)
-                      setGenerationError(
-                        'Failed to create documents: ' +
-                          (docError as Error).message
-                      )
+                      setGenerationError('Failed to create documents: ' + (docError as Error).message)
                       toast.error('Failed to create documents')
                     }
                     displayLine = false // Don't display this line
@@ -600,9 +557,7 @@ const ChatPage = () => {
           )
         })
       } catch (error) {
-        setLocalMessages((prev) =>
-          prev.filter((msg) => msg.id !== tempMessageId)
-        )
+        setLocalMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId))
         removeMessage(tempMessageId)
         throw error
       }
@@ -631,9 +586,7 @@ const ChatPage = () => {
       setLocalMessages((prevLocal) => {
         // Only keep temp messages from the current chat, not from previous chats
         const tempMessages = prevLocal.filter(
-          (msg) =>
-            (msg.id.startsWith('temp-') || msg.id.startsWith('ai-')) &&
-            msg.chatId === chatId
+          (msg) => (msg.id.startsWith('temp-') || msg.id.startsWith('ai-')) && msg.chatId === chatId
         )
 
         if (tempMessages.length > 0) {
@@ -650,10 +603,7 @@ const ChatPage = () => {
                 (serverMsg) =>
                   serverMsg.role === 'assistant' &&
                   serverMsg.content === tempMsg.content &&
-                  Math.abs(
-                    new Date(serverMsg.createdAt).getTime() -
-                      new Date(tempMsg.createdAt).getTime()
-                  ) < 5000
+                  Math.abs(new Date(serverMsg.createdAt).getTime() - new Date(tempMsg.createdAt).getTime()) < 5000
               )
             }
             return true
@@ -752,13 +702,7 @@ const ChatPage = () => {
       // Automatically submit the initial requirement
       handleRequirementSubmitted(chat.description)
     }
-  }, [
-    chat,
-    messages,
-    requirementSubmitted,
-    sendMessageMutation.isPending,
-    handleRequirementSubmitted,
-  ])
+  }, [chat, messages, requirementSubmitted, sendMessageMutation.isPending, handleRequirementSubmitted])
 
   const handleDocumentGeneration = async (documents: any[], chatId: string) => {
     logger.info('Starting document generation', {
@@ -802,6 +746,7 @@ const ChatPage = () => {
           })
 
           createdCount++
+          incrementCreatedCount()
 
           // 使用同步的进度更新
           nextDocument()
@@ -811,12 +756,11 @@ const ChatPage = () => {
           })
 
           // 添加短暂延迟以便UI更新
-          await new Promise((resolve) =>
-            setTimeout(resolve, config.timeouts.progressUpdate)
-          )
+          await new Promise((resolve) => setTimeout(resolve, config.timeouts.progressUpdate))
         } catch (error) {
           logger.error(`Failed to create document "${doc.title}"`, error)
           failedCount++
+          incrementFailedCount()
 
           // 即使失败也要更新进度，避免卡住
           nextDocument()
@@ -826,16 +770,12 @@ const ChatPage = () => {
           })
 
           // 添加短暂延迟以便UI更新
-          await new Promise((resolve) =>
-            setTimeout(resolve, config.timeouts.progressUpdate)
-          )
+          await new Promise((resolve) => setTimeout(resolve, config.timeouts.progressUpdate))
         }
       }
 
       // 等待所有进度更新完成
-      await new Promise((resolve) =>
-        setTimeout(resolve, config.timeouts.stateSync)
-      )
+      await new Promise((resolve) => setTimeout(resolve, config.timeouts.stateSync))
       logger.debug('All progress updates completed')
 
       if (createdCount > 0) {
@@ -900,18 +840,14 @@ const ChatPage = () => {
                 size="sm"
                 onClick={() => {
                   // Scroll to requirement generator
-                  const reqGenerator = document.getElementById(
-                    'requirement-generator'
-                  )
+                  const reqGenerator = document.getElementById('requirement-generator')
                   reqGenerator?.scrollIntoView({ behavior: 'smooth' })
                 }}
                 className="text-sm text-muted-foreground hover:text-foreground">
                 Start inputting requirement →
               </Button>
             ) : (
-              <div className="text-sm text-muted-foreground">
-                ✅ Requirement submitted, you can start chatting
-              </div>
+              <div className="text-sm text-muted-foreground">✅ Requirement submitted, you can start chatting</div>
             )}
           </div>
         </div>
@@ -934,25 +870,17 @@ const ChatPage = () => {
       </div>
 
       {/* Messages */}
-      <ScrollArea
-        className="flex-1 p-4"
-        ref={scrollAreaRef}
-        onScrollCapture={handleScroll}>
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef} onScrollCapture={handleScroll}>
         <div className="space-y-4">
           {localMessages.map((message) => {
             // For user messages, use the message's user info if available, otherwise current user
-            const messageUser =
-              message.role === 'user' && message.user ? message.user : user
-            const displayName =
-              messageUser?.name || messageUser?.email || 'Unknown User'
+            const messageUser = message.role === 'user' && message.user ? message.user : user
+            const displayName = messageUser?.name || messageUser?.email || 'Unknown User'
 
             return (
               <div
                 key={message.id}
-                className={cn(
-                  'flex items-start gap-3',
-                  message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                )}>
+                className={cn('flex items-start gap-3', message.role === 'user' ? 'flex-row-reverse' : 'flex-row')}>
                 <div
                   className={cn(
                     'flex flex-col items-center gap-1',
@@ -988,9 +916,7 @@ const ChatPage = () => {
                 <div
                   className={cn(
                     'max-w-[70%] rounded-lg px-4 py-2',
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
+                    message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
                   )}>
                   <p className="whitespace-pre-wrap">
                     {message.content
@@ -998,9 +924,7 @@ const ChatPage = () => {
                       ?.replace(/__DOCUMENT_GENERATION_START__:.*?\n/g, '')
                       ?.replace(/__GENERATION_PROGRESS__:.*?\n/g, '')}
                   </p>
-                  <p className="mt-1 text-xs opacity-70">
-                    {new Date(message.createdAt).toLocaleTimeString()}
-                  </p>
+                  <p className="mt-1 text-xs opacity-70">{new Date(message.createdAt).toLocaleTimeString()}</p>
                 </div>
               </div>
             )
@@ -1017,9 +941,7 @@ const ChatPage = () => {
                 </Avatar>
 
                 {/* AI Name */}
-                <span className="max-w-20 truncate text-xs text-muted-foreground">
-                  AI助手
-                </span>
+                <span className="max-w-20 truncate text-xs text-muted-foreground">AI助手</span>
               </div>
 
               {/* AI Message Content */}
@@ -1061,21 +983,19 @@ const ChatPage = () => {
                 </Avatar>
 
                 {/* AI Name */}
-                <span className="max-w-20 truncate text-xs text-muted-foreground">
-                  AI助手
-                </span>
+                <span className="max-w-20 truncate text-xs text-muted-foreground">AI助手</span>
               </div>
 
               {/* Document Generation Content */}
               <div className="max-w-[85%]">
                 <DocumentGenerationProgress
                   documents={documentGenerationState.documents}
-                  currentDocumentIndex={
-                    documentGenerationState.currentDocumentIndex
-                  }
+                  currentDocumentIndex={documentGenerationState.currentDocumentIndex}
                   isGenerating={documentGenerationState.isGenerating}
                   error={documentGenerationState.error}
                   overallProgress={documentGenerationState.overallProgress}
+                  createdDocumentCount={documentGenerationState.createdDocumentCount}
+                  failedDocumentCount={documentGenerationState.failedDocumentCount}
                 />
               </div>
             </div>
@@ -1101,15 +1021,9 @@ const ChatPage = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={
-                requirementSubmitted ? '输入您的消息...' : '请先输入需求描述...'
-              }
+              placeholder={requirementSubmitted ? '输入您的消息...' : '请先输入需求描述...'}
               className="max-h-[120px] min-h-[40px] resize-none border-0 bg-transparent px-0 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0"
-              disabled={
-                !requirementSubmitted ||
-                sendMessageMutation.isPending ||
-                isTyping
-              }
+              disabled={!requirementSubmitted || sendMessageMutation.isPending || isTyping}
               rows={1}
             />
 
@@ -1131,19 +1045,11 @@ const ChatPage = () => {
             size="icon"
             className={cn(
               'h-8 w-8 flex-shrink-0 rounded-md',
-              !requirementSubmitted ||
-                !input.trim() ||
-                sendMessageMutation.isPending ||
-                isTyping
+              !requirementSubmitted || !input.trim() || sendMessageMutation.isPending || isTyping
                 ? 'cursor-not-allowed bg-muted text-muted-foreground'
                 : 'bg-primary text-primary-foreground hover:bg-primary/90'
             )}
-            disabled={
-              !requirementSubmitted ||
-              !input.trim() ||
-              sendMessageMutation.isPending ||
-              isTyping
-            }>
+            disabled={!requirementSubmitted || !input.trim() || sendMessageMutation.isPending || isTyping}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
@@ -1155,12 +1061,7 @@ const ChatPage = () => {
             <span>Shift + Enter 换行</span>
           </div>
           {input.length > 0 && (
-            <span
-              className={cn(
-                input.length > 1000
-                  ? 'text-destructive'
-                  : 'text-muted-foreground/70'
-              )}>
+            <span className={cn(input.length > 1000 ? 'text-destructive' : 'text-muted-foreground/70')}>
               {input.length}/2000
             </span>
           )}

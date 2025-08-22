@@ -17,8 +17,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       analysis,
-      contentPreview:
-        content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+      contentPreview: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
       contentLength: content.length,
     })
   } catch (error) {

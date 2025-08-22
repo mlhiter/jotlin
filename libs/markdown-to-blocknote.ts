@@ -2,10 +2,7 @@
  * Convert markdown content to BlockNote blocks using BlockNote's built-in parser
  * This should be used in browser environment where BlockNote editor is available
  */
-export async function convertMarkdownToBlocks(
-  markdown: string,
-  editor?: any
-): Promise<any[]> {
+export async function convertMarkdownToBlocks(markdown: string, editor?: any): Promise<any[]> {
   try {
     if (editor && editor.tryParseMarkdownToBlocks) {
       // Use BlockNote's official markdown parser
@@ -285,9 +282,7 @@ function processTableRows(tableRows: string[], blocks: any[]) {
   if (tableRows.length === 0) return
 
   // Filter out separator rows (e.g., |---|---|)
-  const dataRows = tableRows.filter(
-    (row) => !row.match(/^\s*\|?[\s\-:]+\|?[\s\-:|]*$/)
-  )
+  const dataRows = tableRows.filter((row) => !row.match(/^\s*\|?[\s\-:]+\|?[\s\-:|]*$/))
 
   if (dataRows.length === 0) return
 

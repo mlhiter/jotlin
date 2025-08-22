@@ -6,11 +6,7 @@ interface AuthSocialButtonProps {
   platform: string
 }
 
-const AuthSocialButton = ({
-  icon: Icon,
-  onClick,
-  platform,
-}: AuthSocialButtonProps) => {
+const AuthSocialButton = ({ icon: Icon, onClick, platform }: AuthSocialButtonProps) => {
   return (
     <button
       type="button"

@@ -6,10 +6,7 @@ import { prisma } from '@/libs/prisma'
 // 告诉 Next.js 这个路由是动态的
 export const dynamic = 'force-dynamic'
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { invitationId: string } }
-) {
+export async function PUT(req: Request, { params }: { params: { invitationId: string } }) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session?.user?.email) {
@@ -103,10 +100,7 @@ export async function PUT(
       }
     } catch (notificationError) {
       // Log the error but don't fail the invitation update
-      console.error(
-        'Failed to create notification for invitation response:',
-        notificationError
-      )
+      console.error('Failed to create notification for invitation response:', notificationError)
     }
 
     return NextResponse.json(updatedInvitation)

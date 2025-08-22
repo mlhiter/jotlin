@@ -43,9 +43,7 @@ export function NotificationBell({ documentId }: NotificationBellProps) {
   // 获取通知
   const fetchNotifications = async () => {
     try {
-      const url = documentId
-        ? `/api/notifications?documentId=${documentId}`
-        : '/api/notifications'
+      const url = documentId ? `/api/notifications?documentId=${documentId}` : '/api/notifications'
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
@@ -88,11 +86,7 @@ export function NotificationBell({ documentId }: NotificationBellProps) {
       })
 
       if (response.ok) {
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === notificationId ? { ...n, isRead: true } : n
-          )
-        )
+        setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n)))
         setUnreadCount((prev) => Math.max(0, prev - 1))
       }
     } catch (error) {
@@ -187,27 +181,19 @@ export function NotificationBell({ documentId }: NotificationBellProps) {
 
         <ScrollArea className="h-[300px]">
           {notifications.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              暂无通知
-            </div>
+            <div className="p-4 text-center text-sm text-muted-foreground">暂无通知</div>
           ) : (
             notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className={`flex cursor-pointer items-start gap-3 p-3 ${
-                  !notification.isRead ? 'bg-blue-50' : ''
-                }`}
+                className={`flex cursor-pointer items-start gap-3 p-3 ${!notification.isRead ? 'bg-blue-50' : ''}`}
                 onClick={() => handleNotificationClick(notification)}>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium">{notification.title}</p>
-                    {!notification.isRead && (
-                      <div className="h-2 w-2 rounded-full bg-blue-500" />
-                    )}
+                    {!notification.isRead && <div className="h-2 w-2 rounded-full bg-blue-500" />}
                   </div>
-                  <p className="line-clamp-2 text-xs text-muted-foreground">
-                    {notification.content}
-                  </p>
+                  <p className="line-clamp-2 text-xs text-muted-foreground">{notification.content}</p>
                   <p className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(notification.createdAt), {
                       addSuffix: true,

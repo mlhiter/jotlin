@@ -7,13 +7,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -88,8 +82,8 @@ export function NewChatModal({ isOpen, onClose }: NewChatModalProps) {
         <DialogHeader>
           <DialogTitle>Start a New Chat</DialogTitle>
           <DialogDescription>
-            Describe what you&apos;d like to work on or discuss. We&apos;ll
-            automatically generate a title based on your needs.
+            Describe what you&apos;d like to work on or discuss. We&apos;ll automatically generate a title based on your
+            needs.
           </DialogDescription>
         </DialogHeader>
 
@@ -108,19 +102,12 @@ export function NewChatModal({ isOpen, onClose }: NewChatModalProps) {
           </div>
 
           <div className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              disabled={createMutation.isPending || isGeneratingTitle}>
+            <Button variant="outline" onClick={onClose} disabled={createMutation.isPending || isGeneratingTitle}>
               Cancel
             </Button>
             <Button
               onClick={handleCreate}
-              disabled={
-                !requirement.trim() ||
-                createMutation.isPending ||
-                isGeneratingTitle
-              }>
+              disabled={!requirement.trim() || createMutation.isPending || isGeneratingTitle}>
               {createMutation.isPending || isGeneratingTitle ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -132,9 +119,7 @@ export function NewChatModal({ isOpen, onClose }: NewChatModalProps) {
             </Button>
           </div>
 
-          <p className="text-xs text-muted-foreground">
-            Tip: Press Cmd/Ctrl + Enter to create quickly
-          </p>
+          <p className="text-xs text-muted-foreground">Tip: Press Cmd/Ctrl + Enter to create quickly</p>
         </div>
       </DialogContent>
     </Dialog>

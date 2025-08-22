@@ -4,10 +4,7 @@ import { BlockNoteEditor } from '@blocknote/core'
 import { filterSuggestionItems, PartialBlock } from '@blocknote/core'
 import { en } from '@blocknote/core/locales'
 import { BlockNoteView } from '@blocknote/mantine'
-import {
-  SuggestionMenuController,
-  FormattingToolbarController,
-} from '@blocknote/react'
+import { SuggestionMenuController, FormattingToolbarController } from '@blocknote/react'
 import DOMPurify from 'dompurify'
 import { ChevronRight, MessageCircle } from 'lucide-react'
 import { marked } from 'marked'
@@ -37,14 +34,7 @@ interface EditorProps {
   editable?: boolean
 }
 
-const Editor = ({
-  onChange,
-  initialContent,
-  initialMarkdown,
-  editable,
-  webrtcProvider,
-  ydoc,
-}: EditorProps) => {
+const Editor = ({ onChange, initialContent, initialMarkdown, editable, webrtcProvider, ydoc }: EditorProps) => {
   const { resolvedTheme } = useTheme()
   const { user } = useSession()
   const params = useParams()
@@ -53,9 +43,7 @@ const Editor = ({
   const [hasComments, setHasComments] = useState(false)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
   const [hasInitializedSidebar, setHasInitializedSidebar] = useState(false)
-  const [newCommentBlockId, setNewCommentBlockId] = useState<string | null>(
-    null
-  )
+  const [newCommentBlockId, setNewCommentBlockId] = useState<string | null>(null)
   const [requiredHeight, setRequiredHeight] = useState<number>(0)
 
   // 当有评论时，确保侧边栏是展开的（首次有评论时强制展开）
@@ -80,10 +68,7 @@ const Editor = ({
   // 保存侧边栏状态到localStorage（仅当有评论时）
   useEffect(() => {
     if (hasComments && typeof window !== 'undefined') {
-      localStorage.setItem(
-        'comment-sidebar-expanded',
-        JSON.stringify(isSidebarExpanded)
-      )
+      localStorage.setItem('comment-sidebar-expanded', JSON.stringify(isSidebarExpanded))
     }
   }, [isSidebarExpanded, hasComments])
 
@@ -178,20 +163,12 @@ const Editor = ({
           const blocks = await editor.tryParseMarkdownToBlocks(initialMarkdown)
           editor.replaceBlocks(editor.document, blocks)
         } catch (error) {
-          console.error(
-            'Failed to parse initial markdown with BlockNote parser:',
-            error
-          )
+          console.error('Failed to parse initial markdown with BlockNote parser:', error)
 
           // Fallback: use our enhanced markdown parser
           try {
-            const { convertMarkdownToBlocks } = await import(
-              '@/libs/markdown-to-blocknote'
-            )
-            const fallbackBlocks = await convertMarkdownToBlocks(
-              initialMarkdown,
-              null
-            )
+            const { convertMarkdownToBlocks } = await import('@/libs/markdown-to-blocknote')
+            const fallbackBlocks = await convertMarkdownToBlocks(initialMarkdown, null)
             editor.replaceBlocks(editor.document, fallbackBlocks)
           } catch (fallbackError) {
             console.error('Fallback parser also failed:', fallbackError)
@@ -222,9 +199,7 @@ const Editor = ({
   useEffect(() => {
     const loadComments = async () => {
       try {
-        const response = await fetch(
-          `/api/comments?documentId=${params.documentId}`
-        )
+        const response = await fetch(`/api/comments?documentId=${params.documentId}`)
         if (!response.ok) {
           throw new Error('Failed to fetch comments')
         }
@@ -265,16 +240,12 @@ const Editor = ({
         const currentBlockIds = new Set(allBlocks.map((block) => block.id))
 
         // Fetch all comments for this document
-        const response = await fetch(
-          `/api/comments?documentId=${params.documentId}`
-        )
+        const response = await fetch(`/api/comments?documentId=${params.documentId}`)
         if (response.ok) {
           const comments = await response.json()
 
           // Find comments with blocks that no longer exist
-          const orphanedComments = comments.filter(
-            (comment: any) => !currentBlockIds.has(comment.blockId)
-          )
+          const orphanedComments = comments.filter((comment: any) => !currentBlockIds.has(comment.blockId))
 
           // Delete orphaned comments
           for (const comment of orphanedComments) {
@@ -316,10 +287,10 @@ const Editor = ({
       // markhtml will be parsed to blocks, so we only handle text/plain
       if (item.kind === 'string' && item.type === 'text/plain') {
         item.getAsString(async (markdown) => {
-          const markdownHtml = await marked.parse(
-            markdown.replace(/^[\u200B\u200C\u200D\u200E\u200F\uFEFF]/, ''),
-            { breaks: true, async: true }
-          )
+          const markdownHtml = await marked.parse(markdown.replace(/^[\u200B\u200C\u200D\u200E\u200F\uFEFF]/, ''), {
+            breaks: true,
+            async: true,
+          })
           const cleanedHtml = DOMPurify.sanitize(markdownHtml)
           const blocksFromHTML = await editor.tryParseHTMLToBlocks(cleanedHtml)
           editor.replaceBlocks([currentBlock], blocksFromHTML)
@@ -341,9 +312,7 @@ const Editor = ({
   )
 
   return (
-    <div
-      className="relative flex overflow-hidden"
-      style={{ minHeight: `${containerMinHeight}px` }}>
+    <div className="relative flex overflow-hidden" style={{ minHeight: `${containerMinHeight}px` }}>
       {/* 主编辑器区域 */}
       <div
         className={`flex-1 transition-all duration-300 ${
@@ -360,9 +329,7 @@ const Editor = ({
           slashMenu={false}>
           <SuggestionMenuController
             triggerCharacter={'/'}
-            getItems={async (query) =>
-              filterSuggestionItems(getCustomSlashMenuItems(editor), query)
-            }
+            getItems={async (query) => filterSuggestionItems(getCustomSlashMenuItems(editor), query)}
           />
           <FormattingToolbarController formattingToolbar={formattingToolbar} />
         </BlockNoteView>

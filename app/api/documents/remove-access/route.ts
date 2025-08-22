@@ -16,10 +16,7 @@ export async function PUT(req: Request) {
     const { documentId, collaboratorEmail } = await req.json()
 
     if (!documentId || !collaboratorEmail) {
-      return new NextResponse(
-        'Document ID and collaborator email are required',
-        { status: 400 }
-      )
+      return new NextResponse('Document ID and collaborator email are required', { status: 400 })
     }
 
     // 查找文档及其协作者信息
@@ -48,9 +45,7 @@ export async function PUT(req: Request) {
     }
 
     // 检查被移除的用户是否确实是协作者
-    const collaboratorExists = document.collaborators.some(
-      (collab) => collab.userEmail === collaboratorEmail
-    )
+    const collaboratorExists = document.collaborators.some((collab) => collab.userEmail === collaboratorEmail)
 
     if (!collaboratorExists) {
       return new NextResponse('Collaborator not found in this document', {

@@ -26,20 +26,11 @@ interface ChatExportMenuProps {
   disabled?: boolean
 }
 
-const ChatExportMenu = ({
-  chatId,
-  chatTitle,
-  chatDescription,
-  documents,
-  disabled = false,
-}: ChatExportMenuProps) => {
+const ChatExportMenu = ({ chatId, chatTitle, chatDescription, documents, disabled = false }: ChatExportMenuProps) => {
   const [isExporting, setIsExporting] = useState(false)
   const editor = useCreateBlockNote()
 
-  const convertBlocksToMarkdown = async (
-    content: string,
-    title: string
-  ): Promise<string> => {
+  const convertBlocksToMarkdown = async (content: string, title: string): Promise<string> => {
     try {
       if (!content) {
         return `# ${title}\n\n*This document is empty.*\n`
@@ -61,10 +52,7 @@ const ChatExportMenu = ({
   const fetchDocumentContent = async (doc: Doc): Promise<string> => {
     try {
       const fullDocument = await documentApi.getById(doc.id)
-      return await convertBlocksToMarkdown(
-        fullDocument.content || '',
-        doc.title || 'Untitled'
-      )
+      return await convertBlocksToMarkdown(fullDocument.content || '', doc.title || 'Untitled')
     } catch (error) {
       console.error(`Failed to fetch document ${doc.id}:`, error)
       return `# ${doc.title || 'Untitled'}\n\n*Failed to fetch document content.*\n`
@@ -73,9 +61,7 @@ const ChatExportMenu = ({
 
   const createSummaryHeader = (): string => {
     const title = chatTitle || `Chat ${chatId}`
-    const description = chatDescription
-      ? `\n\n**Description:** ${chatDescription}`
-      : ''
+    const description = chatDescription ? `\n\n**Description:** ${chatDescription}` : ''
     const timestamp = new Date().toLocaleString()
 
     return `# ${title}${description}
@@ -114,8 +100,7 @@ ${documents.map((doc, index) => `${index + 1}. **${doc.title || 'Untitled'}**`).
 
       // 创建总结性前置文本
       const summaryHeader = createSummaryHeader()
-      const combinedMarkdown =
-        summaryHeader + markdownContents.join('\n---\n\n')
+      const combinedMarkdown = summaryHeader + markdownContents.join('\n---\n\n')
 
       await navigator.clipboard.writeText(combinedMarkdown)
       toast.success(`Copied ${documents.length} documents to clipboard`)
@@ -179,31 +164,20 @@ ${documents.map((doc, index) => `${index + 1}. **${doc.title || 'Untitled'}**`).
           Export Documents
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-64"
-        align="end"
-        alignOffset={8}
-        forceMount>
+      <DropdownMenuContent className="w-64" align="end" alignOffset={8} forceMount>
         <div className="p-2 text-xs text-muted-foreground">
-          Export {documents.length} document{documents.length > 1 ? 's' : ''} as
-          Markdown
+          Export {documents.length} document{documents.length > 1 ? 's' : ''} as Markdown
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={handleCopyToClipboard}
-          disabled={isExporting}>
+        <DropdownMenuItem onClick={handleCopyToClipboard} disabled={isExporting}>
           <Copy className="mr-2 h-4 w-4" />
           Copy to Clipboard
-          <div className="ml-auto text-xs text-muted-foreground">
-            With Summary
-          </div>
+          <div className="ml-auto text-xs text-muted-foreground">With Summary</div>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleDownloadZip} disabled={isExporting}>
           <Archive className="mr-2 h-4 w-4" />
           Download as ZIP
-          <div className="ml-auto text-xs text-muted-foreground">
-            Separate files
-          </div>
+          <div className="ml-auto text-xs text-muted-foreground">Separate files</div>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

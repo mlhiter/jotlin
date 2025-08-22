@@ -5,11 +5,7 @@ import { useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 import { UnifiedInboxContent } from '@/app/(main)/components/unified-inbox-content'
 import { useUnifiedNotifications } from '@/hooks/use-unified-notifications'
@@ -18,9 +14,7 @@ interface DocumentNotificationBellProps {
   documentId: string
 }
 
-export function DocumentNotificationBell({
-  documentId,
-}: DocumentNotificationBellProps) {
+export function DocumentNotificationBell({ documentId }: DocumentNotificationBellProps) {
   const { notifications } = useUnifiedNotifications()
   const [documentUnreadCount, setDocumentUnreadCount] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
@@ -28,8 +22,7 @@ export function DocumentNotificationBell({
   // 计算与当前文档相关的未读通知数量
   useEffect(() => {
     const documentNotifications = notifications.filter(
-      (notification) =>
-        notification.documentId === documentId && !notification.isRead
+      (notification) => notification.documentId === documentId && !notification.isRead
     )
     setDocumentUnreadCount(documentNotifications.length)
   }, [notifications, documentId])
@@ -56,15 +49,9 @@ export function DocumentNotificationBell({
 
       <DropdownMenuContent align="end" className="w-auto p-0">
         <div className="border-b p-2">
-          <div className="text-sm font-medium text-muted-foreground">
-            当前文档通知
-          </div>
+          <div className="text-sm font-medium text-muted-foreground">当前文档通知</div>
         </div>
-        <UnifiedInboxContent
-          className="w-80"
-          documentId={documentId}
-          onClose={() => setIsOpen(false)}
-        />
+        <UnifiedInboxContent className="w-80" documentId={documentId} onClose={() => setIsOpen(false)} />
       </DropdownMenuContent>
     </DropdownMenu>
   )

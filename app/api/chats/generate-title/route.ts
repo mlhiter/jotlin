@@ -23,8 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Call the backend agent server to generate title
-    const agentServerUrl =
-      process.env.AGENT_SERVER_URL || 'http://localhost:8000'
+    const agentServerUrl = process.env.AGENT_SERVER_URL || 'http://localhost:8000'
 
     const response = await fetch(`${agentServerUrl}/api/generate-chat-title`, {
       method: 'POST',
@@ -37,16 +36,10 @@ export async function POST(req: NextRequest) {
     })
 
     if (!response.ok) {
-      console.error(
-        'Failed to generate title from agent server:',
-        response.statusText
-      )
+      console.error('Failed to generate title from agent server:', response.statusText)
       // Fallback to a simple title
       return NextResponse.json({
-        title:
-          userRequirement.length > 50
-            ? userRequirement.substring(0, 47) + '...'
-            : userRequirement,
+        title: userRequirement.length > 50 ? userRequirement.substring(0, 47) + '...' : userRequirement,
       })
     }
 

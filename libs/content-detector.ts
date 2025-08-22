@@ -71,10 +71,7 @@ function detectRecursiveJSON(content: string): {
   try {
     const parsed = JSON.parse(content)
 
-    const extractDeepestValidJSON = (
-      current: any,
-      depth = 0
-    ): { content?: any; depth: number } => {
+    const extractDeepestValidJSON = (current: any, depth = 0): { content?: any; depth: number } => {
       if (depth > 15) {
         return { depth }
       }
@@ -90,9 +87,7 @@ function detectRecursiveJSON(content: string): {
           const nestedParsed = JSON.parse(current[0].content[0].text)
           // Recursively check deeper
           const deeper = extractDeepestValidJSON(nestedParsed, depth + 1)
-          return deeper.content
-            ? deeper
-            : { content: nestedParsed, depth: depth + 1 }
+          return deeper.content ? deeper : { content: nestedParsed, depth: depth + 1 }
         } catch {
           return { depth }
         }
@@ -219,9 +214,6 @@ function detectMarkdown(content: string): {
   return {
     isValid: confidence > 30,
     confidence,
-    issues:
-      detectedPatterns.length === 0
-        ? ['No markdown patterns detected']
-        : undefined,
+    issues: detectedPatterns.length === 0 ? ['No markdown patterns detected'] : undefined,
   }
 }

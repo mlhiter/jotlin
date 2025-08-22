@@ -19,11 +19,7 @@ interface InviteUserProps {
   first?: boolean
 }
 
-export const InviteUser = ({
-  collaborator,
-  document,
-  first = false,
-}: InviteUserProps) => {
+export const InviteUser = ({ collaborator, document, first = false }: InviteUserProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { user } = useSession()
   const queryClient = useQueryClient()
@@ -90,10 +86,7 @@ export const InviteUser = ({
     <div className="flex items-center justify-between gap-x-3 rounded-lg p-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
       <div className="flex min-w-0 flex-1 items-center gap-x-3">
         <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarImage
-            src={collaboratorInfo.image || ''}
-            alt={collaboratorInfo.name || collaboratorInfo.email}
-          />
+          <AvatarImage src={collaboratorInfo.image || ''} alt={collaboratorInfo.name || collaboratorInfo.email} />
           <AvatarFallback className="bg-blue-500 text-sm font-medium text-white">
             {getInitials(collaboratorInfo.name, collaboratorInfo.email)}
           </AvatarFallback>
@@ -101,9 +94,7 @@ export const InviteUser = ({
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-center gap-x-2">
-            <span className="truncate text-sm font-medium">
-              {collaboratorInfo.name || '未设置用户名'}
-            </span>
+            <span className="truncate text-sm font-medium">{collaboratorInfo.name || '未设置用户名'}</span>
             {first && (
               <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-800 dark:bg-rose-900 dark:text-rose-200">
                 创建者
@@ -115,9 +106,7 @@ export const InviteUser = ({
               </span>
             )}
           </div>
-          <span className="truncate text-sm text-gray-500 dark:text-gray-400">
-            {collaboratorInfo.email}
-          </span>
+          <span className="truncate text-sm text-gray-500 dark:text-gray-400">{collaboratorInfo.email}</span>
         </div>
       </div>
 

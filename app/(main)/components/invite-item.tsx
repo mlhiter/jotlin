@@ -32,15 +32,7 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
   const queryClient = useQueryClient()
   const { updateInvitation } = useInvitationStore()
   const { setDocuments } = useDocumentStore()
-  const {
-    id,
-    documentId,
-    userEmail,
-    collaboratorEmail,
-    isAccepted,
-    isReplied,
-    isValid,
-  } = invitation
+  const { id, documentId, userEmail, collaboratorEmail, isAccepted, isReplied, isValid } = invitation
   const { data: documentInfo } = useQuery({
     queryKey: ['documentInfo', documentId],
     queryFn: () => documentApi.getBasicInfoById(documentId),
@@ -70,10 +62,7 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
       queryClient.invalidateQueries({ queryKey: ['documents'] })
 
       // 手动触发文档列表更新
-      await Promise.all([
-        setDocuments(null, 'share'),
-        setDocuments(null, 'private'),
-      ])
+      await Promise.all([setDocuments(null, 'share'), setDocuments(null, 'private')])
 
       // 路由到被邀请的文档
       router.push(`/documents/${documentId}`)
@@ -104,10 +93,7 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
   }
 
   // Show loading only if document info is undefined or if we need user info but don't have it
-  if (
-    documentInfo === undefined ||
-    (collaboratorEmail === user?.email && userInfo === undefined)
-  ) {
+  if (documentInfo === undefined || (collaboratorEmail === user?.email && userInfo === undefined)) {
     return (
       <div className="flex h-16 items-center justify-center">
         <Spinner size="lg" />
@@ -119,9 +105,7 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
   const getStatusBadge = () => {
     if (!isReplied) {
       return (
-        <Badge
-          variant="outline"
-          className="rounded-full bg-background/50 px-2.5 py-0.5 text-xs font-normal">
+        <Badge variant="outline" className="rounded-full bg-background/50 px-2.5 py-0.5 text-xs font-normal">
           Pending
         </Badge>
       )
@@ -156,10 +140,7 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-sm">
-                  You invited{' '}
-                  <span className="text-muted-foreground">
-                    {collaboratorEmail}
-                  </span>
+                  You invited <span className="text-muted-foreground">{collaboratorEmail}</span>
                 </div>
                 <div className="ml-auto flex-shrink-0">{getStatusBadge()}</div>
               </div>
@@ -180,22 +161,14 @@ const InviteItem = ({ invitation }: InviteItemProps) => {
         {collaboratorEmail === user?.email && (
           <div className="flex items-start gap-x-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage
-                src={userInfo?.image || ''}
-                alt={userInfo?.name || ''}
-              />
+              <AvatarImage src={userInfo?.image || ''} alt={userInfo?.name || ''} />
             </Avatar>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-sm">
-                  <span className="text-muted-foreground">{userEmail}</span>{' '}
-                  invited you
+                  <span className="text-muted-foreground">{userEmail}</span> invited you
                 </div>
-                {isReplied && (
-                  <div className="ml-auto flex-shrink-0">
-                    {getStatusBadge()}
-                  </div>
-                )}
+                {isReplied && <div className="ml-auto flex-shrink-0">{getStatusBadge()}</div>}
               </div>
 
               <div className="mt-2 flex items-center rounded-lg bg-muted/30 px-3 py-2 text-sm">

@@ -6,10 +6,7 @@ import { prisma } from '@/libs/prisma'
 // 告诉 Next.js 这个路由是动态的
 export const dynamic = 'force-dynamic'
 
-export async function POST(
-  req: Request,
-  { params }: { params: { chatId: string } }
-) {
+export async function POST(req: Request, { params }: { params: { chatId: string } }) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session?.user?.email) {
@@ -34,9 +31,7 @@ export async function POST(
 
     // Check if user has permission to invite (owner or existing collaborator)
     const isOwner = chat.userId === session.user.id
-    const isCollaborator = chat.collaborators.some(
-      (collaborator) => collaborator.userEmail === session.user.email
-    )
+    const isCollaborator = chat.collaborators.some((collaborator) => collaborator.userEmail === session.user.email)
 
     if (!isOwner && !isCollaborator) {
       return new NextResponse('Unauthorized', { status: 401 })

@@ -157,21 +157,11 @@ export const chatApi = {
     return DELETE(`/api/chats/${chatId}/collaborators`, { collaboratorEmail })
   },
 
-  createInvitation: async (
-    chatId: string,
-    data: CreateChatInvitationRequest
-  ) => {
+  createInvitation: async (chatId: string, data: CreateChatInvitationRequest) => {
     return POST<ChatInvitation>(`/api/chats/${chatId}/invitations/create`, data)
   },
 
-  updateInvitation: async (
-    chatId: string,
-    invitationId: string,
-    data: UpdateChatInvitationRequest
-  ) => {
-    return PUT<ChatInvitation>(
-      `/api/chats/${chatId}/invitations/${invitationId}`,
-      data
-    )
+  updateInvitation: async (chatId: string, invitationId: string, data: UpdateChatInvitationRequest) => {
+    return PUT<ChatInvitation>(`/api/chats/${chatId}/invitations/${invitationId}`, data)
   },
 }

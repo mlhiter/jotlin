@@ -1,10 +1,7 @@
 import { GET, POST, PUT } from '@/libs/axios'
 import { Invitation } from '@/types/invitation'
 
-type CreateParams = Pick<
-  Invitation,
-  'documentId' | 'collaboratorEmail' | 'userEmail'
->
+type CreateParams = Pick<Invitation, 'documentId' | 'collaboratorEmail' | 'userEmail'>
 
 type UpdateParams = Pick<Invitation, 'isAccepted' | 'id'>
 

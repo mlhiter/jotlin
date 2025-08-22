@@ -47,12 +47,7 @@ const CoverImageModal = () => {
         <DialogHeader>
           <h2 className="text-center text-lg font-semibold">Cover Image</h2>
         </DialogHeader>
-        <SingleImageDropzone
-          className="w-full outline-none"
-          disabled={isSubmitting}
-          value={file}
-          onChange={onChange}
-        />
+        <SingleImageDropzone className="w-full outline-none" disabled={isSubmitting} value={file} onChange={onChange} />
       </DialogContent>
     </Dialog>
   )

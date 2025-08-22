@@ -24,12 +24,8 @@ const ChatsPage = () => {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4">
       <MessageSquare className="h-16 w-16 text-muted-foreground" />
-      <h2 className="text-2xl font-semibold text-muted-foreground">
-        Start a new chat
-      </h2>
-      <p className="text-muted-foreground">
-        Create a new chat from the left, or select an existing chat to continue
-      </p>
+      <h2 className="text-2xl font-semibold text-muted-foreground">Start a new chat</h2>
+      <p className="text-muted-foreground">Create a new chat from the left, or select an existing chat to continue</p>
     </div>
   )
 }

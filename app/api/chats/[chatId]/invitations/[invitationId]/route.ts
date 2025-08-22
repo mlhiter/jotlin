@@ -6,10 +6,7 @@ import { prisma } from '@/libs/prisma'
 // 告诉 Next.js 这个路由是动态的
 export const dynamic = 'force-dynamic'
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { chatId: string; invitationId: string } }
-) {
+export async function PUT(req: Request, { params }: { params: { chatId: string; invitationId: string } }) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session?.user?.email) {
@@ -60,15 +57,14 @@ export async function PUT(
       if (existingInvitation.chat.documents.length > 0) {
         for (const document of existingInvitation.chat.documents) {
           // Check if user is not already a collaborator
-          const existingDocCollaborator =
-            await prisma.documentCollaborator.findUnique({
-              where: {
-                documentId_userEmail: {
-                  documentId: document.id,
-                  userEmail: session.user.email,
-                },
+          const existingDocCollaborator = await prisma.documentCollaborator.findUnique({
+            where: {
+              documentId_userEmail: {
+                documentId: document.id,
+                userEmail: session.user.email,
               },
-            })
+            },
+          })
 
           if (!existingDocCollaborator) {
             await prisma.documentCollaborator.create({

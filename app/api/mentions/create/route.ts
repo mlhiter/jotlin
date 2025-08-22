@@ -28,13 +28,7 @@ export async function POST(req: NextRequest) {
       documentTitle: string
     } = await req.json()
 
-    if (
-      !mentions ||
-      !commentId ||
-      !documentId ||
-      !mentionerName ||
-      !documentTitle
-    ) {
+    if (!mentions || !commentId || !documentId || !mentionerName || !documentTitle) {
       return new NextResponse('Missing required fields', { status: 400 })
     }
 

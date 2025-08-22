@@ -20,10 +20,7 @@ type InvitationStore = {
     userEmail: string
   }) => Promise<Invitation>
 
-  updateInvitation: (params: {
-    id: string
-    isAccepted: boolean
-  }) => Promise<void>
+  updateInvitation: (params: { id: string; isAccepted: boolean }) => Promise<void>
 }
 
 export const useInvitationStore = create(
@@ -44,9 +41,7 @@ export const useInvitationStore = create(
 
     fetchUnreadCount: async (email) => {
       try {
-        const response = await fetch(
-          `/api/invitations/get-by-email?email=${encodeURIComponent(email)}&countOnly=true`
-        )
+        const response = await fetch(`/api/invitations/get-by-email?email=${encodeURIComponent(email)}&countOnly=true`)
         if (response.ok) {
           const data = await response.json()
           set((state) => {
@@ -80,9 +75,7 @@ export const useInvitationStore = create(
           if (invitation) {
             // 根据用户角色减少未读计数
             const shouldDecrease =
-              invitation.collaboratorEmail === userEmail
-                ? !invitation.isReplied
-                : invitation.isReplied
+              invitation.collaboratorEmail === userEmail ? !invitation.isReplied : invitation.isReplied
             if (shouldDecrease) {
               state.unreadCount = Math.max(0, state.unreadCount - 1)
             }
@@ -110,9 +103,7 @@ export const useInvitationStore = create(
       await invitationApi.update(params)
       set((state) => {
         if (state.invitations) {
-          const index = state.invitations.findIndex(
-            (inv: Invitation) => inv.id === params.id
-          )
+          const index = state.invitations.findIndex((inv: Invitation) => inv.id === params.id)
           if (index !== -1) {
             state.invitations[index].isAccepted = params.isAccepted
             state.invitations[index].isReplied = true

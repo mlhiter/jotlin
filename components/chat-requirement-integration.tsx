@@ -19,10 +19,7 @@ interface ChatRequirementIntegrationProps {
   onDocumentCreated?: (documentId: string) => void
 }
 
-export function ChatRequirementIntegration({
-  chatMessage,
-  onDocumentCreated,
-}: ChatRequirementIntegrationProps) {
+export function ChatRequirementIntegration({ chatMessage, onDocumentCreated }: ChatRequirementIntegrationProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -39,9 +36,7 @@ export function ChatRequirementIntegration({
             <FileText className="h-5 w-5" />
             AI需求文档生成
           </DialogTitle>
-          <DialogDescription>
-            使用AI多agent系统分析需求并生成专业的需求文档
-          </DialogDescription>
+          <DialogDescription>使用AI多agent系统分析需求并生成专业的需求文档</DialogDescription>
         </DialogHeader>
         <RequirementGenerator
           onDocumentCreated={(docId) => {

@@ -17,21 +17,13 @@ interface EditorWrapperProps {
 const activeRooms = new Map<string, { doc: Y.Doc; provider: WebrtcProvider }>()
 
 const EditorWrapper = memo(
-  ({
-    onChange,
-    initialContent,
-    initialMarkdown,
-    documentId,
-    isShared,
-  }: EditorWrapperProps) => {
+  ({ onChange, initialContent, initialMarkdown, documentId, isShared }: EditorWrapperProps) => {
     const Editor = dynamic(() => import('@/components/editor/editor'), {
       ssr: false,
     })
 
     const [ydoc, setYdoc] = useState<Y.Doc | null>(null)
-    const [webrtcProvider, setWebrtcProvider] = useState<WebrtcProvider | null>(
-      null
-    )
+    const [webrtcProvider, setWebrtcProvider] = useState<WebrtcProvider | null>(null)
     const [isConnecting, setIsConnecting] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
@@ -81,10 +73,7 @@ const EditorWrapper = memo(
             filterBcConns: false,
             peerOpts: {
               config: {
-                iceServers: [
-                  { urls: 'stun:stun.l.google.com:19302' },
-                  { urls: 'stun:global.stun.twilio.com:3478' },
-                ],
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:global.stun.twilio.com:3478' }],
               },
             },
           })
@@ -95,22 +84,17 @@ const EditorWrapper = memo(
             provider: newWebrtcProvider,
           })
 
-          newWebrtcProvider.on(
-            'status',
-            ({ connected }: { connected: boolean }) => {
-              if (connected) {
-                console.info('WebRTC connection established successfully')
-                setIsConnecting(false)
-                setError(null)
-                retryCount = 0
-              } else {
-                console.info(
-                  'WebRTC connection lost, attempting to reconnect...'
-                )
-                handleConnectionError(new Error('Connection lost'))
-              }
+          newWebrtcProvider.on('status', ({ connected }: { connected: boolean }) => {
+            if (connected) {
+              console.info('WebRTC connection established successfully')
+              setIsConnecting(false)
+              setError(null)
+              retryCount = 0
+            } else {
+              console.info('WebRTC connection lost, attempting to reconnect...')
+              handleConnectionError(new Error('Connection lost'))
             }
-          )
+          })
 
           setYdoc(newYdoc)
           setWebrtcProvider(newWebrtcProvider)
@@ -147,35 +131,18 @@ const EditorWrapper = memo(
     }, [documentId, isShared])
 
     if (!isShared) {
-      return (
-        <Editor
-          onChange={onChange}
-          initialContent={initialContent}
-          initialMarkdown={initialMarkdown}
-        />
-      )
+      return <Editor onChange={onChange} initialContent={initialContent} initialMarkdown={initialMarkdown} />
     }
 
     if (error) {
-      return (
-        <div className="p-4 text-red-500">
-          Error: {error}. Please refresh the page to try again.
-        </div>
-      )
+      return <div className="p-4 text-red-500">Error: {error}. Please refresh the page to try again.</div>
     }
 
     if (isConnecting || !ydoc || !webrtcProvider) {
       return <div className="p-4">Initializing collaborative editor...</div>
     }
 
-    return (
-      <Editor
-        ydoc={ydoc}
-        webrtcProvider={webrtcProvider}
-        onChange={onChange}
-        initialContent={initialContent}
-      />
-    )
+    return <Editor ydoc={ydoc} webrtcProvider={webrtcProvider} onChange={onChange} initialContent={initialContent} />
   }
 )
 

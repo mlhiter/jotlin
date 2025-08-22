@@ -19,10 +19,7 @@ export async function GET(req: NextRequest) {
     const type = searchParams.get('type')
 
     if (!type || (type !== 'share' && type !== 'private')) {
-      return NextResponse.json(
-        { error: 'The type parameter is invalid.' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'The type parameter is invalid.' }, { status: 400 })
     }
 
     const userEmail = session.user.email

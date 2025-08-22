@@ -1,24 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  ChevronsLeft,
-  MenuIcon,
-  Plus,
-  PlusCircle,
-  Search,
-  Settings,
-  Trash,
-  Inbox,
-  MessageSquare,
-} from 'lucide-react'
+import { ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings, Trash, Inbox, MessageSquare } from 'lucide-react'
 import { useParams, usePathname } from 'next/navigation'
 import { ElementRef, useRef, useState, useEffect, useCallback } from 'react'
 import { useMediaQuery } from 'usehooks-ts'
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 import { useDocumentActions } from '@/hooks/use-document-actions'
 import { useSession } from '@/hooks/use-session'
@@ -67,9 +53,7 @@ const Navigation = () => {
     }
   }, [pathname, isMobile])
 
-  const handleMouseDown = (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => {
+  const handleMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.preventDefault()
     event.stopPropagation()
 
@@ -103,10 +87,7 @@ const Navigation = () => {
       setIsResetting(true)
 
       sidebarRef.current.style.width = isMobile ? '100%' : '240px'
-      navbarRef.current.style.setProperty(
-        'width',
-        isMobile ? '0' : 'calc(100% - 240px)'
-      )
+      navbarRef.current.style.setProperty('width', isMobile ? '0' : 'calc(100% - 240px)')
       navbarRef.current.style.setProperty('left', isMobile ? '100%' : '240px')
 
       setTimeout(() => {
@@ -157,15 +138,11 @@ const Navigation = () => {
             <PopoverTrigger className="group flex min-h-[27px] w-full items-center py-1 pl-3 pr-3 text-sm font-medium text-muted-foreground hover:bg-primary/5">
               <div className="relative mr-2">
                 <Inbox className="h-[18px] w-[18px] shrink-0 text-muted-foreground" />
-                {unreadCount > 0 && (
-                  <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
-                )}
+                {unreadCount > 0 && <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />}
               </div>
               <span className="truncate">Inbox</span>
             </PopoverTrigger>
-            <PopoverContent
-              className="mt-4 w-auto p-0"
-              side={isMobile ? 'bottom' : 'right'}>
+            <PopoverContent className="mt-4 w-auto p-0" side={isMobile ? 'bottom' : 'right'}>
               <UnifiedInboxContent onClose={() => setIsInboxOpen(false)} />
             </PopoverContent>
           </Popover>
@@ -184,16 +161,12 @@ const Navigation = () => {
           </div>
           {/* shared */}
           <div>
-            <div className="ml-4 text-base font-medium text-muted-foreground">
-              Share
-            </div>
+            <div className="ml-4 text-base font-medium text-muted-foreground">Share</div>
             <DocumentList type="share" />
           </div>
           {/* private */}
           <div>
-            <div className="ml-4 text-base font-medium text-muted-foreground">
-              Private
-            </div>
+            <div className="ml-4 text-base font-medium text-muted-foreground">Private</div>
             <DocumentList type="private" />
           </div>
 
@@ -205,9 +178,7 @@ const Navigation = () => {
             <PopoverTrigger className="mt-4 w-full">
               <Item label="Trash" icon={Trash} />
             </PopoverTrigger>
-            <PopoverContent
-              className="w-72 p-0"
-              side={isMobile ? 'bottom' : 'right'}>
+            <PopoverContent className="w-72 p-0" side={isMobile ? 'bottom' : 'right'}>
               <TrashBox />
             </PopoverContent>
           </Popover>
@@ -230,13 +201,7 @@ const Navigation = () => {
           <Navbar isCollapsed={isCollapsed} onResetWidth={resetWidth} />
         ) : (
           <nav className="w-full bg-transparent px-3 py-2">
-            {isCollapsed && (
-              <MenuIcon
-                onClick={resetWidth}
-                role="button"
-                className="h-6 w-6 text-muted-foreground"
-              />
-            )}
+            {isCollapsed && <MenuIcon onClick={resetWidth} role="button" className="h-6 w-6 text-muted-foreground" />}
           </nav>
         )}
       </div>

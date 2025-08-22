@@ -6,10 +6,7 @@ import { prisma } from '@/libs/prisma'
 // 告诉 Next.js 这个路由是动态的
 export const dynamic = 'force-dynamic'
 
-export async function GET(
-  req: Request,
-  { params }: { params: { documentId: string } }
-) {
+export async function GET(req: Request, { params }: { params: { documentId: string } }) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session?.user?.email) {
@@ -52,10 +49,7 @@ export async function GET(
     }
 
     // 获取所有协作者的完整用户信息
-    const collaboratorEmails = [
-      document.user.email,
-      ...document.collaborators.map((c) => c.userEmail),
-    ]
+    const collaboratorEmails = [document.user.email, ...document.collaborators.map((c) => c.userEmail)]
 
     // 去重邮箱
     const uniqueEmails = Array.from(new Set(collaboratorEmails))

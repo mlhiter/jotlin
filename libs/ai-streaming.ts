@@ -27,16 +27,9 @@ export class StreamingChatAgent {
   ): AsyncGenerator<string, void, unknown> {
     try {
       // Check if this is a requirement generation trigger
-      const shouldGenerateRequirements =
-        await this.isRequirementGenerationTrigger(
-          userMessage,
-          conversationHistory
-        )
+      const shouldGenerateRequirements = await this.isRequirementGenerationTrigger(userMessage, conversationHistory)
 
-      const systemPrompt = this.buildSystemPrompt(
-        documentContext,
-        shouldGenerateRequirements
-      )
+      const systemPrompt = this.buildSystemPrompt(documentContext, shouldGenerateRequirements)
       const messages = [
         { role: 'system', content: systemPrompt },
         ...conversationHistory.slice(-8).map((msg) => ({
@@ -82,9 +75,7 @@ export class StreamingChatAgent {
 
           while (!isCompleted && pollCount < maxPollAttempts) {
             try {
-              const status = await requirementApi.getGenerationStatus(
-                response.task_id
-              )
+              const status = await requirementApi.getGenerationStatus(response.task_id)
 
               // Send progress update if changed
               if (status.progress > lastProgress) {
@@ -99,27 +90,17 @@ export class StreamingChatAgent {
               if (status.status === 'completed') {
                 isCompleted = true
                 try {
-                  results = await requirementApi.getFormattedResults(
-                    response.task_id
-                  )
+                  results = await requirementApi.getFormattedResults(response.task_id)
                   // Validate that we actually got results
                   if (!results || (!results.documents && !results.summary)) {
                     throw new Error('Completed task returned no valid results')
                   }
                 } catch (resultError) {
-                  console.error(
-                    'Error fetching results for completed task:',
-                    resultError
-                  )
-                  throw new Error(
-                    'Failed to retrieve results from completed task: ' +
-                      (resultError as Error).message
-                  )
+                  console.error('Error fetching results for completed task:', resultError)
+                  throw new Error('Failed to retrieve results from completed task: ' + (resultError as Error).message)
                 }
               } else if (status.status === 'failed') {
-                throw new Error(
-                  status.message || 'Requirement generation failed'
-                )
+                throw new Error(status.message || 'Requirement generation failed')
               }
 
               // Wait before next poll if not completed
@@ -130,10 +111,7 @@ export class StreamingChatAgent {
             } catch (error) {
               console.error('Error polling status:', error)
               // Implement exponential backoff for error recovery
-              const backoffDelay = Math.min(
-                1000 * Math.pow(2, pollCount % 5),
-                10000
-              )
+              const backoffDelay = Math.min(1000 * Math.pow(2, pollCount % 5), 10000)
               await new Promise((resolve) => setTimeout(resolve, backoffDelay))
               pollCount++
 
@@ -146,9 +124,7 @@ export class StreamingChatAgent {
 
           // Check if we timed out
           if (!isCompleted && pollCount >= maxPollAttempts) {
-            throw new Error(
-              'Requirement generation timeout: Process took too long'
-            )
+            throw new Error('Requirement generation timeout: Process took too long')
           }
 
           if (results.documents && results.documents.length > 0) {
@@ -181,9 +157,7 @@ export class StreamingChatAgent {
     conversationHistory: BaseMessage[]
   ): Promise<boolean> {
     // Only trigger on first message or if no previous assistant responses
-    const hasAssistantResponse = conversationHistory.some(
-      (msg) => msg.constructor.name === 'AIMessage'
-    )
+    const hasAssistantResponse = conversationHistory.some((msg) => msg.constructor.name === 'AIMessage')
 
     if (hasAssistantResponse) {
       return false
@@ -215,9 +189,7 @@ User message: "${userMessage}"
 
 Answer only "YES" or "NO":`
 
-      const response = await this.llm.invoke([
-        { role: 'user', content: judgmentPrompt },
-      ])
+      const response = await this.llm.invoke([{ role: 'user', content: judgmentPrompt }])
 
       const result = response.content.toString().trim().toUpperCase()
       const needsRequirements = result.includes('YES')
@@ -306,10 +278,7 @@ Answer only "YES" or "NO":`
     return projectKeywords.some((keyword) => lowerMessage.includes(keyword))
   }
 
-  private buildSystemPrompt(
-    documentContext?: string,
-    shouldGenerateRequirements?: boolean
-  ): string {
+  private buildSystemPrompt(documentContext?: string, shouldGenerateRequirements?: boolean): string {
     let prompt = `You are an AI assistant integrated into Jotlin, a Notion-like document editor.
 Help users with their documents and provide intelligent assistance.
 

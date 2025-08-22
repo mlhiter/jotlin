@@ -7,11 +7,7 @@ import { ModeToggle } from '@/components/mode-toggle'
 import { Spinner } from '@/components/spinner'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 import { useScrollTop } from '@/hooks/use-scroll-top'
 import { useSession } from '@/hooks/use-session'
@@ -67,9 +63,7 @@ const Navbar = () => {
                   <Settings className="h-4 w-4 text-stone-400" />
                 </div>
                 <div className="col-span-2 cursor-pointer">
-                  <span className="font-normal text-stone-500">
-                    Manage account
-                  </span>
+                  <span className="font-normal text-stone-500">Manage account</span>
                 </div>
                 <div className="flex items-center justify-center ">
                   <ArrowRightFromLine className="h-4 w-4 text-stone-400" />

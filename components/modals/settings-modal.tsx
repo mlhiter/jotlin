@@ -5,7 +5,6 @@ import { useSettings } from '@/stores/settings'
 
 import { ModeToggle } from '../mode-toggle'
 
-
 const SettingsModal = () => {
   const settings = useSettings()
   return (
@@ -17,9 +16,7 @@ const SettingsModal = () => {
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-y-1">
             <Label>Appearance</Label>
-            <span className="text-[0.8rem] text-muted-foreground">
-              Customize how jotlin looks on your device
-            </span>
+            <span className="text-[0.8rem] text-muted-foreground">Customize how jotlin looks on your device</span>
           </div>
           <ModeToggle />
         </div>

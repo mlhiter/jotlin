@@ -22,7 +22,7 @@ export const config = {
   retry: {
     maxAttempts: 3,
     delay: 1000,
-  }
+  },
 }
 
 // 日志工具
@@ -47,5 +47,5 @@ export const logger = {
 
   error: (message: string, ...args: any[]) => {
     console.error(`[ERROR] ${message}`, ...args)
-  }
+  },
 }

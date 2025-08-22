@@ -110,9 +110,7 @@ const status = await statusResponse.json()
 
 // Get formatted results when complete
 if (status.status === 'completed') {
-  const resultsResponse = await fetch(
-    `/api/requirements/result/${task_id}?formatted=true`
-  )
+  const resultsResponse = await fetch(`/api/requirements/result/${task_id}?formatted=true`)
   const { documents } = await resultsResponse.json()
 
   // Each document can be saved to Jotlin

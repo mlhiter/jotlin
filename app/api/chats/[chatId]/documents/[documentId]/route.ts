@@ -6,10 +6,7 @@ import { prisma } from '@/libs/prisma'
 // 告诉 Next.js 这个路由是动态的
 export const dynamic = 'force-dynamic'
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { chatId: string; documentId: string } }
-) {
+export async function POST(req: NextRequest, { params }: { params: { chatId: string; documentId: string } }) {
   try {
     const session = await auth.api.getSession({
       headers: req.headers,
@@ -58,10 +55,7 @@ export async function POST(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { chatId: string; documentId: string } }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: { chatId: string; documentId: string } }) {
   try {
     const session = await auth.api.getSession({
       headers: req.headers,

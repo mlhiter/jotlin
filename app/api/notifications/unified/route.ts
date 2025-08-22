@@ -161,34 +161,25 @@ export async function GET(req: NextRequest) {
       )
 
       // 将聊天邀请转换为统一通知格式
-      const chatInvitationNotifications = chatInvitations.map(
-        (chatInvitation) => ({
-          id: `chat_invitation_${chatInvitation.id}`,
-          type: 'chat_invitation',
-          title: `${chatInvitation.user.name || chatInvitation.userEmail} 邀请你协作聊天`,
-          content: `你被邀请协作聊天「${chatInvitation.chat.title}」`,
-          isRead: chatInvitation.isReplied, // 已回复视为已读
-          priority: 'high',
-          createdAt: chatInvitation.createdAt.toISOString(),
-          chatId: chatInvitation.chatId,
-          chatTitle: chatInvitation.chat.title,
-          chatInvitationId: chatInvitation.id,
-          senderId: null,
-          senderName: chatInvitation.user.name,
-          senderEmail: chatInvitation.userEmail,
-        })
-      )
+      const chatInvitationNotifications = chatInvitations.map((chatInvitation) => ({
+        id: `chat_invitation_${chatInvitation.id}`,
+        type: 'chat_invitation',
+        title: `${chatInvitation.user.name || chatInvitation.userEmail} 邀请你协作聊天`,
+        content: `你被邀请协作聊天「${chatInvitation.chat.title}」`,
+        isRead: chatInvitation.isReplied, // 已回复视为已读
+        priority: 'high',
+        createdAt: chatInvitation.createdAt.toISOString(),
+        chatId: chatInvitation.chatId,
+        chatTitle: chatInvitation.chat.title,
+        chatInvitationId: chatInvitation.id,
+        senderId: null,
+        senderName: chatInvitation.user.name,
+        senderEmail: chatInvitation.userEmail,
+      }))
 
       // 合并并按时间排序
-      const allNotifications = [
-        ...notifications,
-        ...invitationNotifications,
-        ...chatInvitationNotifications,
-      ]
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
+      const allNotifications = [...notifications, ...invitationNotifications, ...chatInvitationNotifications]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, limit)
 
       return NextResponse.json(allNotifications)

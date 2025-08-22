@@ -33,9 +33,7 @@ export function CommentButton() {
   }
 
   return (
-    <Components.FormattingToolbar.Button
-      mainTooltip="Add Comment"
-      onClick={handleAddCommentInSidebar}>
+    <Components.FormattingToolbar.Button mainTooltip="Add Comment" onClick={handleAddCommentInSidebar}>
       💬
     </Components.FormattingToolbar.Button>
   )

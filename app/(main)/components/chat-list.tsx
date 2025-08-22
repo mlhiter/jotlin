@@ -32,7 +32,6 @@ import { documentApi } from '@/api/document'
 import { cn } from '@/libs/utils'
 import { useChatStore } from '@/stores/chat'
 
-
 import Item from './item'
 
 interface ChatListProps {
@@ -73,14 +72,8 @@ export const ChatList = ({}: ChatListProps) => {
           // This handles the case where documents were added to a chat
           const newData = event.query.state.data as any[]
           if (newData && shouldAutoExpand) {
-            const targetChat = newData.find(
-              (chat) => chat.id === shouldAutoExpand
-            )
-            if (
-              targetChat &&
-              targetChat.documents &&
-              targetChat.documents.length > 0
-            ) {
+            const targetChat = newData.find((chat) => chat.id === shouldAutoExpand)
+            if (targetChat && targetChat.documents && targetChat.documents.length > 0) {
               setExpanded((prev) => ({ ...prev, [shouldAutoExpand]: true }))
             }
           }
@@ -197,30 +190,21 @@ export const ChatList = ({}: ChatListProps) => {
                   <div className="flex items-center truncate font-medium">
                     {chat.title}
                     {chat.documents && chat.documents.length > 0 && (
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        ({chat.documents.length})
-                      </span>
+                      <span className="ml-2 text-xs text-muted-foreground">({chat.documents.length})</span>
                     )}
                     {chat.collaborators && chat.collaborators.length > 0 && (
                       <Users className="ml-2 h-3 w-3 text-muted-foreground" />
                     )}
                   </div>
                   {chat.messages?.[0] && (
-                    <div className="truncate text-xs text-muted-foreground">
-                      {chat.messages[0].content}
-                    </div>
+                    <div className="truncate text-xs text-muted-foreground">{chat.messages[0].content}</div>
                   )}
                 </div>
               </div>
 
               <DropdownMenu>
-                <DropdownMenuTrigger
-                  asChild
-                  onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100">
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -282,9 +266,7 @@ export const ChatList = ({}: ChatListProps) => {
 
       {archivedChats.length > 0 && (
         <>
-          <div className="px-2 pt-4 text-xs text-muted-foreground">
-            Archived
-          </div>
+          <div className="px-2 pt-4 text-xs text-muted-foreground">Archived</div>
           <div className="space-y-1">
             {archivedChats.map((chat) => (
               <div
@@ -303,10 +285,7 @@ export const ChatList = ({}: ChatListProps) => {
         </>
       )}
 
-      <NewChatModal
-        isOpen={isNewChatModalOpen}
-        onClose={() => setIsNewChatModalOpen(false)}
-      />
+      <NewChatModal isOpen={isNewChatModalOpen} onClose={() => setIsNewChatModalOpen(false)} />
     </div>
   )
 }

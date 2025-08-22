@@ -33,8 +33,7 @@ export interface FormattedRequirementResults {
 }
 
 // Python FastAPI backend configuration
-const PYTHON_BACKEND_URL =
-  process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || 'http://localhost:8000'
+const PYTHON_BACKEND_URL = process.env.NEXT_PUBLIC_PYTHON_BACKEND_URL || 'http://localhost:8000'
 
 // Create a separate axios instance for Python backend
 import axios from 'axios'
@@ -51,33 +50,23 @@ pythonRequest.interceptors.response.use((response) => {
 
 export const requirementApi = {
   // Generate requirements using the Python backend for chat integration
-  generateRequirements: async (
-    data: RequirementGenerationRequest
-  ): Promise<RequirementGenerationResponse> => {
+  generateRequirements: async (data: RequirementGenerationRequest): Promise<RequirementGenerationResponse> => {
     return pythonRequest.post('/api/requirements/generate-from-chat', data)
   },
 
   // Get the status of requirement generation
-  getGenerationStatus: async (
-    taskId: string
-  ): Promise<RequirementGenerationStatus> => {
+  getGenerationStatus: async (taskId: string): Promise<RequirementGenerationStatus> => {
     return pythonRequest.get(`/api/requirements/status/${taskId}`)
   },
 
   // Get formatted results for frontend
-  getFormattedResults: async (
-    taskId: string
-  ): Promise<FormattedRequirementResults> => {
-    return pythonRequest.get(
-      `/api/requirements/result/${taskId}?formatted=true`
-    )
+  getFormattedResults: async (taskId: string): Promise<FormattedRequirementResults> => {
+    return pythonRequest.get(`/api/requirements/result/${taskId}?formatted=true`)
   },
 
   // Get raw results
   getRawResults: async (taskId: string): Promise<any> => {
-    return pythonRequest.get(
-      `/api/requirements/result/${taskId}?formatted=false`
-    )
+    return pythonRequest.get(`/api/requirements/result/${taskId}?formatted=false`)
   },
 
   // Poll for completion (utility function)
@@ -123,19 +112,12 @@ export const requirementApi = {
           console.error(`Polling error (attempt ${attemptCount}):`, error)
 
           if (consecutiveErrors >= maxConsecutiveErrors) {
-            reject(
-              new Error(
-                `Polling failed after ${maxConsecutiveErrors} consecutive errors`
-              )
-            )
+            reject(new Error(`Polling failed after ${maxConsecutiveErrors} consecutive errors`))
             return
           }
 
           // Exponential backoff for error recovery
-          const backoffDelay = Math.min(
-            pollInterval * Math.pow(2, consecutiveErrors),
-            10000
-          )
+          const backoffDelay = Math.min(pollInterval * Math.pow(2, consecutiveErrors), 10000)
           setTimeout(poll, backoffDelay)
         }
       }
@@ -161,16 +143,13 @@ export const pythonChatApi = {
     onError: (error: Error) => void
   ) => {
     try {
-      const response = await fetch(
-        `${PYTHON_BACKEND_URL}/api/chats/${chatId}/stream`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ message }),
-        }
-      )
+      const response = await fetch(`${PYTHON_BACKEND_URL}/api/chats/${chatId}/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message }),
+      })
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)

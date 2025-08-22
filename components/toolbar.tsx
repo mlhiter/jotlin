@@ -61,9 +61,7 @@ const Toolbar = ({ preview }: ToolbarProps) => {
       {!!currentDocument?.icon && !preview && (
         <div className="group/icon flex items-center gap-x-2 pt-6">
           <IconPicker onChange={onIconSelect}>
-            <p className="text-6xl transition hover:opacity-75">
-              {currentDocument?.icon}
-            </p>
+            <p className="text-6xl transition hover:opacity-75">{currentDocument?.icon}</p>
           </IconPicker>
           <Button
             onClick={onRemoveIcon}
@@ -74,27 +72,18 @@ const Toolbar = ({ preview }: ToolbarProps) => {
           </Button>
         </div>
       )}
-      {!!currentDocument?.icon && preview && (
-        <p className="pt-6 text-6xl">{currentDocument?.icon}</p>
-      )}
+      {!!currentDocument?.icon && preview && <p className="pt-6 text-6xl">{currentDocument?.icon}</p>}
       <div className="flex items-center gap-x-1 py-4 opacity-0 group-hover:opacity-100">
         {!currentDocument?.icon && !preview && (
           <IconPicker asChild onChange={onIconSelect}>
-            <Button
-              className="text-xs text-muted-foreground"
-              variant="outline"
-              size="sm">
+            <Button className="text-xs text-muted-foreground" variant="outline" size="sm">
               <Smile className="mr-2 h-4 w-4" />
               Add icon
             </Button>
           </IconPicker>
         )}
         {!currentDocument?.coverImage && !preview && (
-          <Button
-            onClick={coverImage.onOpen}
-            className="text-xs text-muted-foreground"
-            variant="outline"
-            size="sm">
+          <Button onClick={coverImage.onOpen} className="text-xs text-muted-foreground" variant="outline" size="sm">
             <ImageIcon className="mr-2 h-4 w-4" />
             Add cover
           </Button>
@@ -106,9 +95,7 @@ const Toolbar = ({ preview }: ToolbarProps) => {
           onBlur={disableInput}
           onKeyDown={onKeyDown}
           value={currentDocument?.title}
-          onChange={(e) =>
-            setCurrentDocument({ ...currentDocument!, title: e.target.value })
-          }
+          onChange={(e) => setCurrentDocument({ ...currentDocument!, title: e.target.value })}
           className="resize-none break-words bg-transparent text-5xl font-bold text-[#3F3F3F] outline-none dark:text-[#CFCFCF]"
         />
       ) : (

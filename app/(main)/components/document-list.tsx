@@ -19,12 +19,7 @@ interface DocumentListProps {
   forceExpanded?: boolean
 }
 
-const DocumentList = ({
-  parentDocumentId,
-  level = 0,
-  type,
-  forceExpanded = false,
-}: DocumentListProps) => {
+const DocumentList = ({ parentDocumentId, level = 0, type, forceExpanded = false }: DocumentListProps) => {
   const params = useParams()
   const router = useRouter()
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
@@ -84,10 +79,7 @@ const DocumentList = ({
         style={{
           paddingLeft: `${level * 12 + 25}px`,
         }}
-        className={cn(
-          'hidden text-sm font-medium text-muted-foreground/80',
-          expanded && 'last:block'
-        )}>
+        className={cn('hidden text-sm font-medium text-muted-foreground/80', expanded && 'last:block')}>
         No pages inside
       </p>
       {currentDocuments.map((document: Doc) => (
@@ -106,12 +98,7 @@ const DocumentList = ({
             ownerId={document.userId}
           />
           {expanded[document.id] && (
-            <DocumentList
-              parentDocumentId={document.id}
-              level={level + 1}
-              type={type}
-              forceExpanded={forceExpanded}
-            />
+            <DocumentList parentDocumentId={document.id} level={level + 1} type={type} forceExpanded={forceExpanded} />
           )}
         </div>
       ))}

@@ -8,10 +8,7 @@ import { prisma } from '@/libs/prisma'
 // 告诉 Next.js 这个路由是动态的
 export const dynamic = 'force-dynamic'
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { chatId: string } }
-) {
+export async function POST(req: NextRequest, { params }: { params: { chatId: string } }) {
   try {
     const session = await auth.api.getSession({
       headers: req.headers,
@@ -57,23 +54,17 @@ export async function POST(
 
     // Check if user has access to this chat (owner or collaborator)
     const isOwner = chat.userId === session.user.id
-    const isCollaborator = chat.collaborators.some(
-      (collaborator) => collaborator.userEmail === session.user.email
-    )
+    const isCollaborator = chat.collaborators.some((collaborator) => collaborator.userEmail === session.user.email)
 
     if (!isOwner && !isCollaborator) {
       return new Response('Unauthorized', { status: 401 })
     }
 
     const conversationHistory = chat.messages.map((msg) => {
-      return msg.role === 'user'
-        ? new HumanMessage(msg.content)
-        : new AIMessage(msg.content)
+      return msg.role === 'user' ? new HumanMessage(msg.content) : new AIMessage(msg.content)
     })
 
-    const documentContext = chat.documents
-      ?.map((doc) => `Title: ${doc.title}\nContent: ${doc.content}`)
-      .join('\n\n')
+    const documentContext = chat.documents?.map((doc) => `Title: ${doc.title}\nContent: ${doc.content}`).join('\n\n')
 
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
@@ -113,11 +104,7 @@ export async function POST(
           controller.enqueue(encoder.encode('data: [DONE]\n\n'))
         } catch (error) {
           console.error('Stream error:', error)
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({ error: 'Stream failed' })}\n\n`
-            )
-          )
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: 'Stream failed' })}\n\n`))
         } finally {
           controller.close()
         }

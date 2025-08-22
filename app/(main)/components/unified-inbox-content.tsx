@@ -2,16 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
-import {
-  Bell,
-  Check,
-  CheckCheck,
-  MessageSquare,
-  UserPlus,
-  FileText,
-  Trash2,
-  Bot,
-} from 'lucide-react'
+import { Bell, Check, CheckCheck, MessageSquare, UserPlus, FileText, Trash2, Bot } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
@@ -118,23 +109,13 @@ interface UnifiedInboxContentProps {
   onClose?: () => void // 关闭弹窗的回调
 }
 
-export function UnifiedInboxContent({
-  className,
-  documentId,
-  onClose,
-}: UnifiedInboxContentProps) {
+export function UnifiedInboxContent({ className, documentId, onClose }: UnifiedInboxContentProps) {
   const [selectedType, setSelectedType] = useState<string>('all')
   const router = useRouter()
   const queryClient = useQueryClient()
   const { setDocuments } = useDocumentStore()
-  const {
-    notifications,
-    unreadCount,
-    isLoading,
-    fetchNotifications,
-    markAsRead,
-    markAllAsRead,
-  } = useUnifiedNotifications()
+  const { notifications, unreadCount, isLoading, fetchNotifications, markAsRead, markAllAsRead } =
+    useUnifiedNotifications()
 
   // 统一的标记所有为已读处理
   const handleMarkAllAsRead = async () => {
@@ -159,10 +140,7 @@ export function UnifiedInboxContent({
       queryClient.invalidateQueries({ queryKey: ['documents'] })
 
       // 手动触发文档列表更新
-      await Promise.all([
-        setDocuments(null, 'share'),
-        setDocuments(null, 'private'),
-      ])
+      await Promise.all([setDocuments(null, 'share'), setDocuments(null, 'private')])
 
       // 重新获取通知列表以更新状态
       await fetchNotifications()
@@ -177,10 +155,7 @@ export function UnifiedInboxContent({
   }
 
   // 接受聊天邀请
-  const acceptChatInvitation = async (
-    chatInvitationId: string,
-    chatId: string
-  ) => {
+  const acceptChatInvitation = async (chatInvitationId: string, chatId: string) => {
     try {
       // 接受聊天邀请
       await chatApi.updateInvitation(chatId, chatInvitationId, {
@@ -224,10 +199,7 @@ export function UnifiedInboxContent({
           }
         } else {
           // 未接受的邀请，自动接受并跳转到文档
-          const success = await acceptInvitation(
-            notification.invitationId,
-            notification.documentId!
-          )
+          const success = await acceptInvitation(notification.invitationId, notification.documentId!)
 
           if (success && notification.documentId) {
             // 接受成功后跳转到文档
@@ -236,10 +208,7 @@ export function UnifiedInboxContent({
             onClose?.()
           }
         }
-      } else if (
-        notification.type === 'chat_invitation' &&
-        (notification as any).chatInvitationId
-      ) {
+      } else if (notification.type === 'chat_invitation' && (notification as any).chatInvitationId) {
         // 聊天邀请类型：检查是否已经接受过
         if (notification.isRead) {
           // 已经接受过的邀请，直接跳转到聊天
@@ -283,18 +252,14 @@ export function UnifiedInboxContent({
 
   // 首先按文档过滤（如果指定了 documentId）
   const documentFilteredNotifications = documentId
-    ? notifications.filter(
-        (notification) => notification.documentId === documentId
-      )
+    ? notifications.filter((notification) => notification.documentId === documentId)
     : notifications
 
   // 然后按类型过滤
-  const filteredNotifications = documentFilteredNotifications.filter(
-    (notification) => {
-      if (selectedType === 'all') return true
-      return notification.type === selectedType
-    }
-  )
+  const filteredNotifications = documentFilteredNotifications.filter((notification) => {
+    if (selectedType === 'all') return true
+    return notification.type === selectedType
+  })
 
   // 获取通知类型统计（基于文档过滤后的通知）
   const typeStats = documentFilteredNotifications.reduce(
@@ -306,14 +271,10 @@ export function UnifiedInboxContent({
   )
 
   // 如果是文档级别的通知，显示对应的未读数量
-  const displayUnreadCount = documentId
-    ? documentFilteredNotifications.filter((n) => !n.isRead).length
-    : unreadCount
+  const displayUnreadCount = documentId ? documentFilteredNotifications.filter((n) => !n.isRead).length : unreadCount
 
   // 显示的总数量
-  const displayTotalCount = documentId
-    ? documentFilteredNotifications.length
-    : notifications.length
+  const displayTotalCount = documentId ? documentFilteredNotifications.length : notifications.length
 
   // 组件打开时获取通知列表
   useEffect(() => {
@@ -359,8 +320,7 @@ export function UnifiedInboxContent({
             全部 ({displayTotalCount})
           </Button>
           {Object.entries(typeStats).map(([type, count]) => {
-            const config =
-              notificationConfig[type as keyof typeof notificationConfig]
+            const config = notificationConfig[type as keyof typeof notificationConfig]
             if (!config) return null
 
             return (
@@ -391,13 +351,10 @@ export function UnifiedInboxContent({
           <div className="space-y-1 p-2">
             {filteredNotifications.map((notification) => {
               const config =
-                notificationConfig[
-                  notification.type as keyof typeof notificationConfig
-                ] || notificationConfig.comment_added
+                notificationConfig[notification.type as keyof typeof notificationConfig] ||
+                notificationConfig.comment_added
               const priorityStyle =
-                priorityConfig[
-                  notification.priority as keyof typeof priorityConfig
-                ] || priorityConfig.medium
+                priorityConfig[notification.priority as keyof typeof priorityConfig] || priorityConfig.medium
               const IconComponent = config.icon
 
               return (
@@ -417,17 +374,11 @@ export function UnifiedInboxContent({
                   {/* 内容 */}
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium">
-                        {notification.title}
-                      </p>
-                      {!notification.isRead && (
-                        <div className="h-2 w-2 rounded-full bg-blue-500" />
-                      )}
+                      <p className="text-sm font-medium">{notification.title}</p>
+                      {!notification.isRead && <div className="h-2 w-2 rounded-full bg-blue-500" />}
                     </div>
 
-                    <p className="line-clamp-2 text-xs text-muted-foreground">
-                      {notification.content}
-                    </p>
+                    <p className="line-clamp-2 text-xs text-muted-foreground">{notification.content}</p>
 
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>
@@ -436,9 +387,7 @@ export function UnifiedInboxContent({
                         })}
                       </span>
                       {notification.documentTitle && (
-                        <span className="truncate font-medium">
-                          {notification.documentTitle}
-                        </span>
+                        <span className="truncate font-medium">{notification.documentTitle}</span>
                       )}
                     </div>
                   </div>

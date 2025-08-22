@@ -1,14 +1,7 @@
 'use client'
 
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  ChevronDown,
-  ChevronRight,
-  LucideIcon,
-  MoreHorizontal,
-  Plus,
-  Trash,
-} from 'lucide-react'
+import { ChevronDown, ChevronRight, LucideIcon, MoreHorizontal, Plus, Trash } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -65,9 +58,7 @@ const Item = ({
   // 判断当前用户是否是文档创建者
   const isOwner = ownerId === user?.id
 
-  const onArchive = async (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => {
+  const onArchive = async (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation()
     if (!id) return
     await archiveDocument(id)
@@ -96,16 +87,12 @@ const Item = ({
     })
   }
 
-  const handleExpand = (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => {
+  const handleExpand = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation()
     onExpand?.()
   }
 
-  const onCreate = async (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => {
+  const onCreate = async (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation()
 
     if (!id) return
@@ -157,19 +144,13 @@ const Item = ({
                 <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-60"
-              align="start"
-              side="right"
-              forceMount>
+            <DropdownMenuContent className="w-60" align="start" side="right" forceMount>
               <DropdownMenuItem onClick={isOwner ? onArchive : onQuitDocument}>
                 <Trash className="mr-2 h-4 w-4" />
                 {isOwner ? 'Delete' : 'Quit'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <div className="p-2 text-xs text-muted-foreground">
-                Last edited by:{user?.name}
-              </div>
+              <div className="p-2 text-xs text-muted-foreground">Last edited by:{user?.name}</div>
             </DropdownMenuContent>
           </DropdownMenu>
           {!hideActions && (

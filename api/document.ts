@@ -34,10 +34,7 @@ export const documentApi = {
     parentDocument?: string | null
     chatId?: string
   }) => {
-    return POST<{ id: string; title: string; markdownContent: string }>(
-      '/api/documents/create-from-markdown',
-      data
-    )
+    return POST<{ id: string; title: string; markdownContent: string }>('/api/documents/create-from-markdown', data)
   },
 
   update: async (data: Doc) => {
@@ -64,10 +61,7 @@ export const documentApi = {
     return DELETE(`/api/documents/${id}/remove-cover-image`)
   },
 
-  removeAccess: async (data: {
-    documentId: string
-    collaboratorEmail: string
-  }) => {
+  removeAccess: async (data: { documentId: string; collaboratorEmail: string }) => {
     return PUT('/api/documents/remove-access', data)
   },
 }

@@ -6,10 +6,7 @@ import { prisma } from '@/libs/prisma'
 // 告诉 Next.js 这个路由是动态的
 export const dynamic = 'force-dynamic'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { documentId: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { documentId: string } }) {
   try {
     const session = await auth.api.getSession({ headers: request.headers })
     if (!session?.user?.email) {

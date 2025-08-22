@@ -30,10 +30,7 @@ const TrashBox = () => {
     router.push(`/documents/${documentId}`)
   }
 
-  const onRestore = async (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    documentId: string
-  ) => {
+  const onRestore = async (event: React.MouseEvent<HTMLDivElement, MouseEvent>, documentId: string) => {
     event.stopPropagation()
     await restoreDocument(documentId)
   }
@@ -61,9 +58,7 @@ const TrashBox = () => {
         />
       </div>
       <div className="mt-2 px-1 pb-1">
-        <p className="hidden pb-2 text-center text-xs text-muted-foreground last:block">
-          No documents found.
-        </p>
+        <p className="hidden pb-2 text-center text-xs text-muted-foreground last:block">No documents found.</p>
         {filteredDocuments?.map((document) => (
           <div
             key={document.id}
@@ -79,9 +74,7 @@ const TrashBox = () => {
                 <Undo className="h-4 w-4 text-muted-foreground" />
               </div>
               <ConfirmModal onConfirm={() => onRemove(document.id)}>
-                <div
-                  role="button"
-                  className="rounded-sm p-2 hover:bg-neutral-200 dark:hover:bg-neutral-300">
+                <div role="button" className="rounded-sm p-2 hover:bg-neutral-200 dark:hover:bg-neutral-300">
                   <Trash className="h-4 w-4 text-muted-foreground" />
                 </div>
               </ConfirmModal>

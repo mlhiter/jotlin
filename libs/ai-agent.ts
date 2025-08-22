@@ -34,9 +34,7 @@ Also determine if document analysis is needed (true/false).
 
 Respond in JSON format: {"taskType": "...", "needsDocumentAnalysis": true/false}`
 
-      const response = await this.llm.invoke([
-        { role: 'system', content: analysisPrompt },
-      ])
+      const response = await this.llm.invoke([{ role: 'system', content: analysisPrompt }])
 
       const analysis = JSON.parse(response.content as string)
       return {
@@ -67,9 +65,7 @@ Provide a structured summary that includes:
 
 Keep the summary concise but comprehensive.`
 
-      const response = await this.llm.invoke([
-        { role: 'system', content: analysisPrompt },
-      ])
+      const response = await this.llm.invoke([{ role: 'system', content: analysisPrompt }])
 
       return response.content as string
     } catch (e) {
@@ -78,11 +74,7 @@ Keep the summary concise but comprehensive.`
     }
   }
 
-  private buildSystemPrompt(
-    taskType?: string,
-    documentContext?: string,
-    documentSummary?: string
-  ): string {
+  private buildSystemPrompt(taskType?: string, documentContext?: string, documentSummary?: string): string {
     let prompt = `You are an AI assistant integrated into Jotlin, a Notion-like document editor.
 You help users with their documents and provide intelligent assistance.
 
@@ -127,11 +119,7 @@ Guidelines:
         documentSummary = await this.analyzeDocuments(documentContext)
       }
 
-      const systemPrompt = this.buildSystemPrompt(
-        queryAnalysis.taskType,
-        documentContext,
-        documentSummary
-      )
+      const systemPrompt = this.buildSystemPrompt(queryAnalysis.taskType, documentContext, documentSummary)
 
       const messages = [
         { role: 'system', content: systemPrompt },

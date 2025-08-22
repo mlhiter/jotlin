@@ -147,10 +147,7 @@ export async function getUserNotifications(userId: string, limit: number = 20) {
 /**
  * 标记通知为已读 (现在通过API调用)
  */
-export async function markNotificationAsRead(
-  notificationId: string,
-  userId: string
-) {
+export async function markNotificationAsRead(notificationId: string, userId: string) {
   try {
     const response = await fetch(`/api/notifications?id=${notificationId}`, {
       method: 'PATCH',

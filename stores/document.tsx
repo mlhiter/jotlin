@@ -12,14 +12,8 @@ type DocumentStore = {
 
   // Document list state
   documentsMap: Record<string, Doc[]>
-  setDocuments: (
-    parentDocumentId: string | null,
-    type: string
-  ) => Promise<Doc[]>
-  getDocuments: (
-    parentDocumentId: string | null,
-    type: string
-  ) => Doc[] | undefined
+  setDocuments: (parentDocumentId: string | null, type: string) => Promise<Doc[]>
+  getDocuments: (parentDocumentId: string | null, type: string) => Doc[] | undefined
 }
 
 export const useDocumentStore = create(
