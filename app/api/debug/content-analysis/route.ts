@@ -1,8 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 import { analyzeContent } from '@/libs/content-detector'
 
-export async function POST(req: Request) {
+// 告诉 Next.js 这个路由是动态的
+export const dynamic = 'force-dynamic'
+
+export async function POST(req: NextRequest) {
   try {
     const { content } = await req.json()
 

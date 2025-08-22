@@ -5,6 +5,9 @@ import { documentChatAgent } from '@/libs/ai-agent'
 import { auth } from '@/libs/auth'
 import { prisma } from '@/libs/prisma'
 
+// 告诉 Next.js 这个路由是动态的
+export const dynamic = 'force-dynamic'
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { chatId: string } }

@@ -24,6 +24,7 @@ import { convertMarkdownToBlocks } from '@/libs/markdown-to-blocknote'
 import { cn } from '@/libs/utils'
 import { useChatStore } from '@/stores/chat'
 import { Message } from '@/types/chat'
+import { config, logger } from '@/libs/config'
 
 // Helper function to get user initials
 const getInitials = (name: string | null, email: string) => {
@@ -64,11 +65,45 @@ const ChatPage = () => {
     state: documentGenerationState,
     startGeneration,
     updateProgress,
+    updateDocuments,
     nextDocument,
     completeGeneration,
     setError: setGenerationError,
     reset: resetGeneration,
+    forceComplete,
   } = useDocumentGeneration()
+
+  // 添加全局超时保护
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null
+
+    if (documentGenerationState.isGenerating && documentGenerationState.documents.length > 0) {
+      // 使用配置的超时时间
+      timeoutId = setTimeout(() => {
+        logger.warn('Document generation global timeout detected, forcing completion')
+        forceComplete()
+        toast.error('文档生成超时，已强制完成')
+      }, config.timeouts.documentGeneration)
+    }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+    }
+  }, [documentGenerationState.isGenerating, documentGenerationState.documents.length, forceComplete])
+
+  // 添加错误恢复机制
+  useEffect(() => {
+    if (documentGenerationState.error) {
+      // 5秒后自动重置错误状态
+      const timer = setTimeout(() => {
+        resetGeneration()
+      }, 5000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [documentGenerationState.error, resetGeneration])
 
   const { data: chat, isLoading: chatLoading } = useQuery({
     queryKey: ['chat', chatId],
@@ -138,7 +173,7 @@ const ChatPage = () => {
               for (const line of lines) {
                 let displayLine = true
 
-                // Check for generation progress signal
+                                // Check for generation progress signal
                 if (line.includes('__GENERATION_PROGRESS__:')) {
                   const signalStart = line.indexOf('__GENERATION_PROGRESS__:')
                   const signalData = line
@@ -149,6 +184,84 @@ const ChatPage = () => {
                     const progressData = JSON.parse(signalData)
                     console.info('Generation progress update:', progressData)
                     updateProgress(progressData)
+
+                    // 根据进度更新文档状态，但不重新调用startGeneration
+                    if (progressData.progress <= 30) {
+                      // 初始化阶段：识别最终用户和利益相关者
+                      updateDocuments([
+                        { title: '识别最终用户和利益相关者...', content: '', progress: progressData.progress },
+                        { title: '进行用户访谈和收集需求...', content: '', progress: 0 },
+                        { title: '分析部署环境和约束...', content: '', progress: 0 },
+                        { title: '分析需求并生成用例模型...', content: '', progress: 0 },
+                        { title: '生成IEEE 29148兼容的SRS文档...', content: '', progress: 0 },
+                        { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                      ])
+                    } else if (progressData.progress <= 50) {
+                      // 需求收集阶段
+                      updateDocuments([
+                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
+                        { title: progressData.message, content: '', progress: progressData.progress },
+                        { title: '分析部署环境和约束...', content: '', progress: 0 },
+                        { title: '分析需求并生成用例模型...', content: '', progress: 0 },
+                        { title: '生成IEEE 29148兼容的SRS文档...', content: '', progress: 0 },
+                        { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                      ])
+                    } else if (progressData.progress <= 70) {
+                      // 环境分析阶段
+                      updateDocuments([
+                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
+                        { title: '✓ 进行用户访谈和收集需求', content: '', progress: 100 },
+                        { title: progressData.message, content: '', progress: progressData.progress },
+                        { title: '分析需求并生成用例模型...', content: '', progress: 0 },
+                        { title: '生成IEEE 29148兼容的SRS文档...', content: '', progress: 0 },
+                        { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                      ])
+                    } else if (progressData.progress <= 80) {
+                      // 需求分析阶段
+                      updateDocuments([
+                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
+                        { title: '✓ 进行用户访谈和收集需求', content: '', progress: 100 },
+                        { title: '✓ 分析部署环境和约束', content: '', progress: 100 },
+                        { title: progressData.message, content: '', progress: progressData.progress },
+                        { title: '生成IEEE 29148兼容的SRS文档...', content: '', progress: 0 },
+                        { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                      ])
+                    } else if (progressData.progress <= 90) {
+                      // 文档生成阶段
+                      updateDocuments([
+                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
+                        { title: '✓ 进行用户访谈和收集需求', content: '', progress: 100 },
+                        { title: '✓ 分析部署环境和约束', content: '', progress: 100 },
+                        { title: '✓ 分析需求并生成用例模型', content: '', progress: 100 },
+                        { title: progressData.message, content: '', progress: progressData.progress },
+                        { title: '进行SRS文档质量审查...', content: '', progress: 0 },
+                      ])
+                    } else if (progressData.progress < 100) {
+                      // 质量审查阶段（进行中）
+                      updateDocuments([
+                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
+                        { title: '✓ 进行用户访谈和收集需求', content: '', progress: 100 },
+                        { title: '✓ 分析部署环境和约束', content: '', progress: 100 },
+                        { title: '✓ 分析需求并生成用例模型', content: '', progress: 100 },
+                        { title: '✓ 生成IEEE 29148兼容的SRS文档', content: '', progress: 100 },
+                        { title: progressData.message, content: '', progress: progressData.progress },
+                      ])
+                                        } else if (progressData.progress >= 100) {
+                      // 分析阶段完成，准备进入文档创建阶段
+                      updateDocuments([
+                        { title: '✓ 识别最终用户和利益相关者', content: '', progress: 100 },
+                        { title: '✓ 进行用户访谈和收集需求', content: '', progress: 100 },
+                        { title: '✓ 分析部署环境和约束', content: '', progress: 100 },
+                        { title: '✓ 分析需求并生成用例模型', content: '', progress: 100 },
+                        { title: '✓ 生成IEEE 29148兼容的SRS文档', content: '', progress: 100 },
+                        { title: '✓ 进行SRS文档质量审查', content: '', progress: 100 },
+                      ])
+
+                      // 暂时完成分析阶段，等待文档生成信号
+                      completeGeneration()
+                      console.info('Analysis phase completed, waiting for document generation signal...')
+                    }
+
                     displayLine = false // Don't display this line
                   } catch (error) {
                     console.error(
@@ -178,9 +291,12 @@ const ChatPage = () => {
                     console.info('Document generation started:', data)
                     // Initialize with analyzing state
                     startGeneration([
-                      { title: '正在分析需求...', content: '' },
-                      { title: '生成需求文档...', content: '' },
-                      { title: '创建文档结构...', content: '' },
+                      { title: '识别最终用户和利益相关者...', content: '', progress: 0 },
+                      { title: '进行用户访谈和收集需求...', content: '', progress: 0 },
+                      { title: '分析部署环境和约束...', content: '', progress: 0 },
+                      { title: '分析需求并生成用例模型...', content: '', progress: 0 },
+                      { title: '生成IEEE 29148兼容的SRS文档...', content: '', progress: 0 },
+                      { title: '进行SRS文档质量审查...', content: '', progress: 0 },
                     ])
                     displayLine = false // Don't display this line
                   } catch (error) {
@@ -442,23 +558,41 @@ const ChatPage = () => {
   ])
 
   const handleDocumentGeneration = async (documents: any[], chatId: string) => {
+    logger.info('Starting document generation', { documentCount: documents.length, chatId })
+
     try {
       let createdCount = 0
+      let failedCount = 0
 
+      // 确保状态正确初始化
+      if (documents.length > 0) {
+        startGeneration(documents)
+        logger.debug('Document generation state initialized', { documents: documents.length })
+      }
       for (let i = 0; i < documents.length; i++) {
         const doc = documents[i]
+        logger.debug('Processing document', { index: i, title: doc.title })
+
         try {
+          // 更新进度
+          updateProgress({
+            progress: Math.round(((i + 1) / documents.length) * 100),
+            message: `正在创建文档: ${doc.title}`,
+            status: 'creating'
+          })
+
           // Convert markdown content to BlockNote format
           const blocks = await convertMarkdownToBlocks(doc.content)
+          logger.debug('Markdown converted to blocks', { title: doc.title })
 
           // Create document with BlockNote content
           const documentId = await documentApi.create({
             title: doc.title,
             parentDocument: null,
           })
+          logger.debug('Document created', { documentId, title: doc.title })
 
           // Update document content after creation
-          // Send blocks directly, not as JSON string
           await fetch(`/api/documents/${documentId}`, {
             method: 'PUT',
             headers: {
@@ -467,33 +601,57 @@ const ChatPage = () => {
             body: JSON.stringify({
               id: documentId,
               title: doc.title,
-              content: JSON.stringify(blocks), // Store as JSON string for database
-              chatId: chatId, // Link to current chat
+              content: JSON.stringify(blocks),
+              chatId: chatId,
             }),
           })
+          logger.debug('Document content updated', { documentId, title: doc.title })
 
           createdCount++
-          nextDocument() // Update progress
+
+          // 使用配置的延迟更新进度
+          setTimeout(() => {
+            nextDocument()
+            logger.debug('Progress updated', { currentIndex: i + 1, total: documents.length })
+          }, config.timeouts.progressUpdate)
+
         } catch (error) {
-          console.error(`Failed to create document "${doc.title}":`, error)
+          logger.error(`Failed to create document "${doc.title}"`, error)
+          failedCount++
+
+          // 即使失败也要更新进度，避免卡住
+          setTimeout(() => {
+            nextDocument()
+            logger.warn('Progress updated after failure', { currentIndex: i + 1, total: documents.length })
+          }, config.timeouts.progressUpdate)
         }
       }
 
+      // 等待所有进度更新完成
+      await new Promise(resolve => setTimeout(resolve, config.timeouts.stateSync))
+      logger.debug('All progress updates completed')
+
       if (createdCount > 0) {
-        completeGeneration()
+        // 确保状态完全更新后再完成
+        setTimeout(() => {
+          completeGeneration()
+          logger.info('Document generation completed successfully', { createdCount, failedCount })
+        }, config.timeouts.progressUpdate)
+
         toast.success(`Success to create ${createdCount} documents`)
-        // Refresh the chat to show linked documents
+
+        // Refresh queries
         queryClient.invalidateQueries({ queryKey: ['chat', chatId] })
-        // Refresh documents list in navigation
         queryClient.invalidateQueries({ queryKey: ['documents'] })
-        // Refresh chats list to show updated document count and trigger auto-expand
         queryClient.invalidateQueries({ queryKey: ['chats'] })
       } else {
-        setGenerationError('Create documents failed')
-        toast.error('Create documents failed')
+        const errorMsg = 'Create documents failed'
+        logger.error(errorMsg, { createdCount, failedCount })
+        setGenerationError(errorMsg)
+        toast.error(errorMsg)
       }
     } catch (error) {
-      console.error('Failed to handle document generation:', error)
+      logger.error('Failed to handle document generation', error)
       setGenerationError('Create documents failed')
       toast.error('Create documents failed')
     }

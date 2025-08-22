@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 
 export interface DocumentGenerationState {
   isGenerating: boolean
-  documents: { title: string; content: string }[]
+  documents: { title: string; content: string; progress?: number }[]
   currentDocumentIndex: number
   error?: string
   overallProgress?: {
@@ -24,7 +24,7 @@ export const useDocumentGeneration = () => {
   })
 
   const startGeneration = useCallback(
-    (documents: { title: string; content: string }[]) => {
+    (documents: { title: string; content: string; progress?: number }[]) => {
       setState({
         isGenerating: true,
         documents,
@@ -47,11 +47,45 @@ export const useDocumentGeneration = () => {
     []
   )
 
+  const updateDocuments = useCallback(
+    (documents: { title: string; content: string; progress?: number }[]) => {
+      setState((prev) => {
+        // 计算当前应该激活的文档索引（基于progress字段）
+        let newCurrentIndex = 0
+        for (let i = 0; i < documents.length; i++) {
+          const progress = documents[i].progress
+          if (progress !== undefined && progress > 0 && progress < 100) {
+            newCurrentIndex = i
+            break
+          } else if (progress === 100) {
+            newCurrentIndex = i + 1
+          }
+        }
+
+        return {
+          ...prev,
+          documents,
+          currentDocumentIndex: Math.min(newCurrentIndex, documents.length - 1)
+        }
+      })
+    },
+    []
+  )
+
   const nextDocument = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      currentDocumentIndex: prev.currentDocumentIndex + 1,
-    }))
+    setState((prev) => {
+      const newIndex = prev.currentDocumentIndex + 1
+      // 确保索引不会超出范围
+      if (newIndex <= prev.documents.length) {
+        return {
+          ...prev,
+          currentDocumentIndex: newIndex,
+          // 如果到达最后一个文档，标记为完成
+          isGenerating: newIndex < prev.documents.length,
+        }
+      }
+      return prev
+    })
   }, [])
 
   const completeGeneration = useCallback(() => {
@@ -81,13 +115,26 @@ export const useDocumentGeneration = () => {
     })
   }, [])
 
+  // 添加一个强制完成的方法，用于处理异常情况
+  const forceComplete = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      isGenerating: false,
+      currentDocumentIndex: prev.documents.length,
+      overallProgress: undefined,
+      error: undefined,
+    }))
+  }, [])
+
   return {
     state,
     startGeneration,
     updateProgress,
+    updateDocuments,
     nextDocument,
     completeGeneration,
     setError,
     reset,
+    forceComplete,
   }
 }

@@ -1,9 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/libs/auth'
 import { minioClient } from '@/libs/minio'
 
-export async function DELETE(req: Request) {
+// 告诉 Next.js 这个路由是动态的
+export const dynamic = 'force-dynamic'
+
+export async function DELETE(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
     if (!session?.user?.email) {

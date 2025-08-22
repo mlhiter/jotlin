@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/libs/auth'
 import { prisma } from '@/libs/prisma'
 
+// 告诉 Next.js 这个路由是动态的
+export const dynamic = 'force-dynamic'
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { documentId: string } }

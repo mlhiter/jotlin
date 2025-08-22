@@ -1,9 +1,12 @@
 import { HumanMessage, AIMessage } from '@langchain/core/messages'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 import { streamingChatAgent } from '@/libs/ai-streaming'
 import { auth } from '@/libs/auth'
 import { prisma } from '@/libs/prisma'
+
+// 告诉 Next.js 这个路由是动态的
+export const dynamic = 'force-dynamic'
 
 export async function POST(
   req: NextRequest,

@@ -4,17 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:app\" \"npm run dev:agent\" \"npm run dev:webrtc\"",
+    "start:all": "concurrently \"npm run start\" \"npm run dev:agent\" \"npm run dev:webrtc\"",
     "dev:app": "next dev -p 3001",
     "dev:agent": "cd agent-server/fastapi && . venv/bin/activate && python run.py",
-    "dev:webrtc": "PORT=4444 node node_modules/y-webrtc/bin/server.js",
     "build": "next build",
-    "start": "next start",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
     "code-quality": "npm run lint && npm run type-check",
     "clean-console": "grep -r \"console\\.\" --include=\"*.ts\" --include=\"*.tsx\" app/ components/ libs/ agent-server/fastapi/ hooks/ stores/ | grep -v \"console.warn\\|console.error\\|console.info\"",
     "format": "prettier --write .",
-    "shadcn-ui": "npx shadcn@latest add"
+    "start": "next start -p 3001",
+    "lint": "next lint",
+    "prettier": "prettier --write .",
+    "shadcn-ui": "npx shadcn@latest add",
+    "dev:webrtc": "PORT=4444 node node_modules/y-webrtc/bin/server.js"
   },
   "dependencies": {
     "@blocknote/core": "^0.34.0",

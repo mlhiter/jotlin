@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/libs/auth'
 
+// 告诉 Next.js 这个路由是动态的
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({
