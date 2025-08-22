@@ -15,6 +15,15 @@ export async function POST(req: Request) {
     }
 
     const { title, markdownContent, parentDocument, chatId } = await req.json()
+    
+    console.log('[CREATE_FROM_MARKDOWN] Request received:', {
+      title,
+      contentLength: markdownContent?.length || 0,
+      parentDocument,
+      chatId,
+      userId: session.user.id,
+      userEmail: session.user.email
+    })
 
     // Validate required fields
     if (!title || !markdownContent) {
@@ -39,8 +48,20 @@ export async function POST(req: Request) {
       const chat = await prisma.chat.findFirst({
         where: {
           id: chatId,
-          userId: session.user.id,
+          OR: [
+            { userId: session.user.id }, // User is owner
+            { 
+              collaborators: {
+                some: {
+                  userEmail: session.user.email // User is collaborator
+                }
+              }
+            }
+          ]
         },
+        include: {
+          collaborators: true
+        }
       })
 
       if (!chat) {
@@ -82,6 +103,11 @@ export async function POST(req: Request) {
         },
       })
 
+      console.log('[CREATE_FROM_MARKDOWN] Document created successfully:', {
+        documentId: document.id,
+        title: document.title
+      })
+
       return NextResponse.json({
         id: document.id,
         title: document.title,
@@ -117,6 +143,12 @@ export async function POST(req: Request) {
             },
           },
         },
+      })
+
+      console.log('[CREATE_FROM_MARKDOWN] Document created with fallback:', {
+        documentId: document.id,
+        title: document.title,
+        warning: 'Used fallback parsing'
       })
 
       return NextResponse.json({

@@ -130,12 +130,22 @@ export class StreamingChatAgent {
           if (results.documents && results.documents.length > 0) {
             yield `✅ 已成功分析并生成 ${results.documents.length} 个需求文档。正在为您创建文档...\n\n`
 
+            console.log('[AI_STREAMING] About to send DOCUMENTS_GENERATED signal:', {
+              chatId,
+              documentCount: results.documents.length,
+              documents: results.documents.map((d: any) => ({ title: d.title, hasContent: !!d.content }))
+            })
+
             // Signal the frontend to create documents with full data
-            yield `__DOCUMENTS_GENERATED__:${JSON.stringify({
+            const signalData = {
               chatId,
               documents: results.documents,
-            })}\n`
+            }
+            const signalLine = `__DOCUMENTS_GENERATED__:${JSON.stringify(signalData)}\n`
+            console.log('[AI_STREAMING] Sending signal line:', signalLine.substring(0, 200) + '...')
+            yield signalLine
           } else {
+            console.log('[AI_STREAMING] No documents in results:', results)
             yield '❌ 需求文档生成失败，请稍后重试。\n'
           }
         } catch (error) {

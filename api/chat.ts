@@ -91,7 +91,6 @@ export const chatApi = {
       }
 
       const decoder = new TextDecoder()
-      let pendingContent = '' // Buffer for incomplete content
 
       while (true) {
         const { done, value } = await reader.read()
@@ -106,10 +105,6 @@ export const chatApi = {
             const data = line.slice(6)
 
             if (data === '[DONE]') {
-              // Process any remaining content before completing
-              if (pendingContent.trim()) {
-                onChunk(pendingContent)
-              }
               onComplete()
               return
             }
@@ -117,22 +112,8 @@ export const chatApi = {
             try {
               const parsed = JSON.parse(data)
               if (parsed.content) {
-                // Add content to pending buffer instead of immediately calling onChunk
-                pendingContent += parsed.content
-
-                // Check if we have complete lines to process
-                if (pendingContent.includes('\n')) {
-                  const contentLines = pendingContent.split('\n')
-                  // Keep the last incomplete line
-                  pendingContent = contentLines.pop() || ''
-
-                  // Process complete lines
-                  for (const completeLine of contentLines) {
-                    if (completeLine.trim()) {
-                      onChunk(completeLine + '\n')
-                    }
-                  }
-                }
+                // Pass every chunk immediately to the frontend for proper signal processing
+                onChunk(parsed.content)
               } else if (parsed.error) {
                 onError(new Error(parsed.error))
                 return

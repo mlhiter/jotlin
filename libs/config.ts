@@ -16,8 +16,8 @@ export const config = {
 
   // 调试配置
   debug: {
-    enabled: process.env.NEXT_PUBLIC_DEBUG_MODE === 'true',
-    logLevel: process.env.NEXT_PUBLIC_LOG_LEVEL || 'warn',
+    enabled: process.env.NEXT_PUBLIC_DEBUG_MODE === 'true' || process.env.NODE_ENV === 'development',
+    logLevel: process.env.NEXT_PUBLIC_LOG_LEVEL || 'info',
   },
 
   // 重试配置

@@ -59,15 +59,21 @@ export const useDocumentGenerationHandler = () => {
 
   const handleDocumentsGenerated = useCallback(
     async (documentData: DocumentData) => {
-      logger.info('Documents generated, starting creation process:', documentData)
+      logger.info('Documents generated callback triggered:', {
+        chatId: documentData.chatId,
+        documentCount: documentData.documents?.length || 0,
+        hasDocuments: !!documentData.documents,
+      })
 
       // Validate document data
       if (!documentData.documents || documentData.documents.length === 0) {
-        logger.error('No documents received in generation signal')
+        logger.error('No documents received in generation signal:', documentData)
         setGenerationError('未收到文档数据，生成失败')
         toast.error('未收到文档数据，生成失败')
         return
       }
+
+      logger.info('Starting document creation process with documents:', documentData.documents.map(d => d.title))
 
       // Replace placeholder with real documents
       startGeneration(documentData.documents)
@@ -116,6 +122,12 @@ export const useDocumentGenerationHandler = () => {
             })
 
             // Create document with content directly using createFromMarkdown
+            logger.info('Calling createFromMarkdown API for document:', { 
+              title: doc.title, 
+              contentLength: doc.content?.length || 0,
+              chatId 
+            })
+            
             const documentResult = await documentApi.createFromMarkdown({
               title: doc.title,
               markdownContent: doc.content,
@@ -123,7 +135,7 @@ export const useDocumentGenerationHandler = () => {
               chatId: chatId,
             })
 
-            logger.debug('Document created', {
+            logger.info('Document created successfully', {
               documentId: documentResult.id,
               title: doc.title,
             })

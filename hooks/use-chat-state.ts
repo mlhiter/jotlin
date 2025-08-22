@@ -124,6 +124,11 @@ export const useChatState = (chatId: string): ChatStateHookResult => {
     for (const line of lines) {
       let shouldDisplay = true
 
+      // Log the line being processed for debugging
+      if (line.includes('__DOCUMENTS_GENERATED__') || line.includes('__DOCUMENT_GENERATION_START__') || line.includes('__GENERATION_PROGRESS__')) {
+        console.log('[DEBUG] Processing signal line:', line.substring(0, 100) + '...')
+      }
+
       // Process signals using the signal processor
       if (signalProcessorRef.current) {
         shouldDisplay = signalProcessorRef.current.processLine(line)
