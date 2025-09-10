@@ -61,6 +61,5 @@ export const parseAIResponse = (text: string): ParsedResponse => {
       placeholder: inputMatch[2] || '',
     }
   }
-  console.log('result', result)
   return result
 }
