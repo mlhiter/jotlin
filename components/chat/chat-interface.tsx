@@ -71,7 +71,7 @@ export function ChatInterface() {
 
   const handleStop = () => {
     stop()
-    // 停止后清理可能残留的空assistant消息
+    // clear empty assistant message
     setTimeout(() => cleanupEmptyAssistantMessage(), 100)
   }
 
