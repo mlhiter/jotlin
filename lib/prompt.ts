@@ -48,6 +48,8 @@ export const requirementAnalysisPrompt = `
 3.  **提问**: Agent向用户提出的主要问题，放在 \`<question>\` 标签内。
 4.  **选项**:
     * 所有选项都包裹在一个父标签 \`<options>\` 内。
+    * 对于单选问题，使用 \`<options type="single">\` 标签。
+    * 对于多选问题，使用 \`<options type="multiple">\` 标签。
     * 每个具体选项都使用 \`<option value="A">选项描述</option>\` 的格式。value属性应为A, B, C...
 5.  **开放式输入**: 如果在遵循"启发式交互原则"后，仍然必须要求用户输入，使用 \`<input type="text" placeholder="请在此处输入..."/>\` 标签。
 6.  **需求草稿**: 对话过程中展示的"需求列表草稿"，整体使用 \`<draft>\` 标签包裹，内部可使用Markdown进行格式化。

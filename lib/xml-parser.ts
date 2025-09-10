@@ -2,11 +2,13 @@ export interface ParsedResponse {
   prose?: string[]
   question?: string
   options: { value: string; text: string }[]
+  optionType?: OptionType
   draft?: string
   final?: string
   input?: { type: string; placeholder: string }
   rawText: string
 }
+export type OptionType = 'single' | 'multiple'
 
 export const parseAIResponse = (text: string): ParsedResponse => {
   const result: ParsedResponse = {
@@ -28,9 +30,10 @@ export const parseAIResponse = (text: string): ParsedResponse => {
     result.question = questionMatch[1].trim()
   }
 
-  const optionsMatch = text.match(/<options>([\s\S]*?)<\/options>/)
+  const optionsMatch = text.match(/<options(?:\s+type="(single|multiple)")?>([\s\S]*?)<\/options>/)
   if (optionsMatch) {
-    const optionsText = optionsMatch[1]
+    result.optionType = (optionsMatch[1] as OptionType) || 'single'
+    const optionsText = optionsMatch[2]
     const optionMatches = optionsText.matchAll(/<option value="([^"]*)">([\s\S]*?)<\/option>/g)
 
     for (const match of optionMatches) {
@@ -58,5 +61,6 @@ export const parseAIResponse = (text: string): ParsedResponse => {
       placeholder: inputMatch[2] || '',
     }
   }
+  console.log('result', result)
   return result
 }

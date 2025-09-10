@@ -1,5 +1,6 @@
 'use client'
 
+import { Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { Markdown } from '@/components/chat/markdown'
@@ -16,6 +17,7 @@ interface AIResponseProps {
 export function AIResponse({ content, onOptionSelect }: AIResponseProps) {
   const [inputValue, setInputValue] = useState('')
   const [answered, setAnswered] = useState(false)
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([])
   const parsed: ParsedResponse = parseAIResponse(content)
 
   const handleInputSubmit = () => {
@@ -27,11 +29,55 @@ export function AIResponse({ content, onOptionSelect }: AIResponseProps) {
     }
   }
 
+  const handleOptionClick = (value: string, text: string) => {
+    if (answered) return
+
+    if (parsed.optionType === 'multiple') {
+      const newSelected = selectedOptions.includes(value)
+        ? selectedOptions.filter((opt) => opt !== value)
+        : [...selectedOptions, value]
+
+      setSelectedOptions(newSelected)
+    } else {
+      onOptionSelect(value, text)
+      setAnswered(true)
+    }
+  }
+
+  const handleMultipleSubmit = () => {
+    if (answered || selectedOptions.length === 0) return
+
+    const selectedTexts = selectedOptions
+      .map((v) => {
+        const option = parsed.options.find((opt) => opt.value === v)
+        return option ? option.text : v
+      })
+      .join('\n')
+
+    onOptionSelect(selectedOptions.join(','), selectedTexts)
+    setAnswered(true)
+  }
+
   useEffect(() => {
     // Reset answered state when message content changes
     setAnswered(false)
     setInputValue('')
+    setSelectedOptions([])
   }, [content])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && parsed.optionType === 'multiple' && selectedOptions.length > 0 && !answered) {
+        e.preventDefault()
+        handleMultipleSubmit()
+      }
+    }
+
+    if (parsed.optionType === 'multiple') {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [parsed.optionType, selectedOptions, answered])
 
   return (
     <div className="space-y-4">
@@ -54,22 +100,33 @@ export function AIResponse({ content, onOptionSelect }: AIResponseProps) {
       {/* Options */}
       {parsed.options.length > 0 && (
         <div className="space-y-2">
+          {parsed.optionType === 'multiple' && (
+            <div className="text-xs text-muted-foreground mb-2">
+              💡 You can select multiple options and press{' '}
+              <kbd className="px-1.5 py-0.5 text-xs font-mono bg-muted rounded">Enter</kbd> to submit.
+            </div>
+          )}
           <div className="grid gap-2">
-            {parsed.options.map((option, index) => (
-              <Button
-                key={`${option.value}-${index}`}
-                variant="outline"
-                className="text-left justify-start h-auto py-3 px-4 whitespace-pre-wrap"
-                disabled={answered}
-                onClick={() => {
-                  if (answered) return
-                  onOptionSelect(option.value, option.text)
-                  setAnswered(true)
-                }}>
-                <span className="font-medium text-xs text-muted-foreground mr-2">{option.value}.</span>
-                <Markdown content={option.text} />
-              </Button>
-            ))}
+            {parsed.options.map((option, index) => {
+              const isSelected = selectedOptions.includes(option.value)
+
+              return (
+                <Button
+                  key={`${option.value}-${index}`}
+                  variant="outline"
+                  className={`text-left justify-start h-auto py-3 px-4 whitespace-pre-wrap ${
+                    isSelected && 'bg-accent'
+                  }`}
+                  disabled={answered}
+                  onClick={() => handleOptionClick(option.value, option.text)}>
+                  <span className="font-medium text-xs text-muted-foreground mr-2">{option.value}.</span>
+                  <Markdown content={option.text} />
+                  <div className="w-4 h-4 flex items-center justify-center">
+                    {isSelected && <Check className="w-4 h-4" />}
+                  </div>
+                </Button>
+              )
+            })}
           </div>
           {answered && (
             <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
