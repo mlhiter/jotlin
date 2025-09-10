@@ -13,9 +13,10 @@ import { cn } from '@/lib/utils'
 interface MarkdownProps {
   content: string
   className?: string
+  inline?: boolean
 }
 
-export function Markdown({ content, className }: MarkdownProps) {
+export function Markdown({ content, className, inline = false }: MarkdownProps) {
   const { theme } = useTheme()
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
@@ -26,7 +27,7 @@ export function Markdown({ content, className }: MarkdownProps) {
   }
 
   return (
-    <div className={cn('prose prose-sm max-w-none dark:prose-invert', className)}>
+    <div className={cn(inline ? '' : 'prose prose-sm max-w-none dark:prose-invert', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -35,6 +36,9 @@ export function Markdown({ content, className }: MarkdownProps) {
             const language = match ? match[1] : ''
             const codeContent = String(children).replace(/\n$/, '')
 
+            if (inline) {
+              return <code className="px-1.5 py-0.5 text-sm font-mono bg-muted rounded">{codeContent}</code>
+            }
             return (
               <div className="relative group">
                 <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg border">
