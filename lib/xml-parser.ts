@@ -1,5 +1,5 @@
 export interface ParsedResponse {
-  prose?: string
+  prose?: string[]
   question?: string
   options: { value: string; text: string }[]
   draft?: string
@@ -14,9 +14,13 @@ export const parseAIResponse = (text: string): ParsedResponse => {
     rawText: text,
   }
 
-  const proseMatch = text.match(/<prose>([\s\S]*?)<\/prose>/)
-  if (proseMatch) {
-    result.prose = proseMatch[1].trim()
+  const proseMatches = text.matchAll(/<prose>([\s\S]*?)<\/prose>/g)
+  const proseArray: string[] = []
+  for (const match of proseMatches) {
+    proseArray.push(match[1].trim())
+  }
+  if (proseArray.length > 0) {
+    result.prose = proseArray
   }
 
   const questionMatch = text.match(/<question>([\s\S]*?)<\/question>/)
@@ -54,6 +58,5 @@ export const parseAIResponse = (text: string): ParsedResponse => {
       placeholder: inputMatch[2] || '',
     }
   }
-
   return result
 }

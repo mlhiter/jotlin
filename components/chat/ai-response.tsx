@@ -36,9 +36,11 @@ export function AIResponse({ content, onOptionSelect }: AIResponseProps) {
   return (
     <div className="space-y-4">
       {/* Prose */}
-      {parsed.prose && (
-        <div className="text-sm text-muted-foreground">
-          <Markdown content={parsed.prose} />
+      {parsed.prose && parsed.prose.length > 0 && (
+        <div className="text-sm text-muted-foreground space-y-2">
+          {parsed.prose.map((prose, index) => (
+            <Markdown key={index} content={prose} />
+          ))}
         </div>
       )}
 
@@ -139,7 +141,7 @@ export function AIResponse({ content, onOptionSelect }: AIResponseProps) {
       )}
 
       {/* If there are no special tags, display the original content */}
-      {!parsed.prose &&
+      {(!parsed.prose || parsed.prose.length === 0) &&
         !parsed.question &&
         parsed.options.length === 0 &&
         !parsed.draft &&
