@@ -1,7 +1,7 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { Send, User, Bot, Sparkles, Moon, Sun, Copy, Check, RefreshCw } from 'lucide-react'
+import { User, Bot, Sparkles, Moon, Sun, Copy, Check, RefreshCw, ArrowUp } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useState, useRef, useEffect } from 'react'
 
@@ -241,7 +241,7 @@ export function ChatInterface() {
                 onKeyDown={handleKeyDown}
                 placeholder="Message Jotlin AI..."
                 disabled={status === 'submitted' || status === 'streaming'}
-                className="min-h-[44px] max-h-[200px] resize-none pr-12 py-3"
+                className="max-h-[200px] resize-none pr-12 py-3"
                 rows={1}
               />
               <Button
@@ -249,7 +249,7 @@ export function ChatInterface() {
                 disabled={!input.trim() || status === 'submitted' || status === 'streaming'}
                 size="sm"
                 className="absolute right-2 bottom-2 h-8 w-8 p-0">
-                <Send className="h-4 w-4" />
+                <ArrowUp className="h-4 w-4" />
               </Button>
             </div>
           </div>
