@@ -8,7 +8,6 @@ import { useState, useEffect } from 'react'
 import { ChatInput } from '@/components/chat/chat-input'
 import { MessageList } from '@/components/chat/message-list'
 import { RequirementSidebar } from '@/components/chat/requirement-sidebar'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 
 import { parseAIResponse } from '@/lib/xml-parser'
