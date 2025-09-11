@@ -1,20 +1,18 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { Sparkles, Moon, Sun } from 'lucide-react'
-import { useTheme } from 'next-themes'
 import { useState, useEffect } from 'react'
 
 import { ChatInput } from '@/components/chat/chat-input'
+import { DraftPanel } from '@/components/chat/draft-panel'
 import { MessageList } from '@/components/chat/message-list'
-import { RequirementSidebar } from '@/components/chat/requirement-sidebar'
-import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/page-header'
 
+import { cn } from '@/lib/utils'
 import { parseAIResponse } from '@/lib/xml-parser'
 
-export function ChatContainer() {
+export default function ChatPage() {
   const { messages, sendMessage, status, regenerate, stop, setMessages } = useChat()
-  const { theme, setTheme } = useTheme()
   const [showRequirementSidebar, setShowRequirementSidebar] = useState(false)
 
   // filter empty assistant messages
@@ -76,44 +74,30 @@ export function ChatContainer() {
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      {/* Header */}
-      <header className="flex items-center justify-between py-3 px-6">
-        <div className="flex items-center gap-3">
-          <Sparkles className="h-4 w-4" />
-          <h1 className="text-lg font-semibold">Jotlin Agent</h1>
+    <div className="h-[calc(100vh-24px)] flex flex-col overflow-hidden">
+      <PageHeader title="Chat" />
+      <div className="flex-1 overflow-hidden">
+        <div className="flex h-full overflow-hidden relative">
+          <div
+            className={cn(
+              'flex flex-col overflow-hidden transition-all duration-500 ease-in-out',
+              showRequirementSidebar ? 'pr-[calc(4/9*100%+1rem)]' : 'pr-0'
+            )}
+            style={{ width: '100%' }}>
+            <MessageList messages={filteredMessages} status={status} onRetry={regenerate} onSendMessage={sendMessage} />
+
+            <ChatInput onSendMessage={sendMessage} onStop={handleStop} status={status} />
+          </div>
+
+          <div className="absolute top-0 right-0 h-full">
+            <DraftPanel
+              draft={'testsetestset'}
+              final={requirementContent.final}
+              isVisible={showRequirementSidebar}
+              onToggle={() => setShowRequirementSidebar(!showRequirementSidebar)}
+            />
+          </div>
         </div>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="h-8 w-8 p-0">
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </header>
-
-      {/* Content Area - Split layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Main Chat Panel */}
-        <div className={`flex flex-col overflow-hidden ${showRequirementSidebar ? 'w-5/9' : 'w-full'}`}>
-          {/* Messages Container */}
-          <MessageList messages={filteredMessages} status={status} onRetry={regenerate} onSendMessage={sendMessage} />
-
-          {/* Fixed Input Form */}
-          <ChatInput onSendMessage={sendMessage} onStop={handleStop} status={status} />
-        </div>
-
-        {/* Requirement Sidebar */}
-        {showRequirementSidebar && (
-          <RequirementSidebar
-            draft={requirementContent.draft}
-            final={requirementContent.final}
-            onClose={() => setShowRequirementSidebar(false)}
-          />
-        )}
       </div>
     </div>
   )

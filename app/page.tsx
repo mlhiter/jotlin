@@ -1,5 +1,17 @@
-import { ChatContainer } from '@/components/chat/chat-container'
+import { redirect } from 'next/navigation'
 
-export default function Home() {
-  return <ChatContainer />
+import { AuthGuard } from '@/components/auth/auth-guard'
+
+export default async function Home() {
+  return (
+    <AuthGuard>
+      <RedirectToChat />
+    </AuthGuard>
+  )
+}
+
+function RedirectToChat() {
+  // Redirect authenticated users to chat
+  redirect('/chat')
+  return null
 }

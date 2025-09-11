@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Jotlin AI - Intelligent Chat Assistant',
+  title: 'Jotlin Agent - Intelligent Chat Assistant',
   description: 'A modern AI-powered chat interface built with Next.js and Vercel AI SDK',
 }
 

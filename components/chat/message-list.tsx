@@ -52,7 +52,7 @@ export function MessageList({ messages, status, onRetry, onSendMessage }: Messag
                   <Card
                     className={cn(
                       'max-w-[85%] p-2.5 relative shadow-none border-none bg-background',
-                      message.role === 'user' ? ' text-gray-900 ml-12 bg-neutral-200' : 'mr-12'
+                      message.role === 'user' ? 'ml-12 bg-muted text-foreground' : 'mr-12'
                     )}>
                     {message.parts.map((part, i) => {
                       switch (part.type) {

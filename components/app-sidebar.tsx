@@ -1,12 +1,24 @@
 'use client'
 
-import { BookOpen, Bot, Command, Frame, LifeBuoy, Map, PieChart, Send, Settings2, SquareTerminal } from 'lucide-react'
+import {
+  BookOpen,
+  Bot,
+  Command,
+  LifeBuoy,
+  MessageSquare,
+  PieChart,
+  Send,
+  Settings2,
+  SquareTerminal,
+} from 'lucide-react'
+import Link from 'next/link'
 import * as React from 'react'
 
 import { NavMain } from '@/components/nav-main'
 import { NavProjects } from '@/components/nav-projects'
 import { NavSecondary } from '@/components/nav-secondary'
 import { NavUser } from '@/components/nav-user'
+import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +29,8 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 
+import { useAuth } from '@/hooks/use-auth'
+
 const data = {
   user: {
     name: 'shadcn',
@@ -25,87 +39,71 @@ const data = {
   },
   navMain: [
     {
-      title: 'Playground',
-      url: '#',
-      icon: SquareTerminal,
+      title: 'Chat',
+      url: '/chat',
+      icon: MessageSquare,
       isActive: true,
       items: [
         {
-          title: 'History',
-          url: '#',
+          title: 'New Chat',
+          url: '/chat',
         },
         {
-          title: 'Starred',
-          url: '#',
-        },
-        {
-          title: 'Settings',
-          url: '#',
+          title: 'Chat History',
+          url: '/chat/history',
         },
       ],
     },
-    {
-      title: 'Models',
-      url: '#',
-      icon: Bot,
-      items: [
-        {
-          title: 'Genesis',
-          url: '#',
-        },
-        {
-          title: 'Explorer',
-          url: '#',
-        },
-        {
-          title: 'Quantum',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Documentation',
-      url: '#',
-      icon: BookOpen,
-      items: [
-        {
-          title: 'Introduction',
-          url: '#',
-        },
-        {
-          title: 'Get Started',
-          url: '#',
-        },
-        {
-          title: 'Tutorials',
-          url: '#',
-        },
-        {
-          title: 'Changelog',
-          url: '#',
-        },
-      ],
-    },
+    // {
+    //   title: 'Dashboard',
+    //   url: '/dashboard',
+    //   icon: SquareTerminal,
+    //   items: [
+    //     {
+    //       title: 'Overview',
+    //       url: '/dashboard',
+    //     },
+    //     {
+    //       title: 'Analytics',
+    //       url: '/dashboard/analytics',
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: 'Models',
+    //   url: '#',
+    //   icon: Bot,
+    //   items: [
+    //     {
+    //       title: 'GPT-4',
+    //       url: '#',
+    //     },
+    //     {
+    //       title: 'Claude',
+    //       url: '#',
+    //     },
+    //     {
+    //       title: 'Gemini',
+    //       url: '#',
+    //     },
+    //   ],
+    // },
     {
       title: 'Settings',
-      url: '#',
+      url: '/settings',
       icon: Settings2,
       items: [
         {
-          title: 'General',
-          url: '#',
+          title: 'Profile',
+          url: '/settings/profile',
         },
         {
-          title: 'Team',
-          url: '#',
+          title: 'Preferences',
+          url: '/settings/preferences',
         },
         {
-          title: 'Billing',
-          url: '#',
-        },
-        {
-          title: 'Limits',
-          url: '#',
+          title: 'API Keys',
+          url: '/settings/api-keys',
         },
       ],
     },
@@ -124,24 +122,49 @@ const data = {
   ],
   projects: [
     {
-      name: 'Design Engineering',
-      url: '#',
-      icon: Frame,
+      name: 'Recent Chats',
+      url: '/chat',
+      icon: MessageSquare,
     },
     {
-      name: 'Sales & Marketing',
-      url: '#',
+      name: 'Analytics',
+      url: '/dashboard/analytics',
       icon: PieChart,
     },
     {
-      name: 'Travel',
-      url: '#',
-      icon: Map,
+      name: 'Documentation',
+      url: '/docs',
+      icon: BookOpen,
     },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user, isLoading } = useAuth()
+
+  if (isLoading) {
+    return (
+      <Sidebar variant="inset" {...props}>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </Sidebar>
+    )
+  }
+
+  if (!user) {
+    return (
+      <Sidebar variant="inset" {...props}>
+        <div className="flex flex-col items-center justify-center h-full p-4 space-y-4">
+          <p className="text-sm text-muted-foreground text-center">Please sign in to access your dashboard</p>
+          <Button asChild>
+            <Link href="/login">Sign In</Link>
+          </Button>
+        </div>
+      </Sidebar>
+    )
+  }
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -153,8 +176,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Acme Inc</span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate font-medium">Jotlin Agent</span>
+                  <span className="truncate text-xs">Chat Assistant</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -167,7 +190,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={{
+            name: user.name,
+            email: user.email,
+            avatar: user.image || '/avatars/default.jpg',
+          }}
+        />
       </SidebarFooter>
     </Sidebar>
   )
