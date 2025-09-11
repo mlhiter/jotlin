@@ -14,8 +14,8 @@ import {
 import Link from 'next/link'
 import * as React from 'react'
 
+import { NavChats } from '@/components/nav-chats'
 import { NavMain } from '@/components/nav-main'
-import { NavProjects } from '@/components/nav-projects'
 import { NavSecondary } from '@/components/nav-secondary'
 import { NavUser } from '@/components/nav-user'
 import { Button } from '@/components/ui/button'
@@ -30,6 +30,8 @@ import {
 } from '@/components/ui/sidebar'
 
 import { useAuth } from '@/hooks/use-auth'
+
+import { NavProjects } from './nav-projects'
 
 const data = {
   user: {
@@ -54,40 +56,40 @@ const data = {
         },
       ],
     },
-    // {
-    //   title: 'Dashboard',
-    //   url: '/dashboard',
-    //   icon: SquareTerminal,
-    //   items: [
-    //     {
-    //       title: 'Overview',
-    //       url: '/dashboard',
-    //     },
-    //     {
-    //       title: 'Analytics',
-    //       url: '/dashboard/analytics',
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: 'Models',
-    //   url: '#',
-    //   icon: Bot,
-    //   items: [
-    //     {
-    //       title: 'GPT-4',
-    //       url: '#',
-    //     },
-    //     {
-    //       title: 'Claude',
-    //       url: '#',
-    //     },
-    //     {
-    //       title: 'Gemini',
-    //       url: '#',
-    //     },
-    //   ],
-    // },
+    {
+      title: 'Dashboard',
+      url: '/dashboard',
+      icon: SquareTerminal,
+      items: [
+        {
+          title: 'Overview',
+          url: '/dashboard',
+        },
+        {
+          title: 'Analytics',
+          url: '/dashboard/analytics',
+        },
+      ],
+    },
+    {
+      title: 'Models',
+      url: '#',
+      icon: Bot,
+      items: [
+        {
+          title: 'GPT-4',
+          url: '#',
+        },
+        {
+          title: 'Claude',
+          url: '#',
+        },
+        {
+          title: 'Gemini',
+          url: '#',
+        },
+      ],
+    },
     {
       title: 'Settings',
       url: '/settings',
@@ -121,11 +123,6 @@ const data = {
     },
   ],
   projects: [
-    {
-      name: 'Recent Chats',
-      url: '/chat',
-      icon: MessageSquare,
-    },
     {
       name: 'Analytics',
       url: '/dashboard/analytics',
@@ -185,8 +182,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavMain items={data.navMain} /> */}
+        <NavChats />
+        {/* <NavProjects projects={data.projects} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

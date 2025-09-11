@@ -1,29 +1,14 @@
 'use client'
 
 import { Github } from 'lucide-react'
-import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { authClient } from '@/auth-client'
+import { useAuth } from '@/hooks/use-auth'
 
 export function LoginForm() {
-  const [isLoading, setIsLoading] = useState(false)
-
-  const handleGitHubLogin = async () => {
-    try {
-      setIsLoading(true)
-      await authClient.signIn.social({
-        provider: 'github',
-        callbackURL: '/chat',
-      })
-    } catch (error) {
-      console.error('Login failed:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { isLoading, signIn } = useAuth()
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -33,7 +18,7 @@ export function LoginForm() {
           <CardDescription>Sign in to your account to continue</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleGitHubLogin} disabled={isLoading} className="w-full" size="lg">
+          <Button onClick={() => signIn('github')} disabled={isLoading} className="w-full" size="lg">
             <Github className="mr-2 h-4 w-4" />
             {isLoading ? 'Signing in...' : 'Continue with GitHub'}
           </Button>

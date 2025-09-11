@@ -1,41 +1,41 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-import { authClient } from '@/auth-client'
+import { useSession, signIn, signOut } from '@/lib/auth-client'
 
-export interface User {
-  id: string
-  name: string
-  email: string
-  image?: string
-}
+export const useAuth = () => {
+  const router = useRouter()
+  const { data, isPending, error, refetch } = useSession()
 
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const getSession = async () => {
-      try {
-        const session = await authClient.getSession()
-        if (session?.data?.user) {
-          setUser({
-            id: session.data.user.id,
-            name: session.data.user.name,
-            email: session.data.user.email,
-            image: session.data.user.image || undefined,
-          })
-        }
-      } catch (error) {
-        console.error('Failed to get session:', error)
-      } finally {
-        setIsLoading(false)
-      }
+  const _signIn = async (provider: 'github' | 'google' | 'email') => {
+    if (provider === 'github') {
+      await signIn.social({
+        provider: 'github',
+        callbackURL: '/chat',
+        errorCallbackURL: '/error',
+        newUserCallbackURL: '/chat',
+      })
     }
+  }
 
-    getSession()
-  }, [])
+  const _signOut = async () => {
+    await signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push('/')
+        },
+      },
+    })
+  }
 
-  return { user, isLoading }
+  return {
+    session: data?.session,
+    user: data?.user,
+    isLoading: isPending,
+    error,
+    refetch,
+    signIn: _signIn,
+    signOut: _signOut,
+  }
 }

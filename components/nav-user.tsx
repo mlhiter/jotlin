@@ -1,7 +1,6 @@
 'use client'
 
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Sun, Moon } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { ChevronsUpDown, LogOut, Sparkles, Sun, Moon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -16,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 
-import { authClient } from '@/auth-client'
+import { useAuth } from '@/hooks/use-auth'
 
 export function NavUser({
   user,
@@ -28,17 +27,8 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
-  const router = useRouter()
   const { theme, setTheme } = useTheme()
-
-  const handleLogout = async () => {
-    try {
-      await authClient.signOut()
-      router.push('/login')
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
-  }
+  const { signOut } = useAuth()
 
   return (
     <SidebarMenu>
@@ -104,7 +94,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuItem onClick={() => signOut()}>
               <LogOut />
               Log out
             </DropdownMenuItem>
