@@ -23,7 +23,7 @@ export function AssistantMessage({ content, onOptionSelect }: AssistantMessagePr
   const handleInputSubmit = () => {
     if (answered) return
     if (inputValue.trim()) {
-      onOptionSelect('user_input', inputValue.trim())
+      onOptionSelect(inputValue.trim(), '') // input value = text
       setInputValue('')
       setAnswered(true)
     }
