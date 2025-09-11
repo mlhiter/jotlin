@@ -5,7 +5,7 @@ import { Brain, RefreshCw } from 'lucide-react'
 import { useRef, useEffect } from 'react'
 
 import { AssistantMessage } from '@/components/chat/assistant-message'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { EmptyState } from '@/components/chat/empty-state'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -41,17 +41,7 @@ export function MessageList({ messages, status, onRetry, onSendMessage }: Messag
       <ScrollArea className="h-full px-4">
         <div className="max-w-3xl mx-auto py-6 space-y-6">
           {messages.filter((m) => m.role !== 'system').length === 0 ? (
-            <div className="text-center py-20">
-              <Avatar className="h-12 w-12 mx-auto mb-4">
-                <AvatarFallback className="bg-muted">
-                  <Brain className="h-6 w-6 text-muted-foreground" />
-                </AvatarFallback>
-              </Avatar>
-              <h2 className="text-xl font-semibold mb-2">How can I help you today?</h2>
-              <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                Ask me anything, and I&apos;ll do my best to help you with detailed and accurate responses.
-              </p>
-            </div>
+            <EmptyState onSendMessage={onSendMessage} />
           ) : (
             messages
               .filter((m) => m.role !== 'system')
