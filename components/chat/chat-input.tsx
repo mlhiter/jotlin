@@ -83,7 +83,7 @@ export function ChatInput({ onSendMessage, onStop, status, disabled = false }: C
         </div>
         <div className="flex items-center justify-between mt-2">
           <p className="text-xs text-muted-foreground">Press Enter to send, Shift+Enter for new line</p>
-          <p className="text-xs text-muted-foreground">Powered by Gemini-2.5-flash</p>
+          <p className="text-xs text-muted-foreground">Powered by Gemini-2.5-pro</p>
         </div>
       </form>
     </div>
