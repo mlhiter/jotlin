@@ -57,7 +57,7 @@ export function ChatInput({ onSendMessage, onStop, status, disabled = false }: C
   }, [input])
 
   return (
-    <div className="px-4 mb-2">
+    <div className="px-4 mb-2 mt-1">
       <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
         <div className="relative flex items-end gap-3">
           <div className="flex-1 relative">
