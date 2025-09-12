@@ -24,7 +24,7 @@ export default function ChatIdPage() {
     messages: [],
     transport: new DefaultChatTransport({
       api: `/api/chats/${chatId}`,
-      // only send the last message to the server:
+      // only send the last message to the server
       prepareSendMessagesRequest({ messages, id }) {
         return { body: { message: messages[messages.length - 1], id } }
       },
