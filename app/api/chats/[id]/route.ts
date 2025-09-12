@@ -1,10 +1,12 @@
 import { createOpenAI } from '@ai-sdk/openai'
+import { InputJsonValue } from '@prisma/client/runtime/library'
 import { streamText, UIMessage, convertToModelMessages, createIdGenerator, validateUIMessages } from 'ai'
 import { NextResponse } from 'next/server'
 
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { requirementAnalysisPrompt } from '@/lib/prompt'
+import { BetterAuthSession } from '@/types/session'
 
 const openai = createOpenAI({
   baseURL: process.env.OPENAI_API_BASE_URL,
@@ -16,9 +18,9 @@ const openai = createOpenAI({
 // Allow streaming responses up to 30 seconds
 // export const maxDuration = 30
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await auth.api.getSession({ headers: req.headers })
+    const session = (await auth.api.getSession({ headers: req.headers })) as BetterAuthSession
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -79,8 +81,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
               data: messages.map((msg) => ({
                 id: msg.id,
                 role: msg.role,
-                parts: msg.parts,
-                metadata: msg.metadata,
+                parts: msg.parts as InputJsonValue,
+                metadata: msg.metadata as InputJsonValue,
                 chatId,
               })),
             })
@@ -97,9 +99,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = (await auth.api.getSession({ headers: request.headers })) as BetterAuthSession
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -128,9 +130,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = (await auth.api.getSession({ headers: request.headers })) as BetterAuthSession
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -157,9 +159,9 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
+    const session = (await auth.api.getSession({ headers: request.headers })) as BetterAuthSession
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
