@@ -103,6 +103,18 @@ body {
   background: rgb(107 114 128 / 0.2);
 }
 
+/* Enhanced selection styling for draft panel */
+[data-selection-container] ::selection {
+  background: hsl(var(--accent) / 0.3);
+  color: hsl(var(--accent-foreground));
+}
+
+/* Dark mode selection for draft panel */
+.dark [data-selection-container] ::selection {
+  background: hsl(var(--accent) / 0.4);
+  color: hsl(var(--accent-foreground));
+}
+
 /* Better text rendering */
 h1,
 h2,

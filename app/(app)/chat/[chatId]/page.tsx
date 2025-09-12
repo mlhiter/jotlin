@@ -42,6 +42,7 @@ export default function ChatIdPage() {
   const [showRequirementSidebar, setShowRequirementSidebar] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [hasAutoSent, setHasAutoSent] = useState(false)
+  const [quotes, setQuotes] = useState<Array<{ id: string; text: string }>>([])
 
   useEffect(() => {
     const loadChat = async () => {
@@ -142,6 +143,24 @@ export default function ChatIdPage() {
     setTimeout(() => cleanupEmptyAssistantMessage(), 100)
   }
 
+  const handleQuote = (selectedText: string) => {
+    const newQuote = {
+      id: Date.now().toString(),
+      text: selectedText.trim(),
+    }
+    setQuotes((prev) => [...prev, newQuote])
+  }
+
+  const handleRemoveQuote = (id: string) => {
+    setQuotes((prev) => prev.filter((quote) => quote.id !== id))
+  }
+
+  const handleSendMessage = (message: { text: string }) => {
+    // Clear quotes after sending
+    setQuotes([])
+    sendMessage(message)
+  }
+
   if (isLoading) {
     return (
       <div className="h-[calc(100vh-24px)] flex flex-col overflow-hidden">
@@ -166,7 +185,13 @@ export default function ChatIdPage() {
             style={{ width: '100%' }}>
             <MessageList messages={filteredMessages} status={status} onRetry={regenerate} onSendMessage={sendMessage} />
 
-            <ChatInput onSendMessage={sendMessage} onStop={handleStop} status={status} />
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              onStop={handleStop}
+              status={status}
+              quotes={quotes}
+              onRemoveQuote={handleRemoveQuote}
+            />
           </div>
 
           <div className="absolute top-0 right-0 h-full">
@@ -175,6 +200,7 @@ export default function ChatIdPage() {
               final={requirementContent.final}
               isVisible={showRequirementSidebar}
               onToggle={() => setShowRequirementSidebar(!showRequirementSidebar)}
+              onQuote={handleQuote}
             />
           </div>
         </div>

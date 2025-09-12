@@ -6,6 +6,7 @@ import { useRef, useEffect } from 'react'
 
 import { AssistantMessage } from '@/components/chat/assistant-message'
 import { EmptyState } from '@/components/chat/empty-state'
+import { UserMessage } from '@/components/chat/user-message'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -58,9 +59,7 @@ export function MessageList({ messages, status, onRetry, onSendMessage }: Messag
                       switch (part.type) {
                         case 'text':
                           return message.role === 'user' ? (
-                            <p key={`${message.id}-${i}`} className="whitespace-pre-wrap text-sm leading-relaxed">
-                              {part.text}
-                            </p>
+                            <UserMessage key={`${message.id}-${i}`} content={part.text} />
                           ) : (
                             <AssistantMessage
                               key={`${message.id}-${i}`}

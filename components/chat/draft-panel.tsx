@@ -3,6 +3,7 @@
 import { ChevronsLeft, ChevronsRight } from 'lucide-react'
 
 import { Markdown } from '@/components/chat/markdown'
+import { TextSelectionMenu } from '@/components/chat/text-selection-menu'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
@@ -11,9 +12,10 @@ interface DraftPanelProps {
   final?: string
   isVisible?: boolean
   onToggle?: () => void
+  onQuote?: (selectedText: string) => void
 }
 
-export function DraftPanel({ draft, final, isVisible = true, onToggle }: DraftPanelProps) {
+export function DraftPanel({ draft, final, isVisible = true, onToggle, onQuote }: DraftPanelProps) {
   const content = final || draft
   const isDraft = !final && draft
 
@@ -48,10 +50,11 @@ export function DraftPanel({ draft, final, isVisible = true, onToggle }: DraftPa
         </div>
 
         <ScrollArea className="flex-1 h-0">
-          <div className="p-4">
+          <div className="p-4 relative" data-selection-container>
             <div className="max-w-none text-sm">
               <Markdown content={content} />
             </div>
+            <TextSelectionMenu onQuote={onQuote} />
           </div>
         </ScrollArea>
       </div>

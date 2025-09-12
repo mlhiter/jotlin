@@ -1,20 +1,35 @@
 'use client'
 
 import { ChatStatus } from 'ai'
-import { ArrowUp, Square } from 'lucide-react'
+import { ArrowUp, Square, X, TextAlignStart } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+
+interface Quote {
+  id: string
+  text: string
+}
 
 interface ChatInputProps {
   onSendMessage: (message: { text: string }) => void
   onStop: () => void
   status: ChatStatus
   disabled?: boolean
+  quotes?: Quote[]
+  onAddQuote?: (quote: Quote) => void
+  onRemoveQuote?: (id: string) => void
 }
 
-export function ChatInput({ onSendMessage, onStop, status, disabled = false }: ChatInputProps) {
+export function ChatInput({
+  onSendMessage,
+  onStop,
+  status,
+  disabled = false,
+  quotes = [],
+  onRemoveQuote,
+}: ChatInputProps) {
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -22,7 +37,15 @@ export function ChatInput({ onSendMessage, onStop, status, disabled = false }: C
     e.preventDefault()
     if (!input.trim() || status === 'submitted' || status === 'streaming' || disabled) return
 
-    onSendMessage({ text: input })
+    let messageText = ''
+    if (quotes.length > 0) {
+      const quotesText = quotes.map((quote) => `<quote>${quote.text}</quote>`).join('\n')
+      messageText = quotesText + (input.trim() ? '\n\n' + input : '')
+    } else {
+      messageText = input
+    }
+
+    onSendMessage({ text: messageText })
     setInput('')
 
     // Reset textarea height
@@ -59,6 +82,29 @@ export function ChatInput({ onSendMessage, onStop, status, disabled = false }: C
   return (
     <div className="px-4 mb-2 mt-1">
       <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+        {quotes.length > 0 && (
+          <div className="mb-2 flex flex-wrap gap-2">
+            {quotes.map((quote) => (
+              <div
+                key={quote.id}
+                className="flex items-center gap-1 bg-muted/30 rounded px-2 py-1 w-48 border-border border-1">
+                <TextAlignStart className="h-3 w-3 text-accent-foreground/70 flex-shrink-0" />
+                <div className="flex-1 text-xs text-muted-foreground truncate">{quote.text}</div>
+                {onRemoveQuote && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onRemoveQuote(quote.id)}
+                    className="h-4 w-4 p-0">
+                    <X className="h-2 w-2 text-neutral-500" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="relative flex items-end gap-3">
           <div className="flex-1 relative">
             <Textarea
