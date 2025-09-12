@@ -31,13 +31,19 @@ export function Markdown({ content, className, inline = false }: MarkdownProps) 
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          code({ className, children }) {
+          code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '')
             const language = match ? match[1] : ''
             const codeContent = String(children).replace(/\n$/, '')
 
-            if (inline) {
-              return <code className="px-1.5 py-0.5 text-sm font-mono bg-muted rounded">{codeContent}</code>
+            const isInlineCode = !className || (!match && !codeContent.includes('\n'))
+
+            if (isInlineCode || inline) {
+              return (
+                <code className="px-1.5 py-0.5 text-sm font-mono bg-muted rounded" {...props}>
+                  {codeContent}
+                </code>
+              )
             }
             return (
               <div className="relative group">
