@@ -1,7 +1,7 @@
 'use client'
 
 import { MessageSquare, MoreHorizontal, Trash2 } from 'lucide-react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -13,6 +13,7 @@ import { useChats } from '@/hooks/use-chat'
 export function ChatList() {
   const { chats, isLoading, deleteChat } = useChats()
   const pathname = usePathname()
+  const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const { isMobile } = useSidebar()
 
@@ -22,9 +23,15 @@ export function ChatList() {
 
     if (deletingId) return
 
+    const isCurrentChat = pathname === `/chat/${chatId}`
+
     try {
       setDeletingId(chatId)
       await deleteChat(chatId)
+
+      if (isCurrentChat) {
+        router.push('/chat')
+      }
     } catch (error) {
       console.error('Failed to delete chat:', error)
       toast.error('Failed to delete chat')
