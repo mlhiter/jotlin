@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 interface Chat {
   id: string
@@ -19,78 +19,74 @@ interface Chat {
   }
 }
 
+const fetchChatsRequest = async (): Promise<Chat[]> => {
+  const response = await fetch('/api/chats')
+  if (!response.ok) {
+    throw new Error('Failed to fetch chats')
+  }
+  return response.json()
+}
+
+const createChatRequest = async (title?: string): Promise<Chat> => {
+  const response = await fetch('/api/chats', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ title }),
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to create chat')
+  }
+  return response.json()
+}
+
+const deleteChatRequest = async (chatId: string): Promise<void> => {
+  const response = await fetch(`/api/chats/${chatId}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to delete chat')
+  }
+}
+
 export function useChats() {
-  const [chats, setChats] = useState<Chat[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const fetchChats = async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
+  const {
+    data: chats = [],
+    isLoading,
+    error,
+    refetch: fetchChats,
+  } = useQuery({
+    queryKey: ['chats'],
+    queryFn: fetchChatsRequest,
+  })
 
-      const response = await fetch('/api/chats')
-      if (!response.ok) {
-        throw new Error('Failed to fetch chats')
-      }
+  const createChatMutation = useMutation({
+    mutationFn: createChatRequest,
+    onSuccess: (newChat) => {
+      queryClient.setQueryData(['chats'], (old: Chat[] = []) => [newChat, ...old])
+    },
+  })
 
-      const data = await response.json()
-      setChats(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch chats')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const createChat = async (title?: string) => {
-    try {
-      const response = await fetch('/api/chats', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create chat')
-      }
-
-      const newChat = await response.json()
-      setChats((prev) => [newChat, ...prev])
-      return newChat
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to create chat')
-    }
-  }
-
-  const deleteChat = async (chatId: string) => {
-    try {
-      const response = await fetch(`/api/chats/${chatId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete chat')
-      }
-
-      setChats((prev) => prev.filter((chat) => chat.id !== chatId))
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to delete chat')
-    }
-  }
-
-  useEffect(() => {
-    fetchChats()
-  }, [])
+  const deleteChatMutation = useMutation({
+    mutationFn: deleteChatRequest,
+    onSuccess: (_, chatId) => {
+      queryClient.setQueryData(['chats'], (old: Chat[] = []) => old.filter((chat) => chat.id !== chatId))
+    },
+  })
 
   return {
     chats,
     isLoading,
-    error,
+    error: error?.message || null,
     fetchChats,
-    createChat,
-    deleteChat,
+    createChat: createChatMutation.mutateAsync,
+    deleteChat: deleteChatMutation.mutateAsync,
+    isCreating: createChatMutation.isPending,
+    isDeleting: deleteChatMutation.isPending,
   }
 }

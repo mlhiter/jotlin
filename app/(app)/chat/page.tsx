@@ -7,25 +7,15 @@ import { ChatInput } from '@/components/chat/chat-input'
 import { EmptyState } from '@/components/chat/empty-state'
 import { PageHeader } from '@/components/page-header'
 
+import { useChats } from '@/hooks/use-chat'
+
 export default function ChatPage() {
   const router = useRouter()
+  const { createChat } = useChats()
 
   const handleSendMessage = async (message: { text: string }) => {
     try {
-      const response = await fetch('/api/chats', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title: message.text.slice(0, 50) }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create chat')
-      }
-
-      const chat = await response.json()
-
+      const chat = await createChat(message.text.slice(0, 50))
       router.push(`/chat/${chat.id}?message=${encodeURIComponent(message.text)}`)
     } catch (error) {
       console.error('Failed to create chat:', error)
