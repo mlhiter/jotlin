@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from 'next/server'
 
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { BetterAuthSession } from '@/types/session'
+import { BetterAuthSession } from '@/schema/session'
 
 export async function GET(req: NextRequest) {
   try {

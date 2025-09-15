@@ -1,12 +1,13 @@
 import { createOpenAI } from '@ai-sdk/openai'
 import { InputJsonValue } from '@prisma/client/runtime/library'
-import { streamText, UIMessage, convertToModelMessages, createIdGenerator, validateUIMessages } from 'ai'
+import { streamText, convertToModelMessages, createIdGenerator, validateUIMessages } from 'ai'
 import { NextResponse } from 'next/server'
 
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { requirementAnalysisPrompt } from '@/lib/prompt'
-import { BetterAuthSession } from '@/types/session'
+import { metadataSchema, MyUIMessage } from '@/schema/chat'
+import { BetterAuthSession } from '@/schema/session'
 
 const openai = createOpenAI({
   baseURL: process.env.OPENAI_API_BASE_URL,
@@ -25,7 +26,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { message }: { message: UIMessage[] } = await req.json()
+    const {
+      lastUserMessage,
+      lastAssistantMessage,
+    }: { lastUserMessage: MyUIMessage; lastAssistantMessage: MyUIMessage | null } = await req.json()
     const { id: chatId } = await params
 
     const chat = await prisma.chat.findFirst({
@@ -46,10 +50,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const validatedMessages = await validateUIMessages({
       // append the new message to the previous messages
-      messages: [...previousMessages, message],
-      // tools, // if using tools
-      // metadataSchema, // if using custom metadata
+      messages: [
+        ...previousMessages.slice(0, -1),
+        ...(lastAssistantMessage ? [lastAssistantMessage] : []),
+        lastUserMessage,
+      ],
+      metadataSchema, // if using custom metadata
       // dataSchemas, // if using custom data parts
+      // tools, // if using tools
     })
 
     const result = streamText({

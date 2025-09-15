@@ -1,6 +1,6 @@
 'use client'
 
-import { UIMessage, ChatStatus } from 'ai'
+import { ChatStatus } from 'ai'
 import { Brain, RefreshCw } from 'lucide-react'
 import { useRef, useEffect } from 'react'
 
@@ -12,15 +12,17 @@ import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 import { cn } from '@/lib/utils'
+import { MyUIMessage } from '@/schema/chat'
 
 interface MessageListProps {
-  messages: UIMessage[]
+  messages: MyUIMessage[]
   status: ChatStatus
   onRetry: () => void
   onSendMessage: (message: { text: string }) => void
+  onUpdateMessage?: (messageId: string, metadata: MyUIMessage['metadata']) => void
 }
 
-export function MessageList({ messages, status, onRetry, onSendMessage }: MessageListProps) {
+export function MessageList({ messages, status, onRetry, onSendMessage, onUpdateMessage }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -64,7 +66,9 @@ export function MessageList({ messages, status, onRetry, onSendMessage }: Messag
                             <AssistantMessage
                               key={`${message.id}-${i}`}
                               content={part.text}
+                              metadata={message.metadata}
                               onOptionSelect={(value) => onSendMessage({ text: value })}
+                              onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
                             />
                           )
                       }

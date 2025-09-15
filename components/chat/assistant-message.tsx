@@ -8,16 +8,20 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import { parseAIResponse, ParsedResponse } from '@/lib/xml-parser'
+import { MyUIMessage } from '@/schema/chat'
 
 interface AssistantMessageProps {
   content: string
+  metadata?: MyUIMessage['metadata']
   onOptionSelect: (value: string, text: string) => void
+  onUpdateMetadata?: (metadata: MyUIMessage['metadata']) => void
 }
 
-export function AssistantMessage({ content, onOptionSelect }: AssistantMessageProps) {
-  const [inputValue, setInputValue] = useState('')
-  const [answered, setAnswered] = useState(false)
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([])
+export function AssistantMessage({ content, metadata, onOptionSelect, onUpdateMetadata }: AssistantMessageProps) {
+  const [answered, setAnswered] = useState(metadata?.answered || false)
+  const [selectedOptions, setSelectedOptions] = useState<string[]>(metadata?.selectedOptions || [])
+  const [inputValue, setInputValue] = useState(metadata?.inputValue || '')
+
   const parsed: ParsedResponse = parseAIResponse(content)
 
   const handleInputSubmit = () => {
@@ -26,6 +30,13 @@ export function AssistantMessage({ content, onOptionSelect }: AssistantMessagePr
       onOptionSelect(inputValue.trim(), '') // input value = text
       setInputValue('')
       setAnswered(true)
+
+      onUpdateMetadata?.({
+        ...metadata,
+        answered: true,
+        inputValue: inputValue.trim(),
+        answeredAt: new Date().toISOString(),
+      })
     }
   }
 
@@ -41,6 +52,14 @@ export function AssistantMessage({ content, onOptionSelect }: AssistantMessagePr
     } else {
       onOptionSelect(value, text)
       setAnswered(true)
+      setSelectedOptions([value])
+
+      onUpdateMetadata?.({
+        ...metadata,
+        answered: true,
+        selectedOptions: [value],
+        answeredAt: new Date().toISOString(),
+      })
     }
   }
 
@@ -56,14 +75,14 @@ export function AssistantMessage({ content, onOptionSelect }: AssistantMessagePr
 
     onOptionSelect(selectedOptions.join(','), selectedTexts)
     setAnswered(true)
-  }
 
-  useEffect(() => {
-    // Reset answered state when message content changes
-    setAnswered(false)
-    setInputValue('')
-    setSelectedOptions([])
-  }, [content])
+    onUpdateMetadata?.({
+      ...metadata,
+      answered: true,
+      selectedOptions,
+      answeredAt: new Date().toISOString(),
+    })
+  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -118,7 +137,9 @@ export function AssistantMessage({ content, onOptionSelect }: AssistantMessagePr
                     isSelected && 'bg-accent'
                   }`}
                   disabled={answered}
-                  onClick={() => handleOptionClick(option.value, option.text)}>
+                  onClick={() => {
+                    handleOptionClick(option.value, option.text)
+                  }}>
                   <span className="font-medium text-xs text-muted-foreground mr-2">{option.value}.</span>
                   <Markdown content={option.text} inline />
                   <div className="w-4 h-4 flex items-center justify-center">

@@ -12,6 +12,7 @@ import { PageHeader } from '@/components/page-header'
 
 import { cn } from '@/lib/utils'
 import { parseAIResponse } from '@/lib/xml-parser'
+import { MyUIMessage } from '@/schema/chat'
 
 export default function ChatIdPage() {
   const params = useParams()
@@ -19,14 +20,20 @@ export default function ChatIdPage() {
   const chatId = params.chatId as string
   const initialMessage = searchParams.get('message')
   // TODO: we need messages
-  const { messages, sendMessage, status, stop, setMessages } = useChat({
+  const { messages, sendMessage, status, stop, setMessages } = useChat<MyUIMessage>({
     id: chatId,
     messages: [],
     transport: new DefaultChatTransport({
       api: `/api/chats/${chatId}`,
-      // only send the last message to the server
+      // send the last user message and last assistant message(update selected status) to the server
       prepareSendMessagesRequest({ messages, id }) {
-        return { body: { message: messages[messages.length - 1], id } }
+        return {
+          body: {
+            lastUserMessage: messages[messages.length - 1],
+            id,
+            lastAssistantMessage: messages.length >= 2 ? messages[messages.length - 2] : null,
+          },
+        }
       },
     }),
   })
@@ -161,6 +168,15 @@ export default function ChatIdPage() {
     sendMessage(message)
   }
 
+  const handleUpdateMessage = (messageId: string, metadata: MyUIMessage['metadata']) => {
+    setMessages(
+      (prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, metadata: { ...msg.metadata, ...metadata } } : msg
+        ) as MyUIMessage[]
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="h-[calc(100vh-24px)] flex flex-col overflow-hidden">
@@ -183,7 +199,13 @@ export default function ChatIdPage() {
               showRequirementSidebar ? 'pr-[calc(4/9*100%+1rem)]' : 'pr-0'
             )}
             style={{ width: '100%' }}>
-            <MessageList messages={filteredMessages} status={status} onRetry={regenerate} onSendMessage={sendMessage} />
+            <MessageList
+              messages={filteredMessages}
+              status={status}
+              onRetry={regenerate}
+              onSendMessage={sendMessage}
+              onUpdateMessage={handleUpdateMessage}
+            />
 
             <ChatInput
               onSendMessage={handleSendMessage}
