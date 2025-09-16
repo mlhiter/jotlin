@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 
-import { useSelectedOptions } from '@/hooks/use-selected-options'
+import { SelectedOption, useSelectedOptions } from '@/hooks/use-selected-options'
 
 interface Quote {
   id: string
@@ -22,6 +22,7 @@ interface ChatInputProps {
   quotes?: Quote[]
   onAddQuote?: (quote: Quote) => void
   onRemoveQuote?: (id: string) => void
+  onMarkMessageAnswered?: (messageId: string, selectedOptions: SelectedOption[]) => void
 }
 
 export function ChatInput({
@@ -31,11 +32,12 @@ export function ChatInput({
   disabled = false,
   quotes = [],
   onRemoveQuote,
+  onMarkMessageAnswered,
 }: ChatInputProps) {
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const { selectedOptions, clearOptions, removeOption } = useSelectedOptions()
+  const { selectedOptions, clearOptions, removeOption, currentAssistantMessageId } = useSelectedOptions()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,6 +49,10 @@ export function ChatInput({
     if (selectedOptions.length > 0) {
       const selectedTexts = selectedOptions.map((option) => option.value).join(',')
       messageText = selectedTexts
+
+      if (currentAssistantMessageId) {
+        onMarkMessageAnswered?.(currentAssistantMessageId, selectedOptions)
+      }
     }
 
     if (quotes.length > 0) {

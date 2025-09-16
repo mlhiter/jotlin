@@ -2,22 +2,25 @@
 
 import { create } from 'zustand'
 
-interface SelectedOption {
+export interface SelectedOption {
   value: string
   text: string
 }
 
 interface SelectedOptionsStore {
   selectedOptions: SelectedOption[]
+  currentAssistantMessageId: string | null
+
   setSelectedOptions: (options: SelectedOption[]) => void
   addOption: (option: SelectedOption) => void
   removeOption: (value: string) => void
   clearOptions: () => void
-  toggleOption: (option: SelectedOption) => void
+  toggleOption: (option: SelectedOption, messageId?: string) => void
 }
 
 export const useSelectedOptions = create<SelectedOptionsStore>((set) => ({
   selectedOptions: [],
+  currentAssistantMessageId: null,
 
   setSelectedOptions: (options) => set({ selectedOptions: options }),
 
@@ -31,18 +34,20 @@ export const useSelectedOptions = create<SelectedOptionsStore>((set) => ({
       selectedOptions: state.selectedOptions.filter((opt) => opt.value !== value),
     })),
 
-  clearOptions: () => set({ selectedOptions: [] }),
+  clearOptions: () => set({ selectedOptions: [], currentAssistantMessageId: null }),
 
-  toggleOption: (option) =>
+  toggleOption: (option, messageId) =>
     set((state) => {
       const exists = state.selectedOptions.find((opt) => opt.value === option.value)
       if (exists) {
         return {
           selectedOptions: state.selectedOptions.filter((opt) => opt.value !== option.value),
+          currentAssistantMessageId: state.currentAssistantMessageId,
         }
       } else {
         return {
           selectedOptions: [...state.selectedOptions, option],
+          currentAssistantMessageId: messageId || state.currentAssistantMessageId,
         }
       }
     }),

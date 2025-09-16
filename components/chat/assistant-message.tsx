@@ -13,12 +13,19 @@ import { MyUIMessage } from '@/schema/chat'
 
 interface AssistantMessageProps {
   content: string
+  messageId: string
   metadata?: MyUIMessage['metadata']
   onOptionSelect: (value: string, text: string) => void
   onUpdateMetadata?: (metadata: MyUIMessage['metadata']) => void
 }
 
-export function AssistantMessage({ content, metadata, onOptionSelect, onUpdateMetadata }: AssistantMessageProps) {
+export function AssistantMessage({
+  content,
+  metadata,
+  onOptionSelect,
+  onUpdateMetadata,
+  messageId,
+}: AssistantMessageProps) {
   const [answered, setAnswered] = useState(metadata?.answered || false)
   const [selectedOptions, setSelectedOptions] = useState<string[]>(metadata?.selectedOptions || [])
   const [inputValue, setInputValue] = useState(metadata?.inputValue || '')
@@ -36,11 +43,19 @@ export function AssistantMessage({ content, metadata, onOptionSelect, onUpdateMe
       const currentSelectedStr = selectedOptions.sort().join(',')
       const syncedSelectedStr = syncedSelectedOptions.sort().join(',')
 
-      if (currentSelectedStr !== syncedSelectedStr) {
+      if (currentSelectedStr !== syncedSelectedStr && !answered) {
         setSelectedOptions(syncedSelectedOptions)
       }
     }
   }, [globalSelectedOptions, parsed.optionType])
+
+  useEffect(() => {
+    if (metadata) {
+      setAnswered(metadata.answered || false)
+      setSelectedOptions(metadata.selectedOptions || [])
+      setInputValue(metadata.inputValue || '')
+    }
+  }, [metadata])
 
   const handleInputSubmit = () => {
     if (answered) return
@@ -68,7 +83,7 @@ export function AssistantMessage({ content, metadata, onOptionSelect, onUpdateMe
 
       setSelectedOptions(newSelected)
 
-      toggleOption({ value, text })
+      toggleOption({ value, text }, messageId)
     } else {
       onOptionSelect(value, text)
       setAnswered(true)

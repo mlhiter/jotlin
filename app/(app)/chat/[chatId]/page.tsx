@@ -10,6 +10,7 @@ import { DraftPanel } from '@/components/chat/draft-panel'
 import { MessageList } from '@/components/chat/message-list'
 import { PageHeader } from '@/components/page-header'
 
+import { SelectedOption } from '@/hooks/use-selected-options'
 import { cn } from '@/lib/utils'
 import { parseAIResponse } from '@/lib/xml-parser'
 import { MyUIMessage } from '@/schema/chat'
@@ -146,7 +147,6 @@ export default function ChatIdPage() {
 
   const handleStop = () => {
     stop()
-    // Clear empty assistant message
     setTimeout(() => cleanupEmptyAssistantMessage(), 100)
   }
 
@@ -163,7 +163,6 @@ export default function ChatIdPage() {
   }
 
   const handleSendMessage = (message: { text: string }) => {
-    // Clear quotes after sending
     setQuotes([])
     sendMessage(message)
   }
@@ -173,6 +172,25 @@ export default function ChatIdPage() {
       (prev) =>
         prev.map((msg) =>
           msg.id === messageId ? { ...msg, metadata: { ...msg.metadata, ...metadata } } : msg
+        ) as MyUIMessage[]
+    )
+  }
+
+  const handleMarkMessageAnswered = (messageId: string, selectedOptions: SelectedOption[]) => {
+    setMessages(
+      (prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                metadata: {
+                  ...msg.metadata,
+                  answered: true,
+                  selectedOptions: selectedOptions.map((opt) => opt.value),
+                  answeredAt: new Date().toISOString(),
+                },
+              }
+            : msg
         ) as MyUIMessage[]
     )
   }
@@ -209,6 +227,7 @@ export default function ChatIdPage() {
 
             <ChatInput
               onSendMessage={handleSendMessage}
+              onMarkMessageAnswered={handleMarkMessageAnswered}
               onStop={handleStop}
               status={status}
               quotes={quotes}

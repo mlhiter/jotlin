@@ -66,6 +66,7 @@ export function MessageList({ messages, status, onRetry, onSendMessage, onUpdate
                             <AssistantMessage
                               key={`${message.id}-${i}`}
                               content={part.text}
+                              messageId={message.id}
                               metadata={message.metadata}
                               onOptionSelect={(value) => onSendMessage({ text: value })}
                               onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
