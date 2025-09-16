@@ -1,3 +1,5 @@
+import dedent from 'dedent'
+
 export interface ParsedResponse {
   prose?: string[]
   question?: string
@@ -19,7 +21,7 @@ export const parseAIResponse = (text: string): ParsedResponse => {
   const proseMatches = text.matchAll(/<prose>([\s\S]*?)<\/prose>/g)
   const proseArray: string[] = []
   for (const match of proseMatches) {
-    proseArray.push(match[1].trim())
+    proseArray.push(dedent(match[1]))
   }
   if (proseArray.length > 0) {
     result.prose = proseArray
@@ -27,7 +29,7 @@ export const parseAIResponse = (text: string): ParsedResponse => {
 
   const questionMatch = text.match(/<question>([\s\S]*?)<\/question>/)
   if (questionMatch) {
-    result.question = questionMatch[1].trim()
+    result.question = dedent(questionMatch[1])
   }
 
   const optionsMatch = text.match(/<options(?:\s+type="(single|multiple)")?>([\s\S]*?)<\/options>/)
@@ -39,19 +41,19 @@ export const parseAIResponse = (text: string): ParsedResponse => {
     for (const match of optionMatches) {
       result.options.push({
         value: match[1],
-        text: match[2].trim(),
+        text: dedent(match[2]),
       })
     }
   }
 
   const draftMatch = text.match(/<draft>([\s\S]*?)<\/draft>/)
   if (draftMatch) {
-    result.draft = draftMatch[1].trim()
+    result.draft = dedent(draftMatch[1])
   }
 
   const finalMatch = text.match(/<final>([\s\S]*?)<\/final>/)
   if (finalMatch) {
-    result.final = finalMatch[1].trim()
+    result.final = dedent(finalMatch[1])
   }
 
   const inputMatch = text.match(/<input\s+type="([^"]*)"(?:\s+placeholder="([^"]*)")?\s*\/>/)
