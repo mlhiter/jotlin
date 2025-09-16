@@ -1,8 +1,8 @@
 'use client'
 
 import { ChatStatus } from 'ai'
-import { Brain, RefreshCw } from 'lucide-react'
-import { useRef, useEffect } from 'react'
+import { Brain, RefreshCw, ChevronDown } from 'lucide-react'
+import { useRef, useEffect, useState } from 'react'
 
 import { AssistantMessage } from '@/components/chat/assistant-message'
 import { EmptyState } from '@/components/chat/empty-state'
@@ -24,14 +24,36 @@ interface MessageListProps {
 
 export function MessageList({ messages, status, onRetry, onSendMessage, onUpdateMessage }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const [showScrollButton, setShowScrollButton] = useState(false)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const handleScroll = () => {
+    if (!scrollAreaRef.current) return
+
+    const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')
+    if (!scrollContainer) return
+
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainer
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 100 // 100px threshold
+
+    setShowScrollButton(!isAtBottom)
+  }
+
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')
+    if (!scrollContainer) return
+
+    scrollContainer.addEventListener('scroll', handleScroll)
+    return () => scrollContainer.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
     <div className="flex-1 relative overflow-hidden">
@@ -41,7 +63,7 @@ export function MessageList({ messages, status, onRetry, onSendMessage, onUpdate
       {/* Bottom blur gradient - avoid scrollbar area */}
       <div className="absolute bottom-0 left-0 right-4 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
 
-      <ScrollArea className="h-full px-4">
+      <ScrollArea ref={scrollAreaRef} className="h-full px-4">
         <div className="max-w-3xl mx-auto py-6 space-y-6">
           {messages.filter((m) => m.role !== 'system').length === 0 ? (
             <EmptyState onSendMessage={onSendMessage} />
@@ -111,6 +133,19 @@ export function MessageList({ messages, status, onRetry, onSendMessage, onUpdate
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
+
+      {/* Scroll to bottom button */}
+      {showScrollButton && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+          <Button
+            onClick={scrollToBottom}
+            size="sm"
+            variant="secondary"
+            className="h-8 w-8 p-0 rounded-full shadow-lg border bg-background hover:bg-muted">
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
