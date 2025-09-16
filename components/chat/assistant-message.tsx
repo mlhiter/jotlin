@@ -1,12 +1,13 @@
 'use client'
 
 import { Check } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { Markdown } from '@/components/chat/markdown'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
+import { useSelectedOptions } from '@/hooks/use-selected-options'
 import { parseAIResponse, ParsedResponse } from '@/lib/xml-parser'
 import { MyUIMessage } from '@/schema/chat'
 
@@ -22,7 +23,24 @@ export function AssistantMessage({ content, metadata, onOptionSelect, onUpdateMe
   const [selectedOptions, setSelectedOptions] = useState<string[]>(metadata?.selectedOptions || [])
   const [inputValue, setInputValue] = useState(metadata?.inputValue || '')
 
+  const { toggleOption, selectedOptions: globalSelectedOptions } = useSelectedOptions()
   const parsed: ParsedResponse = parseAIResponse(content)
+
+  useEffect(() => {
+    if (parsed.optionType === 'multiple') {
+      const currentMessageOptions = parsed.options.map((opt) => opt.value)
+      const globalSelectedValues = globalSelectedOptions.map((opt) => opt.value)
+
+      const syncedSelectedOptions = currentMessageOptions.filter((value) => globalSelectedValues.includes(value))
+
+      const currentSelectedStr = selectedOptions.sort().join(',')
+      const syncedSelectedStr = syncedSelectedOptions.sort().join(',')
+
+      if (currentSelectedStr !== syncedSelectedStr) {
+        setSelectedOptions(syncedSelectedOptions)
+      }
+    }
+  }, [globalSelectedOptions, parsed.optionType])
 
   const handleInputSubmit = () => {
     if (answered) return
@@ -49,6 +67,8 @@ export function AssistantMessage({ content, metadata, onOptionSelect, onUpdateMe
         : [...selectedOptions, value]
 
       setSelectedOptions(newSelected)
+
+      toggleOption({ value, text })
     } else {
       onOptionSelect(value, text)
       setAnswered(true)
@@ -62,41 +82,6 @@ export function AssistantMessage({ content, metadata, onOptionSelect, onUpdateMe
       })
     }
   }
-
-  const handleMultipleSubmit = () => {
-    if (answered || selectedOptions.length === 0) return
-
-    const selectedTexts = selectedOptions
-      .map((v) => {
-        const option = parsed.options.find((opt) => opt.value === v)
-        return option ? option.text : v
-      })
-      .join('\n')
-
-    onOptionSelect(selectedOptions.join(','), selectedTexts)
-    setAnswered(true)
-
-    onUpdateMetadata?.({
-      ...metadata,
-      answered: true,
-      selectedOptions,
-      answeredAt: new Date().toISOString(),
-    })
-  }
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && parsed.optionType === 'multiple' && selectedOptions.length > 0 && !answered) {
-        e.preventDefault()
-        handleMultipleSubmit()
-      }
-    }
-
-    if (parsed.optionType === 'multiple') {
-      document.addEventListener('keydown', handleKeyDown)
-      return () => document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [parsed.optionType, selectedOptions, answered])
 
   return (
     <div className="space-y-4">
@@ -121,8 +106,7 @@ export function AssistantMessage({ content, metadata, onOptionSelect, onUpdateMe
         <div className="space-y-2">
           {parsed.optionType === 'multiple' && (
             <div className="text-xs text-muted-foreground mb-2">
-              💡 You can select multiple options and press{' '}
-              <kbd className="px-1.5 py-0.5 text-xs font-mono bg-muted rounded">Enter</kbd> to submit.
+              💡 Select options and they will appear in the input field below.
             </div>
           )}
           <div className="grid gap-2">

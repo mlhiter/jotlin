@@ -7,6 +7,8 @@ import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 
+import { useSelectedOptions } from '@/hooks/use-selected-options'
+
 interface Quote {
   id: string
   text: string
@@ -33,20 +35,30 @@ export function ChatInput({
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  const { selectedOptions, clearOptions, removeOption } = useSelectedOptions()
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim() || status === 'submitted' || status === 'streaming' || disabled) return
+    if ((!input.trim() && selectedOptions.length === 0) || status === 'submitted' || status === 'streaming' || disabled)
+      return
 
     let messageText = ''
+
+    if (selectedOptions.length > 0) {
+      const selectedTexts = selectedOptions.map((option) => option.value).join(',')
+      messageText = selectedTexts
+    }
+
     if (quotes.length > 0) {
       const quotesText = quotes.map((quote) => `<quote>${quote.text}</quote>`).join('\n')
-      messageText = quotesText + (input.trim() ? '\n\n' + input : '')
-    } else {
-      messageText = input
+      messageText = quotesText + (messageText ? '\n\n' + messageText : '') + (input.trim() ? '\n\n' + input : '')
+    } else if (input.trim()) {
+      messageText = messageText ? messageText + '\n\n' + input : input
     }
 
     onSendMessage({ text: messageText })
     setInput('')
+    clearOptions()
 
     // Reset textarea height
     if (textareaRef.current) {
@@ -105,6 +117,39 @@ export function ChatInput({
           </div>
         )}
 
+        {selectedOptions.length > 0 && (
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="text-xs text-muted-foreground">Selected options:</div>
+              <div className="flex flex-wrap gap-2">
+                {selectedOptions.map((option, index) => (
+                  <div
+                    key={`${option.value}-${index}`}
+                    className="flex items-center gap-2 bg-accent/30 rounded px-2 py-1 text-sm border border-border">
+                    <span className="font-medium text-xs text-muted-foreground">{option.value}</span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeOption(option.value)}
+                      className="h-4 w-4 p-0">
+                      <X className="h-2 w-2 text-neutral-500" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={clearOptions}
+              className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground">
+              Clear all
+            </Button>
+          </div>
+        )}
+
         <div className="relative flex items-end gap-3">
           <div className="flex-1 relative">
             <Textarea
@@ -120,7 +165,7 @@ export function ChatInput({
             <Button
               type={status === 'streaming' ? 'button' : 'submit'}
               onClick={status === 'streaming' ? handleStop : undefined}
-              disabled={status !== 'streaming' && !input.trim()}
+              disabled={status !== 'streaming' && !input.trim() && selectedOptions.length === 0}
               size="sm"
               className="absolute right-2 bottom-2 h-8 w-8 p-0">
               {status === 'streaming' ? <Square className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
