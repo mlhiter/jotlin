@@ -27,7 +27,7 @@ export function Markdown({ content, className, inline = false }: MarkdownProps) 
   }
 
   return (
-    <div className={cn(inline ? '' : 'prose prose-sm max-w-none dark:prose-invert', className)}>
+    <div className={cn(inline ? '' : 'prose prose-sm max-w-none dark:prose-invert prose-neutral', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{

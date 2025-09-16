@@ -51,9 +51,7 @@ export function DraftPanel({ draft, final, isVisible = true, onToggle, onQuote }
 
         <ScrollArea className="flex-1 h-0">
           <div className="p-4 relative" data-selection-container>
-            <div className="max-w-none text-sm">
-              <Markdown content={content} />
-            </div>
+            <Markdown content={content} />
             <TextSelectionMenu onQuote={onQuote} />
           </div>
         </ScrollArea>
