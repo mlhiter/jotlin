@@ -59,16 +59,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       // dataSchemas, // if using custom data parts
       // tools, // if using tools
     })
-
     const result = streamText({
       model: openai.chat('gemini-2.5-pro'),
       system: requirementAnalysisPrompt,
       messages: convertToModelMessages(validatedMessages),
     })
-
-    // consume the stream to ensure it runs to completion & triggers onFinish
-    // even when the client response is aborted
-    result.consumeStream() // no await
 
     return result.toUIMessageStreamResponse({
       originalMessages: validatedMessages,
