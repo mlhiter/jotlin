@@ -98,7 +98,7 @@ export function ChatInput({
   }, [input])
 
   return (
-    <div className="px-4 mb-2 mt-1">
+    <div className="px-4 mb-2 mt-1 z-50">
       <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
         {quotes.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
