@@ -27,7 +27,6 @@ export function LoginForm() {
     ;(async () => {
       try {
         const sealosSession = (await sealosApp.getSession()) as unknown as SealosSession
-        console.log('Sealos session detected:', sealosSession)
 
         if (sealosSession) {
           setSealosAvailable(true)
@@ -40,7 +39,7 @@ export function LoginForm() {
           setSealosAvailable(false)
           setHasAttemptedSealosAuth(true)
         }
-      } catch (error) {
+      } catch {
         setSealosAvailable(false)
         setHasAttemptedSealosAuth(true)
       }
