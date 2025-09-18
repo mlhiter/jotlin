@@ -15,7 +15,6 @@ import Link from 'next/link'
 import * as React from 'react'
 
 import { NavChats } from '@/components/nav-chats'
-import { NavMain } from '@/components/nav-main'
 import { NavSecondary } from '@/components/nav-secondary'
 import { NavUser } from '@/components/nav-user'
 import { Button } from '@/components/ui/button'
@@ -30,8 +29,6 @@ import {
 } from '@/components/ui/sidebar'
 
 import { useAuth } from '@/hooks/use-auth'
-
-import { NavProjects } from './nav-projects'
 
 const data = {
   user: {

@@ -1,4 +1,3 @@
-import { getSessionCookie } from 'better-auth/cookies'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function middleware(request: NextRequest) {
@@ -11,20 +10,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Use getSessionCookie for middleware - more efficient and avoids database calls
-  const sessionCookie = getSessionCookie(request)
-
-  if (!sessionCookie) {
-    const loginUrl = new URL('/login', request.url)
-    return NextResponse.redirect(loginUrl)
+  // For client-side routes, we'll let the client handle authentication
+  // The middleware will only protect API routes that need server-side auth
+  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
+    // API routes will handle their own authentication via Authorization header
+    return NextResponse.next()
   }
 
-  // If trying to access login page with session cookie, redirect to dashboard
-  if (pathname === '/login' && sessionCookie) {
-    const dashboardUrl = new URL('/chat', request.url)
-    return NextResponse.redirect(dashboardUrl)
-  }
-
+  // For client-side pages, let them through - auth will be handled by useAuth hook
+  // The client will redirect to login if no valid token is found in localStorage
   return NextResponse.next()
 }
 

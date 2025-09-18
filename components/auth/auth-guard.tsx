@@ -1,20 +1,31 @@
-import { headers } from 'next/headers'
-import { redirect } from 'next/navigation'
+'use client'
 
-import { auth } from '@/lib/auth'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+
+import { useAuth } from '@/hooks/use-auth'
 
 interface AuthGuardProps {
   children: React.ReactNode
   redirectTo?: string
 }
 
-export async function AuthGuard({ children, redirectTo = '/login' }: AuthGuardProps) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+export function AuthGuard({ children, redirectTo = '/login' }: AuthGuardProps) {
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
 
-  if (!session) {
-    redirect(redirectTo)
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push(redirectTo)
+    }
+  }, [user, isLoading, router, redirectTo])
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (!user) {
+    return null
   }
 
   return <>{children}</>

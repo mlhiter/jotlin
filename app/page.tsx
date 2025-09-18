@@ -1,12 +1,15 @@
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 
 import { AuthGuard } from '@/components/auth/auth-guard'
 
 export default async function Home() {
   return (
-    <AuthGuard>
-      <RedirectToChat />
-    </AuthGuard>
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthGuard>
+        <RedirectToChat />
+      </AuthGuard>
+    </Suspense>
   )
 }
 

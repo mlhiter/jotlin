@@ -2,6 +2,8 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { useApi } from './use-api'
+
 interface Chat {
   id: string
   title: string | null
@@ -19,41 +21,23 @@ interface Chat {
   }
 }
 
-const fetchChatsRequest = async (): Promise<Chat[]> => {
-  const response = await fetch('/api/chats')
-  if (!response.ok) {
-    throw new Error('Failed to fetch chats')
-  }
-  return response.json()
-}
-
-const createChatRequest = async (title?: string): Promise<Chat> => {
-  const response = await fetch('/api/chats', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ title }),
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to create chat')
-  }
-  return response.json()
-}
-
-const deleteChatRequest = async (chatId: string): Promise<void> => {
-  const response = await fetch(`/api/chats/${chatId}`, {
-    method: 'DELETE',
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to delete chat')
-  }
-}
-
 export function useChats() {
+  const apiClient = useApi()
   const queryClient = useQueryClient()
+
+  const fetchChatsRequest = async (): Promise<Chat[]> => {
+    const response = await apiClient.get('/api/chats')
+    return response.data
+  }
+
+  const createChatRequest = async (title?: string): Promise<Chat> => {
+    const response = await apiClient.post('/api/chats', { title })
+    return response.data
+  }
+
+  const deleteChatRequest = async (chatId: string): Promise<void> => {
+    await apiClient.delete(`/api/chats/${chatId}`)
+  }
 
   const {
     data: chats = [],

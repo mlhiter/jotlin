@@ -1,0 +1,46 @@
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+
+import apiClient, { setAuthToken } from '@/lib/axios'
+import { SealosSession } from '@/schema/session'
+
+export function useSealosAuth() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+
+  const authenticateWithSealos = async (sealosSession: SealosSession) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await apiClient.post('/api/auth/sealos', {
+        sealosSession,
+      })
+
+      const data = response.data
+
+      if (data.success && data.token) {
+        setAuthToken(data.token)
+        router.push('/chat')
+        return true
+      } else {
+        setError(data.error || 'Authentication failed')
+        return false
+      }
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } }; message?: string }
+      const errorMessage = error.response?.data?.error || error.message || 'Unknown error'
+      setError(errorMessage)
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return {
+    authenticateWithSealos,
+    isLoading,
+    error,
+  }
+}
