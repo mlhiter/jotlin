@@ -26,9 +26,5 @@ export function AuthGuard({ children, redirectTo = '/login' }: AuthGuardProps) {
     return <Loading />
   }
 
-  if (!user) {
-    return null
-  }
-
   return <>{children}</>
 }
