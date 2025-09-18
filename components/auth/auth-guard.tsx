@@ -5,6 +5,8 @@ import { useEffect } from 'react'
 
 import { useAuth } from '@/hooks/use-auth'
 
+import { Loading } from '../ui/loading'
+
 interface AuthGuardProps {
   children: React.ReactNode
   redirectTo?: string
@@ -21,7 +23,7 @@ export function AuthGuard({ children, redirectTo = '/login' }: AuthGuardProps) {
   }, [user, isLoading, router, redirectTo])
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <Loading />
   }
 
   if (!user) {

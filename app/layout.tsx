@@ -1,10 +1,14 @@
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
+import { Suspense } from 'react'
 
+import { AuthGuard } from '@/components/auth/auth-guard'
 import { QueryProvider } from '@/components/providers/query-provider'
+import { Loading } from '@/components/ui/loading'
 import { Toaster } from '@/components/ui/sonner'
 
 import type { Metadata } from 'next'
+
 import './globals.css'
 
 const geistSans = Geist({
@@ -32,7 +36,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            {children}
+            <Suspense fallback={<Loading />}>
+              <AuthGuard>{children}</AuthGuard>
+            </Suspense>
             <Toaster />
           </ThemeProvider>
         </QueryProvider>

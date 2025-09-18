@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useApi } from './use-api'
+import apiClient from '@/lib/axios'
 
 interface Chat {
   id: string
@@ -22,7 +22,6 @@ interface Chat {
 }
 
 export function useChats() {
-  const apiClient = useApi()
   const queryClient = useQueryClient()
 
   const fetchChatsRequest = async (): Promise<Chat[]> => {

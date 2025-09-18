@@ -11,6 +11,7 @@ import { MessageList } from '@/components/chat/message-list'
 import { PageHeader } from '@/components/page-header'
 
 import { SelectedOption } from '@/hooks/use-selected-options'
+import apiClient, { getAuthToken } from '@/lib/axios'
 import { cn } from '@/lib/utils'
 import { parseAIResponse } from '@/lib/xml-parser'
 import { MyUIMessage } from '@/schema/chat'
@@ -26,6 +27,9 @@ export default function ChatIdPage() {
     messages: [],
     transport: new DefaultChatTransport({
       api: `/api/chats/${chatId}`,
+      headers: {
+        Authorization: `Bearer ${getAuthToken()}`,
+      },
       // send the last user message and last assistant message(update selected status) to the server
       prepareSendMessagesRequest({ messages, id }) {
         return {
@@ -55,15 +59,15 @@ export default function ChatIdPage() {
   useEffect(() => {
     const loadChat = async () => {
       try {
-        const response = await fetch(`/api/chats/${chatId}`)
-        if (!response.ok) {
+        const response = await apiClient.get(`/api/chats/${chatId}`)
+        if (response.status !== 200) {
           if (response.status === 404) {
             notFound()
           }
           throw new Error('Failed to load chat')
         }
 
-        const chatData = await response.json()
+        const chatData = response.data
         // Set initial messages from loaded chat data
         if (chatData.messages && chatData.messages.length > 0) {
           setMessages(chatData.messages)

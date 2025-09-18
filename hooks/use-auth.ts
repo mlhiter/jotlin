@@ -13,6 +13,7 @@ export const useAuth = () => {
   const [session, setSession] = useState<AuthSession | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [hasCheckedUrlToken, setHasCheckedUrlToken] = useState(false)
 
   const fetchSession = useCallback(async () => {
     try {
@@ -44,18 +45,21 @@ export const useAuth = () => {
   }, [])
 
   useEffect(() => {
-    // Check for token in URL (from OAuth callback)
-    const tokenFromUrl = searchParams.get('token')
-    if (tokenFromUrl) {
-      setAuthToken(tokenFromUrl)
-      const url = new URL(window.location.href)
-      url.searchParams.delete('token')
-      window.history.replaceState({}, '', url.toString())
-      fetchSession()
-    } else {
-      fetchSession()
+    // Only check for token once when component mounts or when we haven't checked yet
+    if (!hasCheckedUrlToken) {
+      const tokenFromUrl = searchParams.get('token')
+      if (tokenFromUrl) {
+        setAuthToken(tokenFromUrl)
+        const url = new URL(window.location.href)
+        url.searchParams.delete('token')
+        window.history.replaceState({}, '', url.toString())
+        fetchSession()
+      } else {
+        fetchSession()
+      }
+      setHasCheckedUrlToken(true)
     }
-  }, [fetchSession, searchParams])
+  }, [fetchSession, searchParams, hasCheckedUrlToken])
 
   const signIn = async (provider: 'github') => {
     try {
