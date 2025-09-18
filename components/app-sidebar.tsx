@@ -139,8 +139,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   if (isLoading) {
     return (
       <Sidebar variant="inset" {...props}>
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="flex h-full items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
         </div>
       </Sidebar>
     )
@@ -149,8 +149,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   if (!user) {
     return (
       <Sidebar variant="inset" {...props}>
-        <div className="flex flex-col items-center justify-center h-full p-4 space-y-4">
-          <p className="text-sm text-muted-foreground text-center">Please sign in to access your dashboard</p>
+        <div className="flex h-full flex-col items-center justify-center space-y-4 p-4">
+          <p className="text-center text-sm text-muted-foreground">Please sign in to access your dashboard</p>
           <Button asChild>
             <Link href="/login">Sign In</Link>
           </Button>
@@ -166,7 +166,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">

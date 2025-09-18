@@ -27,7 +27,7 @@ export function Markdown({ content, className, inline = false }: MarkdownProps) 
   }
 
   return (
-    <div className={cn(inline ? '' : 'prose prose-sm max-w-none dark:prose-invert prose-neutral', className)}>
+    <div className={cn(inline ? '' : 'prose prose-sm max-w-none prose-neutral dark:prose-invert', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -40,18 +40,18 @@ export function Markdown({ content, className, inline = false }: MarkdownProps) 
 
             if (isInlineCode || inline) {
               return (
-                <code className="px-1.5 py-0.5 text-sm font-mono bg-muted rounded" {...props}>
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm" {...props}>
                   {codeContent}
                 </code>
               )
             }
             return (
-              <div className="relative group">
-                <div className="flex items-center justify-between px-4 py-2 bg-muted rounded-t-lg border">
+              <div className="group relative">
+                <div className="flex items-center justify-between rounded-t-lg border bg-muted px-4 py-2">
                   <span className="text-xs font-medium text-muted-foreground">{language}</span>
                   <button
                     onClick={() => copyToClipboard(codeContent)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-background rounded"
+                    className="rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-background"
                     type="button">
                     {copiedCode === codeContent ? (
                       <Check className="h-3 w-3 text-green-500" />

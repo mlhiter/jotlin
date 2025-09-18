@@ -35,13 +35,13 @@ export function UserMessage({ content }: UserMessageProps) {
         <div>
           {quotes.map((quote, index) => (
             <div key={`quote-${index}`} className="flex items-center gap-2">
-              <TextAlignStart className="h-4 w-4 text-accent-foreground/70 flex-shrink-0" />
-              <div className="text-sm text-muted-foreground truncate leading-relaxed">{quote}</div>
+              <TextAlignStart className="h-4 w-4 flex-shrink-0 text-accent-foreground/70" />
+              <div className="truncate text-sm leading-relaxed text-muted-foreground">{quote}</div>
             </div>
           ))}
         </div>
       )}
-      {text && <p className="whitespace-pre-wrap text-sm leading-relaxed">{text}</p>}
+      {text && <p className="text-sm leading-relaxed whitespace-pre-wrap">{text}</p>}
     </div>
   )
 }

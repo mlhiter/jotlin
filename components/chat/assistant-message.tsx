@@ -102,7 +102,7 @@ export function AssistantMessage({
     <div className="space-y-4">
       {/* Prose */}
       {parsed.prose && parsed.prose.length > 0 && (
-        <div className="text-sm text-muted-foreground space-y-2">
+        <div className="space-y-2 text-sm text-muted-foreground">
           {parsed.prose.map((prose, index) => (
             <Markdown key={index} content={prose} />
           ))}
@@ -111,7 +111,7 @@ export function AssistantMessage({
 
       {/* Question */}
       {parsed.question && (
-        <div className="font-medium text-sm">
+        <div className="text-sm font-medium">
           <Markdown content={parsed.question} />
         </div>
       )}
@@ -120,7 +120,7 @@ export function AssistantMessage({
       {parsed.options.length > 0 && (
         <div className="space-y-2">
           {parsed.optionType === 'multiple' && (
-            <div className="text-xs text-muted-foreground mb-2">
+            <div className="mb-2 text-xs text-muted-foreground">
               💡 Select options and they will appear in the input field below.
             </div>
           )}
@@ -132,17 +132,17 @@ export function AssistantMessage({
                 <Button
                   key={`${option.value}-${index}`}
                   variant="outline"
-                  className={`text-left justify-start h-auto py-3 px-4 whitespace-pre-wrap ${
+                  className={`h-auto justify-start px-4 py-3 text-left whitespace-pre-wrap ${
                     isSelected && 'bg-accent'
                   }`}
                   disabled={answered}
                   onClick={() => {
                     handleOptionClick(option.value, option.text)
                   }}>
-                  <span className="font-medium text-xs text-muted-foreground mr-2">{option.value}.</span>
+                  <span className="mr-2 text-xs font-medium text-muted-foreground">{option.value}.</span>
                   <Markdown content={option.text} inline />
-                  <div className="w-4 h-4 flex items-center justify-center">
-                    {isSelected && <Check className="w-4 h-4" />}
+                  <div className="flex h-4 w-4 items-center justify-center">
+                    {isSelected && <Check className="h-4 w-4" />}
                   </div>
                 </Button>
               )
@@ -176,8 +176,8 @@ export function AssistantMessage({
         </div>
       )}
       {answered && (
-        <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-          <div className="h-1.5 w-1.5 bg-green-500 rounded-full"></div>
+        <div className="mb-2 flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
           Answered
         </div>
       )}

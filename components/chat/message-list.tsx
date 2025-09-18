@@ -56,15 +56,15 @@ export function MessageList({ messages, status, onRetry, onSendMessage, onUpdate
   }, [])
 
   return (
-    <div className="flex-1 relative overflow-hidden">
+    <div className="relative flex-1 overflow-hidden">
       {/* Top blur gradient - avoid scrollbar area */}
-      <div className="absolute top-0 left-0 right-4 h-8 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
+      <div className="pointer-events-none absolute top-0 right-4 left-0 z-10 h-8 bg-gradient-to-b from-background to-transparent" />
 
       {/* Bottom blur gradient - avoid scrollbar area */}
-      <div className="absolute bottom-0 left-0 right-4 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
+      <div className="pointer-events-none absolute right-4 bottom-0 left-0 z-10 h-8 bg-gradient-to-t from-background to-transparent" />
 
       <ScrollArea ref={scrollAreaRef} className="h-full px-4">
-        <div className="max-w-3xl mx-auto py-6 space-y-6">
+        <div className="mx-auto max-w-3xl space-y-6 py-6">
           {messages.filter((m) => m.role !== 'system').length === 0 ? (
             <EmptyState onSendMessage={onSendMessage} />
           ) : (
@@ -73,10 +73,10 @@ export function MessageList({ messages, status, onRetry, onSendMessage, onUpdate
               .map((message) => (
                 <div
                   key={message.id}
-                  className={cn('flex gap-4 group', message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                  className={cn('group flex gap-4', message.role === 'user' ? 'justify-end' : 'justify-start')}>
                   <Card
                     className={cn(
-                      'max-w-[85%] p-2.5 relative shadow-none border-none bg-background',
+                      'relative max-w-[85%] border-none bg-background p-2.5 shadow-none',
                       message.role === 'user' ? 'ml-12 bg-muted text-foreground' : 'mr-12'
                     )}>
                     {message.parts.map((part, i) => {
@@ -102,17 +102,17 @@ export function MessageList({ messages, status, onRetry, onSendMessage, onUpdate
           )}
 
           {(status === 'submitted' || status === 'streaming') && (
-            <div className="flex gap-4 justify-start">
-              <div className="flex items-center gap-2 animate-pulse">
-                <Brain className="h-4 w-4 text-muted-foreground " />
+            <div className="flex justify-start gap-4">
+              <div className="flex animate-pulse items-center gap-2">
+                <Brain className="h-4 w-4 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">{'Thinking...'}</span>
               </div>
             </div>
           )}
 
           {status === 'error' && (
-            <div className="flex gap-4 justify-start">
-              <Card className="bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800 mr-12 p-2.5 shadow-none">
+            <div className="flex justify-start gap-4">
+              <Card className="mr-12 border-red-200 bg-red-50 p-2.5 shadow-none dark:border-red-800 dark:bg-red-950">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-red-600 dark:text-red-400">Failed to get response</span>
@@ -121,8 +121,8 @@ export function MessageList({ messages, status, onRetry, onSendMessage, onUpdate
                     variant="ghost"
                     size="sm"
                     onClick={onRetry}
-                    className="h-7 px-2 text-xs text-red-600  dark:text-red-400 hover:bg-transparent hover:text-red-600">
-                    <RefreshCw className="h-3 w-3 mr-1" />
+                    className="h-7 px-2 text-xs text-red-600 hover:bg-transparent hover:text-red-600 dark:text-red-400">
+                    <RefreshCw className="mr-1 h-3 w-3" />
                     Retry
                   </Button>
                 </div>
@@ -136,12 +136,12 @@ export function MessageList({ messages, status, onRetry, onSendMessage, onUpdate
 
       {/* Scroll to bottom button */}
       {showScrollButton && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 transform">
           <Button
             onClick={scrollToBottom}
             size="sm"
             variant="secondary"
-            className="h-8 w-8 p-0 rounded-full shadow-lg border bg-background hover:bg-muted">
+            className="h-8 w-8 rounded-full border bg-background p-0 shadow-lg hover:bg-muted">
             <ChevronDown className="h-4 w-4" />
           </Button>
         </div>

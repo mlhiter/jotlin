@@ -34,33 +34,33 @@ const EXAMPLE_PROMPTS = [
 
 export function EmptyState({ onSendMessage }: EmptyStateProps) {
   return (
-    <div className="text-center py-20 px-4">
-      <Avatar className="h-12 w-12 mx-auto mb-4">
+    <div className="px-4 py-20 text-center">
+      <Avatar className="mx-auto mb-4 h-12 w-12">
         <AvatarFallback className="bg-muted">
           <Brain className="h-6 w-6 text-muted-foreground" />
         </AvatarFallback>
       </Avatar>
 
-      <h2 className="text-xl font-semibold mb-2 break-words">Let&apos;s Define Your Product Requirements</h2>
-      <p className="text-muted-foreground text-sm max-w-2xl mx-auto mb-8 leading-relaxed">
+      <h2 className="mb-2 text-xl font-semibold break-words">Let&apos;s Define Your Product Requirements</h2>
+      <p className="mx-auto mb-8 max-w-2xl text-sm leading-relaxed text-muted-foreground">
         I&apos;m your AI requirements analyst. I&apos;ll help you clarify your goals, identify target users, and define
         core features through structured conversations.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-4xl mx-auto px-4">
+      <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 px-4 md:grid-cols-2">
         {EXAMPLE_PROMPTS.map((prompt, index) => {
           const Icon = prompt.icon
           return (
             <Button
               key={index}
               variant="outline"
-              className="h-auto p-4 text-left justify-start hover:bg-muted/50 w-full"
+              className="h-auto w-full justify-start p-4 text-left hover:bg-muted/50"
               onClick={() => onSendMessage({ text: prompt.text })}>
-              <div className="flex items-start gap-3 w-full">
-                <Icon className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm break-words leading-relaxed whitespace-normal">{prompt.text}</div>
-                  <div className="text-xs text-muted-foreground mt-1 break-words leading-relaxed whitespace-normal">
+              <div className="flex w-full items-start gap-3">
+                <Icon className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm leading-relaxed font-medium break-words whitespace-normal">{prompt.text}</div>
+                  <div className="mt-1 text-xs leading-relaxed break-words whitespace-normal text-muted-foreground">
                     {prompt.description}
                   </div>
                 </div>

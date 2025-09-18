@@ -98,16 +98,16 @@ export function ChatInput({
   }, [input])
 
   return (
-    <div className="px-4 mb-2 mt-1 z-50">
-      <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+    <div className="z-50 mt-1 mb-2 px-4">
+      <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
         {quotes.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
             {quotes.map((quote) => (
               <div
                 key={quote.id}
-                className="flex items-center gap-1 bg-muted/30 rounded px-2 py-1 w-48 border-border border-1">
-                <TextAlignStart className="h-3 w-3 text-accent-foreground/70 flex-shrink-0" />
-                <div className="flex-1 text-xs text-muted-foreground truncate">{quote.text}</div>
+                className="flex w-48 items-center gap-1 rounded border-1 border-border bg-muted/30 px-2 py-1">
+                <TextAlignStart className="h-3 w-3 flex-shrink-0 text-accent-foreground/70" />
+                <div className="flex-1 truncate text-xs text-muted-foreground">{quote.text}</div>
                 {onRemoveQuote && (
                   <Button
                     type="button"
@@ -131,8 +131,8 @@ export function ChatInput({
                 {selectedOptions.map((option, index) => (
                   <div
                     key={`${option.value}-${index}`}
-                    className="flex items-center gap-2 bg-accent/30 rounded px-2 py-1 text-sm border border-border">
-                    <span className="font-medium text-xs text-muted-foreground">{option.value}</span>
+                    className="flex items-center gap-2 rounded border border-border bg-accent/30 px-2 py-1 text-sm">
+                    <span className="text-xs font-medium text-muted-foreground">{option.value}</span>
                     <Button
                       type="button"
                       size="sm"
@@ -157,7 +157,7 @@ export function ChatInput({
         )}
 
         <div className="relative flex items-end gap-3">
-          <div className="flex-1 relative">
+          <div className="relative flex-1">
             <Textarea
               ref={textareaRef}
               value={input}
@@ -165,7 +165,7 @@ export function ChatInput({
               onKeyDown={handleKeyDown}
               placeholder="Message Jotlin Agent..."
               disabled={status === 'submitted' || status === 'streaming' || disabled}
-              className="max-h-[200px] resize-none pr-12 py-3"
+              className="max-h-[200px] resize-none py-3 pr-12"
               rows={1}
             />
             <Button
@@ -178,7 +178,7 @@ export function ChatInput({
             </Button>
           </div>
         </div>
-        <div className="flex items-center justify-between mt-2">
+        <div className="mt-2 flex items-center justify-between">
           <p className="text-xs text-muted-foreground">Press Enter to send, Shift+Enter for new line</p>
           <p className="text-xs text-muted-foreground">Powered by Gemini-2.5-pro</p>
         </div>

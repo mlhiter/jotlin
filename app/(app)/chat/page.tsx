@@ -24,10 +24,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-24px)] flex flex-col overflow-hidden">
+    <div className="flex h-[calc(100vh-24px)] flex-col overflow-hidden">
       <PageHeader title="Chat" />
       <div className="flex-1 overflow-hidden">
-        <div className="flex flex-col h-full">
+        <div className="flex h-full flex-col">
           <div className="flex-1 overflow-y-auto">
             <EmptyState onSendMessage={handleSendMessage} />
           </div>

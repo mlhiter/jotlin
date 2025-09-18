@@ -39,7 +39,7 @@ export function DraftPanel({ draft, final, isVisible = true, onToggle, onQuote }
           size="icon"
           variant="ghost"
           onClick={onToggle}
-          className="absolute top-2 z-20 h-8 w-8 transition-all duration-500 ease-in-out right-4">
+          className="absolute top-2 right-4 z-20 h-8 w-8 transition-all duration-500 ease-in-out">
           {isVisible ? (
             <ChevronsRight className="h-4 w-4 text-muted-foreground" />
           ) : (
@@ -50,21 +50,20 @@ export function DraftPanel({ draft, final, isVisible = true, onToggle, onQuote }
 
       {/* Panel content */}
       <div
-        className={`w-[calc((100vw-260px)*(4/9))] border border-border bg-card flex flex-col rounded-lg m-2
-          h-[calc(100%-1rem)] transition-all duration-500 ease-in-out transform ${
-            isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
-          }`}>
-        <div className="flex items-center justify-between py-2 px-4 border-b border-border">
+        className={`m-2 flex h-[calc(100%-1rem)] w-[calc((100vw-260px)*(4/9))] transform flex-col rounded-lg border border-border bg-card transition-all duration-500 ease-in-out ${
+          isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+        }`}>
+        <div className="flex items-center justify-between border-b border-border px-4 py-2">
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-semibold text-card-foreground">{isDraft ? 'Draft' : 'Final'}</h4>
           </div>
-          <Button size="icon" variant="ghost" onClick={handleCopy} className="h-8 w-8 mr-6" title="Copy all content">
+          <Button size="icon" variant="ghost" onClick={handleCopy} className="mr-6 h-8 w-8" title="Copy all content">
             <Copy className="h-4 w-4 text-muted-foreground" />
           </Button>
         </div>
 
-        <ScrollArea className="flex-1 h-0">
-          <div className="p-4 relative" data-selection-container>
+        <ScrollArea className="h-0 flex-1">
+          <div className="relative p-4" data-selection-container>
             <Markdown content={content || ''} />
             <TextSelectionMenu onQuote={onQuote} />
           </div>

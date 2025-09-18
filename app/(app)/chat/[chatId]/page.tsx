@@ -201,9 +201,9 @@ export default function ChatIdPage() {
 
   if (isLoading) {
     return (
-      <div className="h-[calc(100vh-24px)] flex flex-col overflow-hidden">
+      <div className="flex h-[calc(100vh-24px)] flex-col overflow-hidden">
         <PageHeader title="Chat" />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex flex-1 items-center justify-center">
           <div className="text-muted-foreground">Loading chat...</div>
         </div>
       </div>
@@ -211,10 +211,10 @@ export default function ChatIdPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-24px)] flex flex-col overflow-hidden">
+    <div className="flex h-[calc(100vh-24px)] flex-col overflow-hidden">
       <PageHeader title="Chat" />
       <div className="flex-1 overflow-hidden">
-        <div className="flex h-full overflow-hidden relative">
+        <div className="relative flex h-full overflow-hidden">
           <div
             className={cn(
               'flex flex-col overflow-hidden transition-all duration-500 ease-in-out',

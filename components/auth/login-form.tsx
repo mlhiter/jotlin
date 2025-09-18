@@ -58,7 +58,7 @@ export function LoginForm() {
           </CardHeader>
           <CardContent>
             <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
             </div>
           </CardContent>
         </Card>
@@ -76,7 +76,7 @@ export function LoginForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+          {error && <div className="text-center text-sm text-red-500">{error}</div>}
 
           {!sealosAvailable && (
             <Button onClick={() => signIn('github')} disabled={isLoading} className="w-full" size="lg">
