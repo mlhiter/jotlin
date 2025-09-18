@@ -9,7 +9,7 @@ export interface JWTPayload {
   exp?: number
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+const JWT_SECRET = process.env.JWT_SECRET!
 const JWT_EXPIRES_IN = '7d'
 
 export function signJWT(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
