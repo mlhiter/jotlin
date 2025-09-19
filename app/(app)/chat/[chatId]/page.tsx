@@ -30,21 +30,40 @@ export default function ChatIdPage() {
       headers: {
         Authorization: `Bearer ${getAuthToken()}`,
       },
-      // send the last user message and last assistant message(update selected status) to the server
-      prepareSendMessagesRequest({ messages, id }) {
-        return {
-          body: {
-            lastUserMessage: messages[messages.length - 1],
-            id,
-            lastAssistantMessage: messages.length >= 2 ? messages[messages.length - 2] : null,
-          },
-        }
-      },
     }),
   })
 
-  // Simple regenerate function - resend last user message
-  const regenerate = () => {
+  // Rollback function - rollback to a specific message and delete all messages after it
+  const handleRollback = (messageId: string) => {
+    const messageIndex = messages.findIndex((msg) => msg.id === messageId)
+    if (messageIndex === -1) return
+
+    // Get messages up to and including the target message
+    const rollbackMessages = messages.slice(0, messageIndex + 1)
+
+    // Update the last message if it's an assistant message - set answered to false
+    const updatedMessages = rollbackMessages.map((msg, index) => {
+      if (index === rollbackMessages.length - 1 && msg.role === 'assistant') {
+        return {
+          ...msg,
+          metadata: {
+            ...msg.metadata,
+            answered: false,
+            selectedOptions: [],
+            inputValue: '',
+            answeredAt: msg.metadata?.answeredAt || new Date().toISOString(),
+          },
+        }
+      }
+      return msg
+    }) as MyUIMessage[]
+
+    // Update messages state
+    setMessages(updatedMessages)
+  }
+
+  // Simple regenerate function - resend last user message (kept for retry button)
+  const handleRetry = () => {
     const lastUserMessage = messages.findLast((m) => m.role === 'user')
     if (lastUserMessage) {
       sendMessage({ text: lastUserMessage.parts.find((p) => p.type === 'text')?.text || '' })
@@ -224,9 +243,10 @@ export default function ChatIdPage() {
             <MessageList
               messages={filteredMessages}
               status={status}
-              onRetry={regenerate}
+              onRetry={handleRetry}
               onSendMessage={sendMessage}
               onUpdateMessage={handleUpdateMessage}
+              onRollback={handleRollback}
             />
 
             <ChatInput

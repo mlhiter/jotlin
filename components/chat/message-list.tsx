@@ -20,9 +20,17 @@ interface MessageListProps {
   onRetry: () => void
   onSendMessage: (message: { text: string }) => void
   onUpdateMessage?: (messageId: string, metadata: MyUIMessage['metadata']) => void
+  onRollback: (messageId: string) => void
 }
 
-export function MessageList({ messages, status, onRetry, onSendMessage, onUpdateMessage }: MessageListProps) {
+export function MessageList({
+  messages,
+  status,
+  onRetry,
+  onSendMessage,
+  onUpdateMessage,
+  onRollback,
+}: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const [showScrollButton, setShowScrollButton] = useState(false)
@@ -74,29 +82,28 @@ export function MessageList({ messages, status, onRetry, onSendMessage, onUpdate
                 <div
                   key={message.id}
                   className={cn('group flex gap-4', message.role === 'user' ? 'justify-end' : 'justify-start')}>
-                  <Card
-                    className={cn(
-                      'relative max-w-[85%] border-none bg-background p-2.5 shadow-none',
-                      message.role === 'user' ? 'ml-12 bg-muted text-foreground' : 'mr-12'
-                    )}>
-                    {message.parts.map((part, i) => {
-                      switch (part.type) {
-                        case 'text':
-                          return message.role === 'user' ? (
-                            <UserMessage key={`${message.id}-${i}`} content={part.text} />
-                          ) : (
-                            <AssistantMessage
-                              key={`${message.id}-${i}`}
-                              content={part.text}
-                              messageId={message.id}
-                              metadata={message.metadata}
-                              onOptionSelect={(value) => onSendMessage({ text: value })}
-                              onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
-                            />
-                          )
-                      }
-                    })}
-                  </Card>
+                  {message.parts.map((part, i) => {
+                    switch (part.type) {
+                      case 'text':
+                        return message.role === 'user' ? (
+                          <UserMessage
+                            key={`${message.id}-${i}`}
+                            content={part.text}
+                            onRollback={() => onRollback(message.id)}
+                          />
+                        ) : (
+                          <AssistantMessage
+                            key={`${message.id}-${i}`}
+                            content={part.text}
+                            messageId={message.id}
+                            metadata={message.metadata}
+                            onOptionSelect={(value) => onSendMessage({ text: value })}
+                            onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
+                            onRollback={() => onRollback(message.id)}
+                          />
+                        )
+                    }
+                  })}
                 </div>
               ))
           )}

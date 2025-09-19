@@ -25,10 +25,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const {
-      lastUserMessage,
-      lastAssistantMessage,
-    }: { lastUserMessage: MyUIMessage; lastAssistantMessage: MyUIMessage | null } = await req.json()
+    const { messages }: { messages: MyUIMessage[] } = await req.json()
     const { id: chatId } = await params
 
     const chat = await prisma.chat.findFirst({
@@ -42,18 +39,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
     }
 
-    const previousMessages = await prisma.message.findMany({
-      where: { chatId },
-      orderBy: { createdAt: 'asc' },
-    })
-
     const validatedMessages = await validateUIMessages({
       // append the new message to the previous messages
-      messages: [
-        ...previousMessages.slice(0, -1),
-        ...(lastAssistantMessage ? [lastAssistantMessage] : []),
-        lastUserMessage,
-      ],
+      messages: messages,
       metadataSchema, // if using custom metadata
       // dataSchemas, // if using custom data parts
       // tools, // if using tools
