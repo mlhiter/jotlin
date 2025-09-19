@@ -237,7 +237,7 @@ export default function ChatIdPage() {
           <div
             className={cn(
               'flex flex-col overflow-hidden transition-all duration-500 ease-in-out',
-              showRequirementSidebar ? 'pr-[calc(4/9*100%+1rem)]' : 'pr-0'
+              showRequirementSidebar ? 'pr-[calc(4/9*100%+1rem)]' : 'z-50 pr-0'
             )}
             style={{ width: '100%' }}>
             <MessageList

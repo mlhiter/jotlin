@@ -39,7 +39,7 @@ export function DraftPanel({ draft, final, isVisible = true, onToggle, onQuote }
           size="icon"
           variant="ghost"
           onClick={onToggle}
-          className="absolute top-2 right-4 z-20 h-8 w-8 transition-all duration-500 ease-in-out">
+          className="absolute top-2 right-4 z-100 h-8 w-8 transition-all duration-500 ease-in-out">
           {isVisible ? (
             <ChevronsRight className="h-4 w-4 text-muted-foreground" />
           ) : (
