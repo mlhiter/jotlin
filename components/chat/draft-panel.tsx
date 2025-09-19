@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronsLeft, ChevronsRight, Copy } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 
 import { Markdown } from '@/components/chat/markdown'
@@ -17,6 +18,7 @@ interface DraftPanelProps {
 }
 
 export function DraftPanel({ draft, final, isVisible = true, onToggle, onQuote }: DraftPanelProps) {
+  const t = useTranslations('chat')
   const content = final || draft
   const isDraft = !final && draft
 
@@ -24,10 +26,10 @@ export function DraftPanel({ draft, final, isVisible = true, onToggle, onQuote }
     if (content) {
       try {
         await navigator.clipboard.writeText(content)
-        toast.success('Copied to clipboard')
+        toast.success(t('copiedToClipboard'))
       } catch (err) {
         console.error('Failed to copy text: ', err)
-        toast.error('Failed to copy text')
+        toast.error(t('failedToCopyText'))
       }
     }
   }
@@ -55,9 +57,9 @@ export function DraftPanel({ draft, final, isVisible = true, onToggle, onQuote }
         }`}>
         <div className="flex items-center justify-between border-b border-border px-4 py-2">
           <div className="flex items-center gap-2">
-            <h4 className="text-sm font-semibold text-card-foreground">{isDraft ? 'Draft' : 'Final'}</h4>
+            <h4 className="text-sm font-semibold text-card-foreground">{isDraft ? t('draft') : t('final')}</h4>
           </div>
-          <Button size="icon" variant="ghost" onClick={handleCopy} className="mr-6 h-8 w-8" title="Copy all content">
+          <Button size="icon" variant="ghost" onClick={handleCopy} className="mr-6 h-8 w-8" title={t('copyAllContent')}>
             <Copy className="h-4 w-4 text-muted-foreground" />
           </Button>
         </div>

@@ -3,6 +3,7 @@
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import { useParams, useSearchParams, notFound } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 
 import { ChatInput } from '@/components/chat/chat-input'
@@ -17,6 +18,7 @@ import { parseAIResponse } from '@/lib/xml-parser'
 import { MyUIMessage } from '@/schema/chat'
 
 export default function ChatIdPage() {
+  const t = useTranslations('chat')
   const params = useParams()
   const searchParams = useSearchParams()
   const chatId = params.chatId as string
@@ -221,9 +223,9 @@ export default function ChatIdPage() {
   if (isLoading) {
     return (
       <div className="flex h-[calc(100vh-24px)] flex-col overflow-hidden">
-        <PageHeader title="Chat" />
+        <PageHeader title={t('title')} />
         <div className="flex flex-1 items-center justify-center">
-          <div className="text-muted-foreground">Loading chat...</div>
+          <div className="text-muted-foreground">{t('loadingChat')}</div>
         </div>
       </div>
     )
@@ -231,7 +233,7 @@ export default function ChatIdPage() {
 
   return (
     <div className="flex h-[calc(100vh-24px)] flex-col overflow-hidden">
-      <PageHeader title="Chat" />
+      <PageHeader title={t('title')} />
       <div className="flex-1 overflow-hidden">
         <div className="relative flex h-full overflow-hidden">
           <div

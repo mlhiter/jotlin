@@ -1,6 +1,7 @@
 'use client'
 
 import { MessageSquare, MoreHorizontal, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -11,6 +12,7 @@ import { useChats } from '@/hooks/use-chat'
 import { usePathname, useRouter } from '@/i18n/navigation'
 
 export function ChatList() {
+  const t = useTranslations('chat')
   const { chats, isLoading, deleteChat } = useChats()
   const pathname = usePathname()
   const router = useRouter()
@@ -34,7 +36,7 @@ export function ChatList() {
       }
     } catch (error) {
       console.error('Failed to delete chat:', error)
-      toast.error('Failed to delete chat')
+      toast.error(t('failedToDelete'))
     } finally {
       setDeletingId(null)
     }
@@ -54,8 +56,8 @@ export function ChatList() {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <MessageSquare className="mb-2 h-8 w-8 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">No chats yet</p>
-        <p className="mt-1 text-xs text-muted-foreground">Start a conversation to see your chat history</p>
+        <p className="text-sm text-muted-foreground">{t('noChatsYet')}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('startConversation')}</p>
       </div>
     )
   }
@@ -64,7 +66,7 @@ export function ChatList() {
     <SidebarMenu>
       {chats.map((chat) => {
         const isActive = pathname === `/chat/${chat.id}`
-        const displayTitle = chat.title || 'New Chat'
+        const displayTitle = chat.title || t('newChat')
         return (
           <SidebarMenuItem key={chat.id}>
             <SidebarMenuButton asChild isActive={isActive}>
@@ -76,7 +78,7 @@ export function ChatList() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuAction onClick={(e) => e.preventDefault()}>
                   <MoreHorizontal className="h-3 w-3" />
-                  <span className="sr-only">More</span>
+                  <span className="sr-only">{t('more')}</span>
                 </SidebarMenuAction>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -85,7 +87,7 @@ export function ChatList() {
                 align={isMobile ? 'end' : 'start'}>
                 <DropdownMenuItem onClick={(e) => handleDelete(chat.id, e)}>
                   <Trash2 className="text-muted-foreground" />
-                  <span>Delete</span>
+                  <span>{t('delete')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

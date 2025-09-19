@@ -1,1 +1,79 @@
-{}
+{
+  "auth": {
+    "welcome": "Welcome to Jotlin",
+    "checkingAuth": "Checking authentication status...",
+    "signInToContinue": "Sign in to your account to continue",
+    "signInWithGithub": "Sign in with GitHub to continue",
+    "continueWithGithub": "Continue with GitHub",
+    "signingIn": "Signing in..."
+  },
+  "chat": {
+    "title": "Chat",
+    "emptyStateTitle": "Let's Define Your Product Requirements",
+    "emptyStateDescription": "I'm your AI requirements analyst. I'll help you clarify your goals, identify target users, and define core features through structured conversations.",
+    "placeholder": "Message Jotlin Agent...",
+    "sendHint": "Press Enter to send, Shift+Enter for new line",
+    "poweredBy": "Powered by Gemini-2.5-pro",
+    "selectedOptions": "Selected options:",
+    "clearAll": "Clear all",
+    "failedToCreate": "Failed to create chat",
+    "loadingChat": "Loading chat...",
+    "submit": "Submit",
+    "answered": "Answered",
+    "rollback": "Rollback",
+    "rollbackTooltip": "Rollback to this message",
+    "draft": "Draft",
+    "final": "Final",
+    "copyAllContent": "Copy all content",
+    "copiedToClipboard": "Copied to clipboard",
+    "failedToCopyText": "Failed to copy text",
+    "failedToDelete": "Failed to delete chat",
+    "noChatsYet": "No chats yet",
+    "startConversation": "Start a conversation to see your chat history",
+    "newChat": "New Chat",
+    "delete": "Delete",
+    "more": "More",
+    "loading": "Loading...",
+    "examples": {
+      "mobileApp": "I want to build a mobile app for fitness tracking",
+      "mobileAppDesc": "Help me analyze requirements and define features",
+      "saasplatform": "I need to create a SaaS platform for team collaboration",
+      "saasPlatformDesc": "Guide me through requirement gathering process",
+      "ecommerce": "I have an idea for an e-commerce website",
+      "ecommerceDesc": "Let's define the core features and user scenarios",
+      "digitize": "I want to digitize my traditional business",
+      "digitizeDesc": "Help me understand what features I really need"
+    }
+  },
+  "navigation": {
+    "parentTitle": "Jotlin Agent"
+  },
+  "user": {
+    "upgradeToPro": "Upgrade to Pro",
+    "theme": "Theme",
+    "language": "Language",
+    "english": "English",
+    "chinese": "中文",
+    "logOut": "Log out"
+  },
+  "sidebar": {
+    "appName": "Jotlin Agent",
+    "appDescription": "Chat Assistant",
+    "pleaseSignIn": "Please sign in to access your dashboard",
+    "signIn": "Sign In",
+    "chat": "Chat",
+    "newChat": "New Chat",
+    "chatHistory": "Chat History",
+    "dashboard": "Dashboard",
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "models": "Models",
+    "settings": "Settings",
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "apiKeys": "API Keys",
+    "support": "Support",
+    "feedback": "Feedback",
+    "documentation": "Documentation"
+  }
+}

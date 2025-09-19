@@ -1,6 +1,7 @@
 'use client'
 
 import { Check, RotateCcw } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 
 import { Markdown } from '@/components/chat/markdown'
@@ -28,6 +29,7 @@ export function AssistantMessage({
   messageId,
   onRollback,
 }: AssistantMessageProps) {
+  const t = useTranslations('chat')
   const [answered, setAnswered] = useState(metadata?.answered || false)
   const [selectedOptions, setSelectedOptions] = useState<string[]>(metadata?.selectedOptions || [])
   const [inputValue, setInputValue] = useState(metadata?.inputValue || '')
@@ -173,7 +175,7 @@ export function AssistantMessage({
                 className="flex-1"
               />
               <Button onClick={handleInputSubmit} disabled={!inputValue.trim() || answered} size="sm">
-                Submit
+                {t('submit')}
               </Button>
             </div>
           </div>
@@ -190,7 +192,7 @@ export function AssistantMessage({
         {answered && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
-            Answered
+            {t('answered')}
           </div>
         )}
         <Button
@@ -198,9 +200,9 @@ export function AssistantMessage({
           size="sm"
           onClick={() => onRollback()}
           className="h-6 px-2 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground"
-          title="Rollback to this message">
+          title={t('rollbackTooltip')}>
           <RotateCcw className="mr-1 h-4 w-4" />
-          Rollback
+          {t('rollback')}
         </Button>
       </div>
     </div>

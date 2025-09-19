@@ -2,6 +2,7 @@
 
 import { BookOpen, Bot, LifeBuoy, MessageSquare, PieChart, Send, Settings2, SquareTerminal } from 'lucide-react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import * as React from 'react'
 
 import { NavChats } from '@/components/nav-chats'
@@ -21,111 +22,112 @@ import {
 import { useAuth } from '@/hooks/use-auth'
 import { Link } from '@/i18n/navigation'
 
-const data = {
-  user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg',
-  },
-  navMain: [
-    {
-      title: 'Chat',
-      url: '/chat',
-      icon: MessageSquare,
-      isActive: true,
-      items: [
-        {
-          title: 'New Chat',
-          url: '/chat',
-        },
-        {
-          title: 'Chat History',
-          url: '/chat/history',
-        },
-      ],
-    },
-    {
-      title: 'Dashboard',
-      url: '/dashboard',
-      icon: SquareTerminal,
-      items: [
-        {
-          title: 'Overview',
-          url: '/dashboard',
-        },
-        {
-          title: 'Analytics',
-          url: '/dashboard/analytics',
-        },
-      ],
-    },
-    {
-      title: 'Models',
-      url: '#',
-      icon: Bot,
-      items: [
-        {
-          title: 'GPT-4',
-          url: '#',
-        },
-        {
-          title: 'Claude',
-          url: '#',
-        },
-        {
-          title: 'Gemini',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Settings',
-      url: '/settings',
-      icon: Settings2,
-      items: [
-        {
-          title: 'Profile',
-          url: '/settings/profile',
-        },
-        {
-          title: 'Preferences',
-          url: '/settings/preferences',
-        },
-        {
-          title: 'API Keys',
-          url: '/settings/api-keys',
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: 'Support',
-      url: '#',
-      icon: LifeBuoy,
-    },
-    {
-      title: 'Feedback',
-      url: '#',
-      icon: Send,
-    },
-  ],
-  projects: [
-    {
-      name: 'Analytics',
-      url: '/dashboard/analytics',
-      icon: PieChart,
-    },
-    {
-      name: 'Documentation',
-      url: '/docs',
-      icon: BookOpen,
-    },
-  ],
-}
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, isLoading } = useAuth()
+  const t = useTranslations('sidebar')
+
+  const data = React.useMemo(() => ({
+    user: {
+      name: 'shadcn',
+      email: 'm@example.com',
+      avatar: '/avatars/shadcn.jpg',
+    },
+    navMain: [
+      {
+        title: t('chat'),
+        url: '/chat',
+        icon: MessageSquare,
+        isActive: true,
+        items: [
+          {
+            title: t('newChat'),
+            url: '/chat',
+          },
+          {
+            title: t('chatHistory'),
+            url: '/chat/history',
+          },
+        ],
+      },
+      {
+        title: t('dashboard'),
+        url: '/dashboard',
+        icon: SquareTerminal,
+        items: [
+          {
+            title: t('overview'),
+            url: '/dashboard',
+          },
+          {
+            title: t('analytics'),
+            url: '/dashboard/analytics',
+          },
+        ],
+      },
+      {
+        title: t('models'),
+        url: '#',
+        icon: Bot,
+        items: [
+          {
+            title: 'GPT-4',
+            url: '#',
+          },
+          {
+            title: 'Claude',
+            url: '#',
+          },
+          {
+            title: 'Gemini',
+            url: '#',
+          },
+        ],
+      },
+      {
+        title: t('settings'),
+        url: '/settings',
+        icon: Settings2,
+        items: [
+          {
+            title: t('profile'),
+            url: '/settings/profile',
+          },
+          {
+            title: t('preferences'),
+            url: '/settings/preferences',
+          },
+          {
+            title: t('apiKeys'),
+            url: '/settings/api-keys',
+          },
+        ],
+      },
+    ],
+    navSecondary: [
+      {
+        title: t('support'),
+        url: '#',
+        icon: LifeBuoy,
+      },
+      {
+        title: t('feedback'),
+        url: '#',
+        icon: Send,
+      },
+    ],
+    projects: [
+      {
+        name: t('analytics'),
+        url: '/dashboard/analytics',
+        icon: PieChart,
+      },
+      {
+        name: t('documentation'),
+        url: '/docs',
+        icon: BookOpen,
+      },
+    ],
+  }), [t])
 
   if (isLoading) {
     return (
@@ -141,9 +143,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
       <Sidebar variant="inset" {...props}>
         <div className="flex h-full flex-col items-center justify-center space-y-4 p-4">
-          <p className="text-center text-sm text-muted-foreground">Please sign in to access your dashboard</p>
+          <p className="text-center text-sm text-muted-foreground">{t('pleaseSignIn')}</p>
           <Button asChild>
-            <Link href="/login">Sign In</Link>
+            <Link href="/login">{t('signIn')}</Link>
           </Button>
         </div>
       </Sidebar>
@@ -161,8 +163,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Image src="/logo.svg" alt="Jotlin Agent" width={16} height={16} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Jotlin Agent</span>
-                  <span className="truncate text-xs">Chat Assistant</span>
+                  <span className="truncate font-medium">{t('appName')}</span>
+                  <span className="truncate text-xs">{t('appDescription')}</span>
                 </div>
               </a>
             </SidebarMenuButton>

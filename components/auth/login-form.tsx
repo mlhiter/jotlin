@@ -1,6 +1,7 @@
 'use client'
 
 import { Github } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { createSealosApp, sealosApp } from 'sealos-desktop-sdk/app'
 
@@ -12,6 +13,7 @@ import { useSealosAuth } from '@/hooks/use-sealos-auth'
 import { SealosSession } from '@/schema/session'
 
 export function LoginForm() {
+  const t = useTranslations('auth')
   const { isLoading, signIn, session } = useAuth()
   const { authenticateWithSealos, isLoading: isSealosLoading, error } = useSealosAuth()
   const [sealosAvailable, setSealosAvailable] = useState<boolean | null>(null)
@@ -53,8 +55,8 @@ export function LoginForm() {
       <div className="flex min-h-screen items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle>Welcome to Jotlin</CardTitle>
-            <CardDescription>Checking authentication status...</CardDescription>
+            <CardTitle>{t('welcome')}</CardTitle>
+            <CardDescription>{t('checkingAuth')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex justify-center">
@@ -70,9 +72,9 @@ export function LoginForm() {
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle>Welcome to Jotlin</CardTitle>
+          <CardTitle>{t('welcome')}</CardTitle>
           <CardDescription>
-            {sealosAvailable ? 'Sign in to your account to continue' : 'Sign in with GitHub to continue'}
+            {sealosAvailable ? t('signInToContinue') : t('signInWithGithub')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -81,7 +83,7 @@ export function LoginForm() {
           {!sealosAvailable && (
             <Button onClick={() => signIn('github')} disabled={isLoading} className="w-full" size="lg">
               <Github className="mr-2 h-4 w-4" />
-              {isLoading ? 'Signing in...' : 'Continue with GitHub'}
+              {isLoading ? t('signingIn') : t('continueWithGithub')}
             </Button>
           )}
         </CardContent>

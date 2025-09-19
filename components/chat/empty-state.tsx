@@ -1,6 +1,7 @@
 'use client'
 
 import { Brain, Code, Globe, FileText, Lightbulb } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -9,30 +10,31 @@ interface EmptyStateProps {
   onSendMessage: (message: { text: string }) => void
 }
 
-const EXAMPLE_PROMPTS = [
-  {
-    icon: Globe,
-    text: 'I want to build a mobile app for fitness tracking',
-    description: 'Help me analyze requirements and define features',
-  },
-  {
-    icon: FileText,
-    text: 'I need to create a SaaS platform for team collaboration',
-    description: 'Guide me through requirement gathering process',
-  },
-  {
-    icon: Code,
-    text: 'I have an idea for an e-commerce website',
-    description: "Let's define the core features and user scenarios",
-  },
-  {
-    icon: Lightbulb,
-    text: 'I want to digitize my traditional business',
-    description: 'Help me understand what features I really need',
-  },
-]
-
 export function EmptyState({ onSendMessage }: EmptyStateProps) {
+  const t = useTranslations('chat')
+
+  const EXAMPLE_PROMPTS = [
+    {
+      icon: Globe,
+      text: t('examples.mobileApp'),
+      description: t('examples.mobileAppDesc'),
+    },
+    {
+      icon: FileText,
+      text: t('examples.saasplatform'),
+      description: t('examples.saasPlatformDesc'),
+    },
+    {
+      icon: Code,
+      text: t('examples.ecommerce'),
+      description: t('examples.ecommerceDesc'),
+    },
+    {
+      icon: Lightbulb,
+      text: t('examples.digitize'),
+      description: t('examples.digitizeDesc'),
+    },
+  ]
   return (
     <div className="px-4 py-20 text-center">
       <Avatar className="mx-auto mb-4 h-12 w-12">
@@ -41,10 +43,9 @@ export function EmptyState({ onSendMessage }: EmptyStateProps) {
         </AvatarFallback>
       </Avatar>
 
-      <h2 className="mb-2 text-xl font-semibold break-words">Let&apos;s Define Your Product Requirements</h2>
+      <h2 className="mb-2 text-xl font-semibold break-words">{t('emptyStateTitle')}</h2>
       <p className="mx-auto mb-8 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        I&apos;m your AI requirements analyst. I&apos;ll help you clarify your goals, identify target users, and define
-        core features through structured conversations.
+        {t('emptyStateDescription')}
       </p>
 
       <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 px-4 md:grid-cols-2">

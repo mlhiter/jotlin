@@ -1,6 +1,7 @@
 'use client'
 
-import { ChevronsUpDown, LogOut, Sparkles, Sun, Moon } from 'lucide-react'
+import { ChevronsUpDown, LogOut, Sparkles, Sun, Moon, Languages, Check } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -16,6 +17,7 @@ import {
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 
 import { useAuth } from '@/hooks/use-auth'
+import { useLocaleStorage } from '@/hooks/use-locale'
 
 export function NavUser({
   user,
@@ -26,9 +28,11 @@ export function NavUser({
     avatar: string
   }
 }) {
+  const t = useTranslations('user')
   const { isMobile } = useSidebar()
   const { theme, setTheme } = useTheme()
   const { signOut } = useAuth()
+  const { currentLocale, changeLocale, isClient } = useLocaleStorage()
 
   return (
     <SidebarMenu>
@@ -70,33 +74,43 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <Sparkles />
-                Upgrade to Pro
+                {t('upgradeToPro')}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              {/* <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem> */}
               <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                 <Sun className="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
                 <Moon className="absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-                Theme
+                {t('theme')}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                {t('language')}
+              </DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => changeLocale('en')}
+                disabled={!isClient}
+              >
+                <Languages className="h-4 w-4" />
+                {t('english')}
+                {isClient && currentLocale === 'en' && <Check className='ml-auto text-xs'/>}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => changeLocale('zh')}
+                disabled={!isClient}
+              >
+                <Languages className="h-4 w-4" />
+                {t('chinese')}
+                {isClient && currentLocale === 'zh' &&<Check className='ml-auto text-xs'/>}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut()}>
               <LogOut />
-              Log out
+              {t('logOut')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,6 +1,7 @@
 'use client'
 
 import { RotateCcw, TextAlignStart } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '../ui/button'
 
@@ -10,6 +11,7 @@ interface UserMessageProps {
 }
 
 export function UserMessage({ content, onRollback }: UserMessageProps) {
+  const t = useTranslations('chat')
   const extractQuotes = () => {
     const quotes: string[] = []
     let remainingContent = content
@@ -52,9 +54,9 @@ export function UserMessage({ content, onRollback }: UserMessageProps) {
         size="sm"
         onClick={() => onRollback()}
         className="h-6 px-2 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground"
-        title="Rollback to this message">
+        title={t('rollbackTooltip')}>
         <RotateCcw className="mr-1 h-4 w-4" />
-        Rollback
+        {t('rollback')}
       </Button>
     </div>
   )
