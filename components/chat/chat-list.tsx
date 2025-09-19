@@ -1,7 +1,6 @@
 'use client'
 
 import { MessageSquare, MoreHorizontal, Trash2 } from 'lucide-react'
-import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -9,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 
 import { useChats } from '@/hooks/use-chat'
+import { usePathname, useRouter } from '@/i18n/navigation'
 
 export function ChatList() {
   const { chats, isLoading, deleteChat } = useChats()

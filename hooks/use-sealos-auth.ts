@@ -1,6 +1,6 @@
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+import { useRouter } from '@/i18n/navigation'
 import apiClient, { setAuthToken } from '@/lib/axios'
 import { SealosSession } from '@/schema/session'
 

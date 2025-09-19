@@ -1,8 +1,9 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 
+import { useRouter } from '@/i18n/navigation'
 import apiClient, { getAuthToken, setAuthToken, removeAuthToken } from '@/lib/axios'
 import { AuthSession } from '@/schema/session'
 

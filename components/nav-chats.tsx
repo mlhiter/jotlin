@@ -1,12 +1,12 @@
 'use client'
 
 import { Plus } from 'lucide-react'
-import Link from 'next/link'
 
 import { ChatList } from '@/components/chat/chat-list'
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenuButton } from '@/components/ui/sidebar'
 
 import { useChats } from '@/hooks/use-chat'
+import { Link } from '@/i18n/navigation'
 
 export function NavChats() {
   const { chats } = useChats()

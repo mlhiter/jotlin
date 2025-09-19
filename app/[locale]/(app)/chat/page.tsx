@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 import { ChatInput } from '@/components/chat/chat-input'
@@ -8,6 +7,7 @@ import { EmptyState } from '@/components/chat/empty-state'
 import { PageHeader } from '@/components/page-header'
 
 import { useChats } from '@/hooks/use-chat'
+import { useRouter } from '@/i18n/navigation'
 
 export default function ChatPage() {
   const router = useRouter()

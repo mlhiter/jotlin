@@ -1,26 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import createMiddleware from 'next-intl/middleware'
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
+import { routing } from './i18n/routing'
 
-  const publicRoutes = ['/login', '/api/auth']
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
-
-  if (isPublicRoute) {
-    return NextResponse.next()
-  }
-
-  // For client-side routes, we'll let the client handle authentication
-  // The middleware will only protect API routes that need server-side auth
-  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
-    // API routes will handle their own authentication via Authorization header
-    return NextResponse.next()
-  }
-
-  // For client-side pages, let them through - auth will be handled by useAuth hook
-  // The client will redirect to login if no valid token is found in localStorage
-  return NextResponse.next()
-}
+export default createMiddleware(routing)
 
 export const config = {
   matcher: [
@@ -32,6 +14,6 @@ export const config = {
      * - public folder
      * Apply to main app routes: /, /chat, /dashboard, /settings
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

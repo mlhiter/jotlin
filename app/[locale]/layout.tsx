@@ -1,11 +1,16 @@
 import { Geist, Geist_Mono } from 'next/font/google'
+import { notFound } from 'next/navigation'
+import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { ThemeProvider } from 'next-themes'
 import { Suspense } from 'react'
+
 
 import { AuthGuard } from '@/components/auth/auth-guard'
 import { QueryProvider } from '@/components/providers/query-provider'
 import { Loading } from '@/components/ui/loading'
 import { Toaster } from '@/components/ui/sonner'
+
+import { routing } from '@/i18n/routing'
 
 import type { Metadata } from 'next'
 
@@ -26,19 +31,32 @@ export const metadata: Metadata = {
   description: 'A modern AI-powered chat interface built with Next.js and Vercel AI SDK',
 }
 
-export default function RootLayout({
+type Props = {
+  children: React.ReactNode;
+  params: Promise<{locale: string}>;
+};
+
+export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+  params,
+}: Props) {
+  // Ensure that the incoming `locale` is valid
+  const {locale} = await params;
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <Suspense fallback={<Loading />}>
-              <AuthGuard>{children}</AuthGuard>
-            </Suspense>
+            <NextIntlClientProvider>
+              <Suspense fallback={<Loading />}>
+                <AuthGuard>{children}</AuthGuard>
+              </Suspense>
+            </NextIntlClientProvider>
             <Toaster />
           </ThemeProvider>
         </QueryProvider>

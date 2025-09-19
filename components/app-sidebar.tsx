@@ -2,7 +2,6 @@
 
 import { BookOpen, Bot, LifeBuoy, MessageSquare, PieChart, Send, Settings2, SquareTerminal } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
 import * as React from 'react'
 
 import { NavChats } from '@/components/nav-chats'
@@ -20,6 +19,7 @@ import {
 } from '@/components/ui/sidebar'
 
 import { useAuth } from '@/hooks/use-auth'
+import { Link } from '@/i18n/navigation'
 
 const data = {
   user: {
