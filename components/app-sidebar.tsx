@@ -1,16 +1,7 @@
 'use client'
 
-import {
-  BookOpen,
-  Bot,
-  Command,
-  LifeBuoy,
-  MessageSquare,
-  PieChart,
-  Send,
-  Settings2,
-  SquareTerminal,
-} from 'lucide-react'
+import { BookOpen, Bot, LifeBuoy, MessageSquare, PieChart, Send, Settings2, SquareTerminal } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import * as React from 'react'
 
@@ -167,7 +158,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Command className="size-4" />
+                  <Image src="/logo.svg" alt="Jotlin Agent" width={16} height={16} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Jotlin Agent</span>
