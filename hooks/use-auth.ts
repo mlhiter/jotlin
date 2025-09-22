@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 import { useRouter } from '@/i18n/navigation'
 import apiClient, { getAuthToken, setAuthToken, removeAuthToken } from '@/lib/axios'
@@ -14,7 +14,7 @@ export const useAuth = () => {
   const [session, setSession] = useState<AuthSession | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [hasCheckedUrlToken, setHasCheckedUrlToken] = useState(false)
+  const hasCheckedUrlToken = useRef(false)
 
   const fetchSession = useCallback(async () => {
     try {
@@ -47,7 +47,7 @@ export const useAuth = () => {
 
   useEffect(() => {
     // Only check for token once when component mounts or when we haven't checked yet
-    if (!hasCheckedUrlToken) {
+    if (!hasCheckedUrlToken.current) {
       const tokenFromUrl = searchParams.get('token')
       if (tokenFromUrl) {
         setAuthToken(tokenFromUrl)
@@ -58,9 +58,9 @@ export const useAuth = () => {
       } else {
         fetchSession()
       }
-      setHasCheckedUrlToken(true)
+      hasCheckedUrlToken.current = true
     }
-  }, [fetchSession, searchParams, hasCheckedUrlToken])
+  }, [searchParams, fetchSession])
 
   const signIn = async (provider: 'github') => {
     try {

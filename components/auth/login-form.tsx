@@ -2,7 +2,7 @@
 
 import { Github } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createSealosApp, sealosApp } from 'sealos-desktop-sdk/app'
 
 import { Button } from '@/components/ui/button'
@@ -16,11 +16,12 @@ export function LoginForm() {
   const t = useTranslations('auth')
   const { isLoading, signIn, session } = useAuth()
   const { authenticateWithSealos, isLoading: isSealosLoading, error } = useSealosAuth()
-  const [sealosAvailable, setSealosAvailable] = useState<boolean | null>(null)
-  const [hasAttemptedSealosAuth, setHasAttemptedSealosAuth] = useState(false)
+  const [sealosAvailable, setSealosAvailable] = useState<boolean>(false)
+  const hasCheckedSealos = useRef(false)
 
   useEffect(() => {
-    if (session || hasAttemptedSealosAuth) {
+    // If user is already authenticated or we've already checked Sealos, return
+    if (session || hasCheckedSealos.current) {
       return
     }
 
@@ -32,25 +33,25 @@ export function LoginForm() {
 
         if (sealosSession) {
           setSealosAvailable(true)
-          setHasAttemptedSealosAuth(true)
           const success = await authenticateWithSealos(sealosSession)
           if (!success) {
             console.error('Sealos authentication failed:', error)
           }
         } else {
           setSealosAvailable(false)
-          setHasAttemptedSealosAuth(true)
         }
       } catch {
         setSealosAvailable(false)
-        setHasAttemptedSealosAuth(true)
+      } finally {
+        hasCheckedSealos.current = true
       }
     })()
 
     return response
-  }, [session, hasAttemptedSealosAuth, authenticateWithSealos, error])
+  }, [session, authenticateWithSealos, error])
 
-  if (sealosAvailable === null || isSealosLoading) {
+
+  if (sealosAvailable && isSealosLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Card className="w-full max-w-md">
@@ -74,18 +75,15 @@ export function LoginForm() {
         <CardHeader className="text-center">
           <CardTitle>{t('welcome')}</CardTitle>
           <CardDescription>
-            {sealosAvailable ? t('signInToContinue') : t('signInWithGithub')}
+            {t('signInToContinue')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && <div className="text-center text-sm text-red-500">{error}</div>}
-
-          {!sealosAvailable && (
             <Button onClick={() => signIn('github')} disabled={isLoading} className="w-full" size="lg">
               <Github className="mr-2 h-4 w-4" />
               {isLoading ? t('signingIn') : t('continueWithGithub')}
             </Button>
-          )}
         </CardContent>
       </Card>
     </div>
