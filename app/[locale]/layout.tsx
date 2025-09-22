@@ -28,29 +28,23 @@ export const metadata: Metadata = {
 }
 
 type Props = {
-  children: React.ReactNode;
-  params: Promise<{locale: string}>;
-};
+  children: React.ReactNode
+  params: Promise<{ locale: string }>
+}
 
-export default async function RootLayout({
-  children,
-  params,
-}: Props) {
+export default async function RootLayout({ children, params }: Props) {
   // Ensure that the incoming `locale` is valid
-  const {locale} = await params;
+  const { locale } = await params
   if (!hasLocale(routing.locales, locale)) {
-    notFound();
+    notFound()
   }
-
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <NextIntlClientProvider>
-                {children}
-            </NextIntlClientProvider>
+            <NextIntlClientProvider>{children}</NextIntlClientProvider>
             <Toaster />
           </ThemeProvider>
         </QueryProvider>

@@ -26,108 +26,111 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, isLoading } = useAuth()
   const t = useTranslations('sidebar')
 
-  const data = React.useMemo(() => ({
-    user: {
-      name: 'shadcn',
-      email: 'm@example.com',
-      avatar: '/avatars/shadcn.jpg',
-    },
-    navMain: [
-      {
-        title: t('chat'),
-        url: '/chat',
-        icon: MessageSquare,
-        isActive: true,
-        items: [
-          {
-            title: t('newChat'),
-            url: '/chat',
-          },
-          {
-            title: t('chatHistory'),
-            url: '/chat/history',
-          },
-        ],
+  const data = React.useMemo(
+    () => ({
+      user: {
+        name: 'shadcn',
+        email: 'm@example.com',
+        avatar: '/avatars/shadcn.jpg',
       },
-      {
-        title: t('dashboard'),
-        url: '/dashboard',
-        icon: SquareTerminal,
-        items: [
-          {
-            title: t('overview'),
-            url: '/dashboard',
-          },
-          {
-            title: t('analytics'),
-            url: '/dashboard/analytics',
-          },
-        ],
-      },
-      {
-        title: t('models'),
-        url: '#',
-        icon: Bot,
-        items: [
-          {
-            title: 'GPT-4',
-            url: '#',
-          },
-          {
-            title: 'Claude',
-            url: '#',
-          },
-          {
-            title: 'Gemini',
-            url: '#',
-          },
-        ],
-      },
-      {
-        title: t('settings'),
-        url: '/settings',
-        icon: Settings2,
-        items: [
-          {
-            title: t('profile'),
-            url: '/settings/profile',
-          },
-          {
-            title: t('preferences'),
-            url: '/settings/preferences',
-          },
-          {
-            title: t('apiKeys'),
-            url: '/settings/api-keys',
-          },
-        ],
-      },
-    ],
-    navSecondary: [
-      {
-        title: t('support'),
-        url: '#',
-        icon: LifeBuoy,
-      },
-      {
-        title: t('feedback'),
-        url: '#',
-        icon: Send,
-      },
-    ],
-    projects: [
-      {
-        name: t('analytics'),
-        url: '/dashboard/analytics',
-        icon: PieChart,
-      },
-      {
-        name: t('documentation'),
-        url: '/docs',
-        icon: BookOpen,
-      },
-    ],
-  }), [t])
+      navMain: [
+        {
+          title: t('chat'),
+          url: '/chat',
+          icon: MessageSquare,
+          isActive: true,
+          items: [
+            {
+              title: t('newChat'),
+              url: '/chat',
+            },
+            {
+              title: t('chatHistory'),
+              url: '/chat/history',
+            },
+          ],
+        },
+        {
+          title: t('dashboard'),
+          url: '/dashboard',
+          icon: SquareTerminal,
+          items: [
+            {
+              title: t('overview'),
+              url: '/dashboard',
+            },
+            {
+              title: t('analytics'),
+              url: '/dashboard/analytics',
+            },
+          ],
+        },
+        {
+          title: t('models'),
+          url: '#',
+          icon: Bot,
+          items: [
+            {
+              title: 'GPT-4',
+              url: '#',
+            },
+            {
+              title: 'Claude',
+              url: '#',
+            },
+            {
+              title: 'Gemini',
+              url: '#',
+            },
+          ],
+        },
+        {
+          title: t('settings'),
+          url: '/settings',
+          icon: Settings2,
+          items: [
+            {
+              title: t('profile'),
+              url: '/settings/profile',
+            },
+            {
+              title: t('preferences'),
+              url: '/settings/preferences',
+            },
+            {
+              title: t('apiKeys'),
+              url: '/settings/api-keys',
+            },
+          ],
+        },
+      ],
+      navSecondary: [
+        {
+          title: t('support'),
+          url: '#',
+          icon: LifeBuoy,
+        },
+        {
+          title: t('feedback'),
+          url: '#',
+          icon: Send,
+        },
+      ],
+      projects: [
+        {
+          name: t('analytics'),
+          url: '/dashboard/analytics',
+          icon: PieChart,
+        },
+        {
+          name: t('documentation'),
+          url: '/docs',
+          icon: BookOpen,
+        },
+      ],
+    }),
+    [t]
+  )
 
   if (isLoading) {
     return (

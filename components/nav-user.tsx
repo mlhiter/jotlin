@@ -90,21 +90,15 @@ export function NavUser({
               <DropdownMenuLabel className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
                 {t('language')}
               </DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => changeLocale('en')}
-                disabled={!isClient}
-              >
+              <DropdownMenuItem onClick={() => changeLocale('en')} disabled={!isClient}>
                 <Languages className="h-4 w-4" />
                 {t('english')}
-                {isClient && currentLocale === 'en' && <Check className='ml-auto text-xs'/>}
+                {isClient && currentLocale === 'en' && <Check className="ml-auto text-xs" />}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => changeLocale('zh')}
-                disabled={!isClient}
-              >
+              <DropdownMenuItem onClick={() => changeLocale('zh')} disabled={!isClient}>
                 <Languages className="h-4 w-4" />
                 {t('chinese')}
-                {isClient && currentLocale === 'zh' &&<Check className='ml-auto text-xs'/>}
+                {isClient && currentLocale === 'zh' && <Check className="ml-auto text-xs" />}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

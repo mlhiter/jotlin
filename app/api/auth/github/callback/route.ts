@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       if (Date.now() - stateData.timestamp > 600000) {
         return NextResponse.redirect(`${redirectBaseUrl}/login?error=state_expired`)
       }
-    } catch  {
+    } catch {
       return NextResponse.redirect(`${redirectBaseUrl}/login?error=invalid_state`)
     }
 
