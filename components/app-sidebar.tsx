@@ -160,7 +160,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Image src="/logo.svg" alt="Jotlin Agent" width={16} height={16} />
+                  <Image src="/logo-white.svg" alt="Jotlin Agent" width={16} height={16} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{t('appName')}</span>
