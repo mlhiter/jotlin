@@ -2,10 +2,8 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { ThemeProvider } from 'next-themes'
-import { Suspense } from 'react'
 
 import { QueryProvider } from '@/components/providers/query-provider'
-import { Loading } from '@/components/ui/loading'
 import { Toaster } from '@/components/ui/sonner'
 
 import { routing } from '@/i18n/routing'
@@ -51,9 +49,7 @@ export default async function RootLayout({
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <NextIntlClientProvider>
-              <Suspense fallback={<Loading />}>
                 {children}
-              </Suspense>
             </NextIntlClientProvider>
             <Toaster />
           </ThemeProvider>

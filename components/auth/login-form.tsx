@@ -35,7 +35,7 @@ export function LoginForm() {
           setSealosAvailable(true)
           const success = await authenticateWithSealos(sealosSession)
           if (!success) {
-            console.error('Sealos authentication failed:', error)
+            console.error('Sealos authentication failed')
           }
         } else {
           setSealosAvailable(false)
@@ -48,8 +48,7 @@ export function LoginForm() {
     })()
 
     return response
-  }, [session, authenticateWithSealos, error])
-
+  }, [session, authenticateWithSealos])
 
   if (sealosAvailable && isSealosLoading) {
     return (
@@ -74,16 +73,14 @@ export function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>{t('welcome')}</CardTitle>
-          <CardDescription>
-            {t('signInToContinue')}
-          </CardDescription>
+          <CardDescription>{t('signInToContinue')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && <div className="text-center text-sm text-red-500">{error}</div>}
-            <Button onClick={() => signIn('github')} disabled={isLoading} className="w-full" size="lg">
-              <Github className="mr-2 h-4 w-4" />
-              {isLoading ? t('signingIn') : t('continueWithGithub')}
-            </Button>
+          <Button onClick={() => signIn('github')} disabled={isLoading} className="w-full" size="lg">
+            <Github className="mr-2 h-4 w-4" />
+            {isLoading ? t('signingIn') : t('continueWithGithub')}
+          </Button>
         </CardContent>
       </Card>
     </div>

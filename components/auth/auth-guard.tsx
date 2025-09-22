@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 
 import { useAuth } from '@/hooks/use-auth'
 import { useRouter } from '@/i18n/navigation'
@@ -26,5 +26,5 @@ export function AuthGuard({ children, redirectTo = '/login' }: AuthGuardProps) {
     return <Loading />
   }
 
-  return <>{children}</>
+  return <Suspense fallback={<Loading />}>{children}</Suspense>
 }
