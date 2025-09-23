@@ -25,7 +25,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   chats         Chat[]
-  messageLimit  Int       @default(100)
+  messageLimit  Int       @default(200)
 
   @@unique([email])
   @@map("user")
