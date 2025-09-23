@@ -12,7 +12,10 @@ export async function GET(req: NextRequest) {
     }
 
     const chats = await prisma.chat.findMany({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        isDeleted: false,
+      },
       orderBy: { updatedAt: 'desc' },
       include: {
         messages: {

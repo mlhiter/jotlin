@@ -32,6 +32,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       where: {
         id: chatId,
         userId: session.user.id,
+        isDeleted: false,
       },
     })
 
@@ -101,6 +102,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       where: {
         id,
         userId: session.user.id,
+        isDeleted: false,
       },
       include: {
         messages: {
@@ -134,6 +136,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       where: {
         id,
         userId: session.user.id,
+        isDeleted: false,
       },
       data: { title },
     })
@@ -157,10 +160,15 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
 
     const { id } = await params
-    const chat = await prisma.chat.deleteMany({
+    const chat = await prisma.chat.updateMany({
       where: {
         id,
         userId: session.user.id,
+        isDeleted: false,
+      },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
       },
     })
 
