@@ -38,6 +38,14 @@ const eslintConfig = [
           },
         },
       ],
+      // Prohibit the use of fetch
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'fetch',
+          message: 'Please use axios or other HTTP client instead of fetch.',
+        },
+      ],
       // Consistently import navigation APIs from `@/i18n/navigation`
       'no-restricted-imports': [
         'error',

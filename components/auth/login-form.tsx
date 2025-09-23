@@ -38,8 +38,7 @@ export function LoginForm() {
         } else {
           setSealosAvailable(false)
         }
-      } catch (error) {
-        console.error('Sealos session check failed:', error)
+      } catch {
         setSealosAvailable(false)
       }
     }

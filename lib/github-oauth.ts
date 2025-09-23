@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 export interface GitHubUser {
   id: number
   login: string
@@ -32,65 +34,75 @@ export class GitHubOAuth {
   }
 
   async exchangeCodeForToken(code: string): Promise<string> {
-    const response = await fetch('https://github.com/login/oauth/access_token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({
-        client_id: this.config.clientId,
-        client_secret: this.config.clientSecret,
-        code,
-        redirect_uri: this.config.redirectUri,
-      }),
-    })
+    try {
+      const response = await axios.post(
+        'https://github.com/login/oauth/access_token',
+        {
+          client_id: this.config.clientId,
+          client_secret: this.config.clientSecret,
+          code,
+          redirect_uri: this.config.redirectUri,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        }
+      )
 
-    if (!response.ok) {
-      throw new Error(`Failed to exchange code for token: ${response.statusText}`)
+      const data = response.data
+
+      if (data.error) {
+        throw new Error(`GitHub OAuth error: ${data.error_description || data.error}`)
+      }
+
+      return data.access_token
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to exchange code for token: ${error.response?.statusText || error.message}`)
+      }
+      throw error
     }
-
-    const data = await response.json()
-
-    if (data.error) {
-      throw new Error(`GitHub OAuth error: ${data.error_description || data.error}`)
-    }
-
-    return data.access_token
   }
 
   async getUserInfo(accessToken: string): Promise<GitHubUser> {
-    const [userResponse, emailsResponse] = await Promise.all([
-      fetch('https://api.github.com/user', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/vnd.github.v3+json',
-        },
-      }),
-      fetch('https://api.github.com/user/emails', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/vnd.github.v3+json',
-        },
-      }),
-    ])
+    try {
+      const [userResponse, emailsResponse] = await Promise.all([
+        axios.get('https://api.github.com/user', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/vnd.github.v3+json',
+          },
+        }),
+        axios
+          .get('https://api.github.com/user/emails', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              Accept: 'application/vnd.github.v3+json',
+            },
+          })
+          .catch(() => null), // Don't fail if emails endpoint fails
+      ])
 
-    if (!userResponse.ok) {
-      throw new Error(`Failed to fetch user info: ${userResponse.statusText}`)
-    }
+      const user = userResponse.data
 
-    const user = await userResponse.json()
-
-    // Get primary email if not public
-    if (!user.email && emailsResponse.ok) {
-      const emails = await emailsResponse.json()
-      const primaryEmail = emails.find((email: { primary: boolean }) => email.primary)
-      if (primaryEmail) {
-        user.email = primaryEmail.email
+      // Get primary email if not public
+      if (!user.email && emailsResponse) {
+        const emails = emailsResponse.data
+        const primaryEmail = emails.find((email: { primary: boolean }) => email.primary)
+        if (primaryEmail) {
+          user.email = primaryEmail.email
+        }
       }
-    }
 
-    return user
+      return user
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to fetch user info: ${error.response?.statusText || error.message}`)
+      }
+      throw error
+    }
   }
 
   async authenticateWithCode(code: string): Promise<GitHubUser> {
