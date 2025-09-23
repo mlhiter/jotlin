@@ -51,6 +51,8 @@ export function TextSelectionMenu({ onQuote }: TextSelectionMenuProps) {
 
       // Ensure menu doesn't go outside container bounds
       const menuWidth = 100 // Approximate menu width (increased for Q shortcut)
+      const menuHeight = 40 // Approximate menu height
+      const headerHeight = 50 // Header height to avoid overlap
 
       // Adjust horizontal position if needed
       if (x - menuWidth / 2 < 0) {
@@ -59,8 +61,8 @@ export function TextSelectionMenu({ onQuote }: TextSelectionMenuProps) {
         x = containerRect.width - menuWidth / 2
       }
 
-      // If there's not enough space above, position below
-      if (y < 0) {
+      // If there's not enough space above or would overlap with header, position below
+      if (y < headerHeight || y - menuHeight < 0) {
         y = rect.bottom - containerRect.top + 10
       }
 
