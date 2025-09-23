@@ -20,32 +20,31 @@ export function LoginForm() {
   const hasCheckedSealos = useRef(false)
 
   useEffect(() => {
-    // If user is already authenticated or we've already checked Sealos, return
     if (session || hasCheckedSealos.current) {
       return
     }
 
     const response = createSealosApp()
 
-    ;(async () => {
+    const checkSealosAuth = async () => {
       try {
+        hasCheckedSealos.current = true
+
         const sealosSession = (await sealosApp.getSession()) as unknown as SealosSession
 
         if (sealosSession) {
           setSealosAvailable(true)
-          const success = await authenticateWithSealos(sealosSession)
-          if (!success) {
-            console.error('Sealos authentication failed')
-          }
+          await authenticateWithSealos(sealosSession)
         } else {
           setSealosAvailable(false)
         }
-      } catch {
+      } catch (error) {
+        console.error('Sealos session check failed:', error)
         setSealosAvailable(false)
-      } finally {
-        hasCheckedSealos.current = true
       }
-    })()
+    }
+
+    checkSealosAuth()
 
     return response
   }, [session, authenticateWithSealos])
@@ -76,7 +75,7 @@ export function LoginForm() {
           <CardDescription>{t('signInToContinue')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {error && <div className="text-center text-sm text-red-500">{error}</div>}
+          {error && <div className="text-center text-sm text-red-500">{error.message}</div>}
           <Button onClick={() => signIn('github')} disabled={isLoading} className="w-full" size="lg">
             <Github className="mr-2 h-4 w-4" />
             {isLoading ? t('signingIn') : t('continueWithGithub')}
