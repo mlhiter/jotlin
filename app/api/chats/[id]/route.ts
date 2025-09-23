@@ -3,7 +3,7 @@ import { InputJsonValue } from '@prisma/client/runtime/library'
 import { streamText, convertToModelMessages, createIdGenerator, validateUIMessages } from 'ai'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { getSessionFromRequest } from '@/lib/auth'
+import { getSessionFromRequest, getUserMessageUsage } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { requirementAnalysisPrompt } from '@/lib/prompt'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
@@ -23,6 +23,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const session = await getSessionFromRequest(req as NextRequest)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const usage = await getUserMessageUsage(session.user.id)
+    if (!usage.canSendMessage) {
+      return NextResponse.json(
+        {
+          error: 'Message limit exceeded',
+          details: {
+            currentCount: usage.currentCount,
+            limit: usage.limit,
+            message: `You have reached your message limit of ${usage.limit}. Please contact support for more quota.`,
+          },
+        },
+        { status: 429 }
+      )
     }
 
     const { messages }: { messages: MyUIMessage[] } = await req.json()

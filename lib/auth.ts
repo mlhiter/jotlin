@@ -67,3 +67,33 @@ export async function getSessionFromAuthHeader(authHeader: string | null): Promi
   const token = authHeader.substring(7)
   return getSessionFromToken(token)
 }
+
+export async function getUserMessageUsage(userId: string): Promise<{
+  currentCount: number
+  limit: number
+  canSendMessage: boolean
+}> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { messageLimit: true },
+  })
+
+  if (!user) {
+    throw new Error('User not found')
+  }
+
+  // all message(include deleted chat)
+  const currentCount = await prisma.message.count({
+    where: {
+      chat: {
+        userId: userId,
+      },
+    },
+  })
+
+  return {
+    currentCount,
+    limit: user.messageLimit,
+    canSendMessage: currentCount < user.messageLimit,
+  }
+}

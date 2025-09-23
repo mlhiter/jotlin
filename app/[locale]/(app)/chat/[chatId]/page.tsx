@@ -11,6 +11,7 @@ import { DraftPanel } from '@/components/chat/draft-panel'
 import { MessageList } from '@/components/chat/message-list'
 import { PageHeader } from '@/components/page-header'
 
+import { useMessageLimits } from '@/hooks/use-message-limits'
 import { SelectedOption } from '@/hooks/use-selected-options'
 import apiClient, { getAuthToken } from '@/lib/axios'
 import { cn } from '@/lib/utils'
@@ -23,6 +24,8 @@ export default function ChatIdPage() {
   const searchParams = useSearchParams()
   const chatId = params.chatId as string
   const initialMessage = searchParams.get('message')
+  const { handleMessageSent, handleLimitError } = useMessageLimits()
+
   // TODO: we need messages
   const { messages, sendMessage, status, stop, setMessages } = useChat<MyUIMessage>({
     id: chatId,
@@ -33,6 +36,15 @@ export default function ChatIdPage() {
         Authorization: `Bearer ${getAuthToken()}`,
       },
     }),
+    onFinish: () => {
+      handleMessageSent()
+    },
+    onError: (error) => {
+      const isLimitError = handleLimitError(error)
+      if (!isLimitError) {
+        console.error('Chat error:', error)
+      }
+    },
   })
 
   // Rollback function - rollback to a specific message and delete all messages after it

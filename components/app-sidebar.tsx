@@ -18,6 +18,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { UsageIndicator } from '@/components/usage-indicator'
 
 import { useAuth } from '@/hooks/use-auth'
 import { Link } from '@/i18n/navigation'
@@ -181,13 +182,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser
-          user={{
-            name: user.name,
-            email: user.email,
-            avatar: user.image || '/avatars/default.jpg',
-          }}
-        />
+        <div className="space-y-3">
+          <UsageIndicator />
+          <NavUser
+            user={{
+              name: user.name,
+              email: user.email,
+              avatar: user.image || '/avatars/default.jpg',
+            }}
+          />
+        </div>
       </SidebarFooter>
     </Sidebar>
   )
