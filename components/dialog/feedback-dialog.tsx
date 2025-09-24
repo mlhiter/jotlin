@@ -13,15 +13,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/use-auth'
 import apiClient from '@/lib/axios'
 
-const getFeedbackTypes = (t: any) =>
-  [
-    { value: 'BUG_REPORT', label: t('types.bugReport'), icon: '🐛' },
-    { value: 'FEATURE_REQUEST', label: t('types.featureRequest'), icon: '💡' },
-    { value: 'GENERAL', label: t('types.general'), icon: '💬' },
-    { value: 'COMPLAINT', label: t('types.complaint'), icon: '😞' },
-    { value: 'COMPLIMENT', label: t('types.compliment'), icon: '👍' },
-  ] as const
-
 interface FeedbackDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -37,6 +28,15 @@ interface FeedbackFormData {
 export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
   const { user } = useAuth()
   const t = useTranslations('feedback')
+
+  const getFeedbackTypes = () =>
+    [
+      { value: 'BUG_REPORT', label: t('types.bugReport'), icon: '🐛' },
+      { value: 'FEATURE_REQUEST', label: t('types.featureRequest'), icon: '💡' },
+      { value: 'GENERAL', label: t('types.general'), icon: '💬' },
+      { value: 'COMPLAINT', label: t('types.complaint'), icon: '😞' },
+      { value: 'COMPLIMENT', label: t('types.compliment'), icon: '👍' },
+    ] as const
 
   const [formData, setFormData] = useState<FeedbackFormData>({
     type: 'GENERAL',
@@ -97,7 +97,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           <div>
             <label className="text-sm font-medium">{t('type')}</label>
             <div className="mt-2 flex flex-wrap gap-2">
-              {getFeedbackTypes(t).map((type) => (
+              {getFeedbackTypes().map((type) => (
                 <Badge
                   key={type.value}
                   variant={formData.type === type.value ? 'default' : 'outline'}
