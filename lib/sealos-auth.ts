@@ -38,7 +38,7 @@ export class SealosAuth {
     return { session: validatedSession, token: decodedToken }
   }
 
-  authenticateUser(sealosSession: SealosSession): User {
+  authenticateUser(sealosSession: SealosSession): Omit<User, 'role' | 'messageLimit'> {
     const { session } = this.validateTokenAndSession(sealosSession)
 
     const { user } = session
@@ -47,7 +47,7 @@ export class SealosAuth {
       id: user.id,
       name: user.name,
       email: `${user.id}@sealos.internal`, // Generate internal email
-      image: user.avatar || undefined,
+      image: user.avatar || null,
       emailVerified: true,
       createdAt: new Date(),
       updatedAt: new Date(),

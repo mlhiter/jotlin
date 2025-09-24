@@ -16,9 +16,11 @@ export const userSchema = z.object({
   email: z.string(),
   emailVerified: z.boolean(),
   name: z.string(),
+  role: z.enum(['USER', 'ADMIN', 'SUPER_ADMIN']),
   createdAt: z.date(),
   updatedAt: z.date(),
-  image: z.string().nullish(),
+  image: z.string().nullable(),
+  messageLimit: z.number(),
 })
 
 export type Session = z.infer<typeof sessionSchema>

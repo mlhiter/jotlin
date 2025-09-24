@@ -66,7 +66,8 @@
     "profile": "个人资料",
     "settings": "设置",
     "signIn": "登录",
-    "support": "支持"
+    "support": "支持",
+    "adminPanel": "管理面板"
   },
   "user": {
     "chinese": "中文",
@@ -75,5 +76,59 @@
     "logOut": "退出登录",
     "theme": "主题",
     "upgradeToPro": "升级到专业版"
+  },
+  "feedback": {
+    "title": "我们重视您的反馈",
+    "description": "通过分享您的想法、报告错误或建议新功能来帮助我们改进。",
+    "type": "反馈类型",
+    "types": {
+      "bugReport": "错误报告",
+      "featureRequest": "功能请求",
+      "general": "一般反馈",
+      "complaint": "投诉",
+      "compliment": "表扬"
+    },
+    "titleLabel": "标题",
+    "titlePlaceholder": "您的反馈简要概述",
+    "detailsLabel": "详细信息",
+    "detailsPlaceholder": "请提供详细信息...",
+    "emailLabel": "邮箱（可选）",
+    "emailPlaceholder": "your@email.com",
+    "cancel": "取消",
+    "submit": "提交反馈",
+    "submitting": "提交中...",
+    "successMessage": "感谢您的反馈！",
+    "errorMessage": "提交反馈失败，请重试。",
+    "admin": {
+      "title": "用户反馈",
+      "filterPlaceholder": "过滤标题...",
+      "columns": {
+        "type": "类型",
+        "title": "标题",
+        "content": "内容",
+        "submitter": "提交者",
+        "date": "日期"
+      },
+      "showMore": "显示更多",
+      "showLess": "显示更少",
+      "anonymous": "匿名",
+      "noFeedback": "暂无反馈提交。",
+      "showing": "显示",
+      "to": "到",
+      "of": "共",
+      "feedbacks": "条反馈",
+      "loading": "正在加载反馈...",
+      "loadingAuth": "正在加载...",
+      "accessDenied": "访问被拒绝",
+      "noPermission": "您没有权限访问此页面。",
+      "requiredRole": "需要角色：管理员或超级管理员",
+      "failedToLoad": "加载反馈失败",
+      "pagination": {
+        "first": "转到第一页",
+        "previous": "转到上一页",
+        "next": "转到下一页",
+        "last": "转到最后一页"
+      }
+    }
   }
 }

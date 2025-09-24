@@ -101,6 +101,7 @@ export const useAuth = () => {
     user: session?.user || null,
     session,
     isLoading,
+    isAdmin: session?.user.role === 'ADMIN' || session?.user.role === 'SUPER_ADMIN',
     error,
     signIn,
     signOut,

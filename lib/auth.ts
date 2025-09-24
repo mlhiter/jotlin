@@ -6,7 +6,7 @@ import { signJWT, verifyJWT } from './jwt'
 import { prisma } from './prisma'
 
 // Server-side functions
-export async function createUser(userData: User): Promise<User> {
+export async function createUser(userData: Omit<User, 'role' | 'messageLimit'>): Promise<User> {
   return await prisma.user.upsert({
     where: { email: userData.email },
     update: {

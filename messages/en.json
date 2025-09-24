@@ -74,6 +74,61 @@
     "apiKeys": "API Keys",
     "support": "Support",
     "feedback": "Feedback",
-    "documentation": "Documentation"
+    "documentation": "Documentation",
+    "adminPanel": "Admin Panel"
+  },
+  "feedback": {
+    "title": "We Value Your Feedback",
+    "description": "Help us improve by sharing your thoughts, reporting bugs, or suggesting new features.",
+    "type": "Feedback Type",
+    "types": {
+      "bugReport": "Bug Report",
+      "featureRequest": "Feature Request",
+      "general": "General Feedback",
+      "complaint": "Complaint",
+      "compliment": "Compliment"
+    },
+    "titleLabel": "Title",
+    "titlePlaceholder": "Brief summary of your feedback",
+    "detailsLabel": "Details",
+    "detailsPlaceholder": "Please provide detailed information...",
+    "emailLabel": "Email (Optional)",
+    "emailPlaceholder": "your@email.com",
+    "cancel": "Cancel",
+    "submit": "Submit Feedback",
+    "submitting": "Submitting...",
+    "successMessage": "Thank you for your feedback!",
+    "errorMessage": "Failed to submit feedback. Please try again.",
+    "admin": {
+      "title": "User Feedback",
+      "filterPlaceholder": "Filter titles...",
+      "columns": {
+        "type": "Type",
+        "title": "Title",
+        "content": "Content",
+        "submitter": "Submitter",
+        "date": "Date"
+      },
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "anonymous": "Anonymous",
+      "noFeedback": "No feedback submitted yet.",
+      "showing": "Showing",
+      "to": "to",
+      "of": "of",
+      "feedbacks": "feedback(s)",
+      "loading": "Loading feedbacks...",
+      "loadingAuth": "Loading...",
+      "accessDenied": "Access Denied",
+      "noPermission": "You don't have permission to access this page.",
+      "requiredRole": "Required role: ADMIN or SUPER_ADMIN",
+      "failedToLoad": "Failed to load feedbacks",
+      "pagination": {
+        "first": "Go to first page",
+        "previous": "Go to previous page",
+        "next": "Go to next page",
+        "last": "Go to last page"
+      }
+    }
   }
 }

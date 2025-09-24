@@ -22,6 +22,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tanstack/react-query": "^5.87.4",
+    "@tanstack/react-table": "^8.21.3",
     "ai": "^5.0.39",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",

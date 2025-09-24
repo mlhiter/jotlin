@@ -9,6 +9,8 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 
+import { useRouter } from '@/i18n/navigation'
+
 export function NavSecondary({
   items,
   ...props
@@ -17,19 +19,20 @@ export function NavSecondary({
     title: string
     url: string
     icon: LucideIcon
+    onClick?: () => void
   }[]
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  const router = useRouter()
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild size="sm">
-                <a href={item.url}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
+              <SidebarMenuButton size="sm" onClick={item.onClick ? item.onClick : () => router.push(item.url)}>
+                <item.icon />
+                <span>{item.title}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

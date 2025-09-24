@@ -1,10 +1,11 @@
 'use client'
 
-import { BookOpen, Bot, LifeBuoy, MessageSquare, PieChart, Send, Settings2, SquareTerminal } from 'lucide-react'
+import { BookOpen, Bot, MessageSquare, PieChart, Send, Settings2, SquareTerminal, Shield } from 'lucide-react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import * as React from 'react'
 
+import { FeedbackDialog } from '@/components/dialog/feedback-dialog'
 import { NavChats } from '@/components/nav-chats'
 import { NavSecondary } from '@/components/nav-secondary'
 import { NavUser } from '@/components/nav-user'
@@ -24,114 +25,117 @@ import { useAuth } from '@/hooks/use-auth'
 import { Link } from '@/i18n/navigation'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, isAdmin } = useAuth()
   const t = useTranslations('sidebar')
+  const [feedbackOpen, setFeedbackOpen] = React.useState(false)
 
-  const data = React.useMemo(
-    () => ({
-      user: {
-        name: 'shadcn',
-        email: 'm@example.com',
-        avatar: '/avatars/shadcn.jpg',
+  const data = {
+    user: {
+      name: 'shadcn',
+      email: 'm@example.com',
+      avatar: '/avatars/shadcn.jpg',
+    },
+    navMain: [
+      {
+        title: t('chat'),
+        url: '/chat',
+        icon: MessageSquare,
+        isActive: true,
+        items: [
+          {
+            title: t('newChat'),
+            url: '/chat',
+          },
+          {
+            title: t('chatHistory'),
+            url: '/chat/history',
+          },
+        ],
       },
-      navMain: [
-        {
-          title: t('chat'),
-          url: '/chat',
-          icon: MessageSquare,
-          isActive: true,
-          items: [
+      {
+        title: t('dashboard'),
+        url: '/dashboard',
+        icon: SquareTerminal,
+        items: [
+          {
+            title: t('overview'),
+            url: '/dashboard',
+          },
+          {
+            title: t('analytics'),
+            url: '/dashboard/analytics',
+          },
+        ],
+      },
+      {
+        title: t('models'),
+        url: '#',
+        icon: Bot,
+        items: [
+          {
+            title: 'GPT-4',
+            url: '#',
+          },
+          {
+            title: 'Claude',
+            url: '#',
+          },
+          {
+            title: 'Gemini',
+            url: '#',
+          },
+        ],
+      },
+      {
+        title: t('settings'),
+        url: '/settings',
+        icon: Settings2,
+        items: [
+          {
+            title: t('profile'),
+            url: '/settings/profile',
+          },
+          {
+            title: t('preferences'),
+            url: '/settings/preferences',
+          },
+          {
+            title: t('apiKeys'),
+            url: '/settings/api-keys',
+          },
+        ],
+      },
+    ],
+    navSecondary: [
+      {
+        title: t('feedback'),
+        url: '#',
+        icon: Send,
+        onClick: () => setFeedbackOpen(true),
+      },
+      ...(user && isAdmin
+        ? [
             {
-              title: t('newChat'),
-              url: '/chat',
+              title: t('adminPanel'),
+              url: '/admin/feedback',
+              icon: Shield,
             },
-            {
-              title: t('chatHistory'),
-              url: '/chat/history',
-            },
-          ],
-        },
-        {
-          title: t('dashboard'),
-          url: '/dashboard',
-          icon: SquareTerminal,
-          items: [
-            {
-              title: t('overview'),
-              url: '/dashboard',
-            },
-            {
-              title: t('analytics'),
-              url: '/dashboard/analytics',
-            },
-          ],
-        },
-        {
-          title: t('models'),
-          url: '#',
-          icon: Bot,
-          items: [
-            {
-              title: 'GPT-4',
-              url: '#',
-            },
-            {
-              title: 'Claude',
-              url: '#',
-            },
-            {
-              title: 'Gemini',
-              url: '#',
-            },
-          ],
-        },
-        {
-          title: t('settings'),
-          url: '/settings',
-          icon: Settings2,
-          items: [
-            {
-              title: t('profile'),
-              url: '/settings/profile',
-            },
-            {
-              title: t('preferences'),
-              url: '/settings/preferences',
-            },
-            {
-              title: t('apiKeys'),
-              url: '/settings/api-keys',
-            },
-          ],
-        },
-      ],
-      navSecondary: [
-        {
-          title: t('support'),
-          url: '#',
-          icon: LifeBuoy,
-        },
-        {
-          title: t('feedback'),
-          url: '#',
-          icon: Send,
-        },
-      ],
-      projects: [
-        {
-          name: t('analytics'),
-          url: '/dashboard/analytics',
-          icon: PieChart,
-        },
-        {
-          name: t('documentation'),
-          url: '/docs',
-          icon: BookOpen,
-        },
-      ],
-    }),
-    [t]
-  )
+          ]
+        : []),
+    ],
+    projects: [
+      {
+        name: t('analytics'),
+        url: '/dashboard/analytics',
+        icon: PieChart,
+      },
+      {
+        name: t('documentation'),
+        url: '/docs',
+        icon: BookOpen,
+      },
+    ],
+  }
 
   if (isLoading) {
     return (
@@ -193,6 +197,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           />
         </div>
       </SidebarFooter>
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </Sidebar>
   )
 }
