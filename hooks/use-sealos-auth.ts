@@ -1,8 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
 
 import { useRouter } from '@/i18n/navigation'
-import apiClient, { setAuthToken } from '@/lib/axios'
+import apiClient from '@/lib/axios'
 import { SealosSession } from '@/schema/session'
+import { useAuthStore } from '@/store/auth-store'
 
 export function useSealosAuth() {
   const router = useRouter()
@@ -16,8 +17,11 @@ export function useSealosAuth() {
       return response.data
     },
     onSuccess: (data) => {
-      if (data.success && data.token) {
-        setAuthToken(data.token)
+      if (data.success && data.token && data.user) {
+        useAuthStore.getState().setAuth({
+          user: data.user,
+          token: data.token,
+        })
         router.push('/chat')
       }
     },

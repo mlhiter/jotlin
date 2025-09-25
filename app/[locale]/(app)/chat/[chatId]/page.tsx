@@ -13,10 +13,11 @@ import { PageHeader } from '@/components/page-header'
 
 import { useMessageLimits } from '@/hooks/use-message-limits'
 import { SelectedOption } from '@/hooks/use-selected-options'
-import apiClient, { getAuthToken } from '@/lib/axios'
+import apiClient from '@/lib/axios'
 import { cn } from '@/lib/utils'
 import { parseAIResponse } from '@/lib/xml-parser'
 import { MyUIMessage } from '@/schema/chat'
+import { useAuthStore } from '@/store/auth-store'
 
 export default function ChatIdPage() {
   const t = useTranslations('chat')
@@ -26,6 +27,8 @@ export default function ChatIdPage() {
   const initialMessage = searchParams.get('message')
   const { handleMessageSent, handleLimitError } = useMessageLimits()
 
+  const token = useAuthStore((state) => state.token)
+
   // TODO: we need messages
   const { messages, sendMessage, status, stop, setMessages } = useChat<MyUIMessage>({
     id: chatId,
@@ -33,7 +36,7 @@ export default function ChatIdPage() {
     transport: new DefaultChatTransport({
       api: `/api/chats/${chatId}`,
       headers: {
-        Authorization: `Bearer ${getAuthToken()}`,
+        Authorization: `Bearer ${token}`,
       },
     }),
     onFinish: () => {

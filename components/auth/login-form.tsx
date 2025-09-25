@@ -46,7 +46,7 @@ export function LoginForm() {
     checkSealosAuth()
 
     return response
-  }, [session, authenticateWithSealos])
+  }, [session])
 
   if (sealosAvailable && isSealosLoading) {
     return (

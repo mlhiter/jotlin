@@ -3,13 +3,12 @@
 import { BookOpen, Bot, MessageSquare, PieChart, Send, Settings2, SquareTerminal, Shield } from 'lucide-react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
-import * as React from 'react'
+import { ComponentProps, useState } from 'react'
 
 import { FeedbackDialog } from '@/components/dialog/feedback-dialog'
 import { NavChats } from '@/components/nav-chats'
 import { NavSecondary } from '@/components/nav-secondary'
 import { NavUser } from '@/components/nav-user'
-import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -22,12 +21,11 @@ import {
 import { UsageIndicator } from '@/components/usage-indicator'
 
 import { useAuth } from '@/hooks/use-auth'
-import { Link } from '@/i18n/navigation'
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, isLoading, isAdmin } = useAuth()
+export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
+  const { user, isAdmin } = useAuth()
   const t = useTranslations('sidebar')
-  const [feedbackOpen, setFeedbackOpen] = React.useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
 
   const data = {
     user: {
@@ -137,29 +135,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
   }
 
-  if (isLoading) {
-    return (
-      <Sidebar variant="inset" {...props}>
-        <div className="flex h-full items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
-        </div>
-      </Sidebar>
-    )
-  }
-
-  if (!user) {
-    return (
-      <Sidebar variant="inset" {...props}>
-        <div className="flex h-full flex-col items-center justify-center space-y-4 p-4">
-          <p className="text-center text-sm text-muted-foreground">{t('pleaseSignIn')}</p>
-          <Button asChild>
-            <Link href="/login">{t('signIn')}</Link>
-          </Button>
-        </div>
-      </Sidebar>
-    )
-  }
-
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -190,9 +165,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <UsageIndicator />
           <NavUser
             user={{
-              name: user.name,
-              email: user.email,
-              avatar: user.image || '/avatars/default.jpg',
+              name: user?.name || '',
+              email: user?.email || '',
+              avatar: user?.image || '/avatars/default.jpg',
             }}
           />
         </div>

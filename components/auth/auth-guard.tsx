@@ -1,11 +1,9 @@
 'use client'
 
-import { Suspense, useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { useAuth } from '@/hooks/use-auth'
 import { useRouter } from '@/i18n/navigation'
-
-import { Loading } from '../ui/loading'
 
 interface AuthGuardProps {
   children: React.ReactNode
@@ -13,18 +11,14 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children, redirectTo = '/login' }: AuthGuardProps) {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, isInitialized } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (isInitialized && !isLoading && !user) {
       router.push(redirectTo)
     }
-  }, [user, isLoading, router, redirectTo])
+  }, [user, isLoading, isInitialized, router, redirectTo])
 
-  if (isLoading) {
-    return <Loading />
-  }
-
-  return <Suspense fallback={<Loading />}>{children}</Suspense>
+  return <>{children}</>
 }
