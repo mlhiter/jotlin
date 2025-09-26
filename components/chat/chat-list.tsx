@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 
 import { useChats } from '@/hooks/use-chat'
-import { usePathname, useRouter } from '@/i18n/navigation'
+import { Link, usePathname, useRouter } from '@/i18n/navigation'
 
 export function ChatList() {
   const t = useTranslations('chat')
@@ -70,9 +70,9 @@ export function ChatList() {
         return (
           <SidebarMenuItem key={chat.id}>
             <SidebarMenuButton asChild isActive={isActive}>
-              <a href={`/chat/${chat.id}`}>
+              <Link href={`/chat/${chat.id}`}>
                 <span className="truncate">{displayTitle}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
