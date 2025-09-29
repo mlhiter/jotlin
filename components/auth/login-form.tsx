@@ -2,7 +2,7 @@
 
 import { Github } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createSealosApp, sealosApp } from 'sealos-desktop-sdk/app'
 
 import { Button } from '@/components/ui/button'
