@@ -10,17 +10,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 import { useAuth } from '@/hooks/use-auth'
 import { useSealosAuth } from '@/hooks/use-sealos-auth'
+import { useRouter } from '@/i18n/navigation'
 import { SealosSession } from '@/schema/session'
 
 export function LoginForm() {
   const t = useTranslations('auth')
+  const router = useRouter()
   const { isLoading, signIn, session } = useAuth()
   const { authenticateWithSealos, isLoading: isSealosLoading, error } = useSealosAuth()
   const [sealosAvailable, setSealosAvailable] = useState<boolean>(false)
-  const hasCheckedSealos = useRef(false)
+  const [isRedirecting, setIsRedirecting] = useState<boolean>(false)
 
   useEffect(() => {
-    if (session || hasCheckedSealos.current) {
+    if (session) {
       return
     }
 
@@ -28,13 +30,13 @@ export function LoginForm() {
 
     const checkSealosAuth = async () => {
       try {
-        hasCheckedSealos.current = true
-
         const sealosSession = (await sealosApp.getSession()) as unknown as SealosSession
 
         if (sealosSession) {
           setSealosAvailable(true)
           await authenticateWithSealos(sealosSession)
+          setIsRedirecting(true)
+          router.push('/chat')
         } else {
           setSealosAvailable(false)
         }
@@ -48,7 +50,7 @@ export function LoginForm() {
     return response
   }, [session])
 
-  if (sealosAvailable && isSealosLoading) {
+  if (sealosAvailable && (isSealosLoading || isRedirecting)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Card className="w-full max-w-md">
