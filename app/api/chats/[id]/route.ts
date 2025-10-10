@@ -144,16 +144,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { title } = await request.json()
+    const body = await request.json()
+    const { title, isPublic } = body
 
     const { id } = await params
+
+    // Prepare update data
+    const updateData: { title?: string; isPublic?: boolean } = {}
+    if (title !== undefined) updateData.title = title
+    if (isPublic !== undefined) updateData.isPublic = isPublic
+
     const chat = await prisma.chat.updateMany({
       where: {
         id,
         userId: session.user.id,
         isDeleted: false,
       },
-      data: { title },
+      data: updateData,
     })
 
     if (chat.count === 0) {

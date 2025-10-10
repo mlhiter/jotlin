@@ -43,7 +43,25 @@
     "sendHint": "按 Enter 发送，Shift+Enter 换行",
     "startConversation": "开始对话以查看您的聊天历史",
     "submit": "提交",
-    "title": "对话"
+    "title": "对话",
+    "public": "公开",
+    "private": "私有",
+    "makePublic": "设为公开",
+    "makePrivate": "设为私有",
+    "copyPreviewLink": "复制预览链接",
+    "shareChat": "分享对话",
+    "shareChatDescription": "任何拥有此链接的人都可以查看此对话。",
+    "previewLinkNote": "此链接允许只读访问您的对话。查看者无法发送消息或与对话互动。",
+    "publicSuccess": "对话已设为公开",
+    "privateSuccess": "对话已设为私有",
+    "publicError": "更新对话可见性失败",
+    "linkCopied": "链接已复制到剪贴板",
+    "copyError": "复制链接失败",
+    "untitledChat": "无标题对话",
+    "noMessages": "此对话中没有消息",
+    "previewFooter": "这是公开对话的只读预览。",
+    "failedToLoadChat": "加载对话失败",
+    "chatNotFound": "未找到对话"
   },
   "navigation": {
     "parentTitle": "Jotlin Agent"

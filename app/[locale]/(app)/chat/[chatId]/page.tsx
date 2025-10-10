@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react'
 import { ChatInput } from '@/components/chat/chat-input'
 import { DraftPanel } from '@/components/chat/draft-panel'
 import { MessageList } from '@/components/chat/message-list'
+import { PublicButton } from '@/components/chat/public-button'
 import { PageHeader } from '@/components/page-header'
 
 import { useMessageLimits } from '@/hooks/use-message-limits'
@@ -91,6 +92,7 @@ export default function ChatIdPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [hasAutoSent, setHasAutoSent] = useState(false)
   const [quotes, setQuotes] = useState<Array<{ id: string; text: string }>>([])
+  const [chatData, setChatData] = useState<{ isPublic: boolean } | null>(null)
 
   useEffect(() => {
     const loadChat = async () => {
@@ -103,10 +105,11 @@ export default function ChatIdPage() {
           throw new Error('Failed to load chat')
         }
 
-        const chatData = response.data
+        const data = response.data
+        setChatData(data)
         // Set initial messages from loaded chat data
-        if (chatData.messages && chatData.messages.length > 0) {
-          setMessages(chatData.messages)
+        if (data.messages && data.messages.length > 0) {
+          setMessages(data.messages)
         }
         setIsLoading(false)
       } catch (error) {
@@ -235,6 +238,10 @@ export default function ChatIdPage() {
     )
   }
 
+  const handlePublicChange = (isPublic: boolean) => {
+    setChatData((prev) => (prev ? { ...prev, isPublic } : null))
+  }
+
   if (isLoading) {
     return (
       <div className="flex h-[calc(100vh-24px)] flex-col overflow-hidden">
@@ -248,7 +255,12 @@ export default function ChatIdPage() {
 
   return (
     <div className="flex h-[calc(100vh-24px)] flex-col overflow-hidden">
-      <PageHeader title={t('title')} />
+      <PageHeader
+        title={t('title')}
+        actions={
+          chatData && <PublicButton chatId={chatId} isPublic={chatData.isPublic} onPublicChange={handlePublicChange} />
+        }
+      />
       <div className="flex-1 overflow-hidden">
         <div className="relative flex h-full overflow-hidden">
           <div

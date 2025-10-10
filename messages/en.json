@@ -43,7 +43,25 @@
       "ecommerceDesc": "Let's define the core features and user scenarios",
       "digitize": "I want to digitize my traditional business",
       "digitizeDesc": "Help me understand what features I really need"
-    }
+    },
+    "public": "Public",
+    "private": "Private",
+    "makePublic": "Make Public",
+    "makePrivate": "Make Private",
+    "copyPreviewLink": "Copy Preview Link",
+    "shareChat": "Share Chat",
+    "shareChatDescription": "Anyone with this link can view this chat conversation.",
+    "previewLinkNote": "This link allows read-only access to your chat. The viewer cannot send messages or interact with the chat.",
+    "publicSuccess": "Chat is now public",
+    "privateSuccess": "Chat is now private",
+    "publicError": "Failed to update chat visibility",
+    "linkCopied": "Link copied to clipboard",
+    "copyError": "Failed to copy link",
+    "untitledChat": "Untitled Chat",
+    "noMessages": "No messages in this chat",
+    "previewFooter": "This is a read-only preview of a public chat conversation.",
+    "failedToLoadChat": "Failed to load chat",
+    "chatNotFound": "Chat not found"
   },
   "navigation": {
     "parentTitle": "Jotlin Agent"

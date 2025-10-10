@@ -15,9 +15,10 @@ interface PageHeaderProps {
   title: string
   parentTitle?: string
   parentHref?: string
+  actions?: React.ReactNode
 }
 
-export function PageHeader({ title, parentTitle, parentHref = '/' }: PageHeaderProps) {
+export function PageHeader({ title, parentTitle, parentHref = '/', actions }: PageHeaderProps) {
   const t = useTranslations('navigation')
   const defaultParentTitle = parentTitle || t('parentTitle')
   return (
@@ -37,6 +38,7 @@ export function PageHeader({ title, parentTitle, parentHref = '/' }: PageHeaderP
           </BreadcrumbList>
         </Breadcrumb>
       </div>
+      {actions && <div className="ml-auto pr-4">{actions}</div>}
     </header>
   )
 }
