@@ -1,7 +1,7 @@
 'use client'
 
 import { Calendar, User } from 'lucide-react'
-import { useParams, notFound } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 
@@ -38,14 +38,16 @@ export default function ChatPreviewPage() {
         const response = await apiClient.get(`/api/chats/${chatId}/public`)
         setChat(response.data)
       } catch (error) {
-        console.error('Failed to load public chat:', error)
-        // Check if it's an axios error with 404 status
         if (error && typeof error === 'object' && 'response' in error) {
           const axiosError = error as { response?: { status?: number } }
           if (axiosError.response?.status === 404) {
-            notFound()
+            // 404 is expected when chat is not public or doesn't exist
+            // Don't log this as an error to avoid console noise
+            setError(t('linkExpired'))
+            return
           }
         }
+        console.error('Failed to load public chat:', error)
         setError(t('failedToLoadChat'))
       } finally {
         setIsLoading(false)
@@ -71,8 +73,26 @@ export default function ChatPreviewPage() {
   if (error || !chat) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="space-y-4 text-center">
-          <div className="text-destructive">{error || t('chatNotFound')}</div>
+        <div className="mx-auto max-w-md space-y-4 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+            <svg
+              className="h-8 w-8 text-muted-foreground"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+              />
+            </svg>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-foreground">{t('linkExpired')}</h3>
+            <p className="text-sm text-muted-foreground">{t('linkExpiredDescription')}</p>
+          </div>
         </div>
       </div>
     )

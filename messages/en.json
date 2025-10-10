@@ -61,7 +61,9 @@
     "noMessages": "No messages in this chat",
     "previewFooter": "This is a read-only preview of a public chat conversation.",
     "failedToLoadChat": "Failed to load chat",
-    "chatNotFound": "Chat not found"
+    "chatNotFound": "Chat not found",
+    "linkExpired": "Link Expired",
+    "linkExpiredDescription": "This sharing link has expired or the chat has been set to private"
   },
   "navigation": {
     "parentTitle": "Jotlin Agent"
