@@ -1,0 +1,113 @@
+'use client'
+
+import { Clock, MapPin, HeartCrack, MessageCircleMore, CircleUser, Users, Tag, GitCompare } from 'lucide-react'
+import Image from 'next/image'
+import { useTranslations } from 'next-intl'
+
+export function TargetAudienceSection() {
+  const t = useTranslations('landing.targetAudience')
+
+  const scenarios = [
+    {
+      icon: HeartCrack,
+      text: t('scenarios.vague'),
+      position: 'top-[46px] right-0',
+    },
+    {
+      icon: MapPin,
+      text: t('scenarios.plan'),
+      position: 'top-[145px] right-[296px]',
+    },
+    {
+      icon: MessageCircleMore,
+      text: t('scenarios.communication'),
+      position: 'top-[244px] right-[2px]',
+    },
+    {
+      icon: Clock,
+      text: t('scenarios.code'),
+      position: 'top-[273px] right-[637px]',
+    },
+  ]
+
+  const roadmapFeatures = [
+    [
+      { icon: CircleUser, text: t('roadmap.roleAgents') },
+      { icon: Users, text: t('roadmap.multiUser') },
+    ],
+    [
+      { icon: Tag, text: t('roadmap.versioning') },
+      { icon: GitCompare, text: t('roadmap.workflow') },
+    ],
+  ]
+
+  return (
+    <section className="flex w-full justify-center py-12 md:py-24">
+      <div className="w-full max-w-[1310px] px-4 md:px-6">
+        <div className="relative overflow-visible rounded-t-[32px] border border-zinc-950 bg-zinc-950">
+          <div className="pointer-events-none absolute top-1/2 left-1/2 h-[399px] w-[1311px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-t-[32px]">
+            <Image src="/landing/target-bg-ellipses.svg" alt="" fill className="object-cover" />
+          </div>
+
+          <div className="relative z-10 min-h-[400px] px-4 pt-12 pb-0 md:px-8 md:pt-[92px] lg:px-[57px]">
+            <h2 className="text-2xl leading-none font-medium text-white md:text-4xl">{t('title')}</h2>
+            <p className="mt-4 font-edu text-xl leading-[1.5] font-medium text-teal-400 md:ml-12 md:text-2xl">
+              {t('subtitle')}
+            </p>
+
+            <div className="hidden lg:block">
+              {scenarios.map((scenario, index) => (
+                <div
+                  key={index}
+                  className={`absolute ${scenario.position} flex items-center gap-2.5 rounded-full border border-white/10 bg-gradient-to-l from-transparent to-[#414147] px-4 py-3 backdrop-blur-[20px]`}>
+                  <scenario.icon className="h-6 w-6 shrink-0 text-zinc-400" />
+                  <p className="text-base leading-6 text-zinc-300">{scenario.text}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-col gap-3 lg:hidden">
+              {scenarios.map((scenario, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-2.5 rounded-full border border-white/10 bg-gradient-to-l from-transparent to-[#414147] px-4 py-3 backdrop-blur-[20px]">
+                  <scenario.icon className="h-6 w-6 shrink-0 text-zinc-400" />
+                  <p className="text-base leading-6 text-zinc-300">{scenario.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-b-[32px] border border-t-0 border-zinc-950 bg-[#f6f6f7] px-4 py-6 md:px-8 md:py-[41px] lg:px-[56px]">
+          <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
+            <div className="w-full lg:w-auto">
+              <h3 className="text-xl leading-8 font-medium text-zinc-900 md:text-2xl">{t('teamReady.title')}</h3>
+              <div className="mt-2 flex items-center gap-2">
+                <p className="font-edu text-xl leading-[1.5] font-medium text-teal-500 md:text-2xl">
+                  {t('teamReady.roadmap')}
+                </p>
+                <Image src="/landing/roadmap-arrow.svg" alt="" width={18} height={24} />
+              </div>
+            </div>
+
+            <div className="flex w-full flex-col gap-3 md:gap-4 lg:w-auto lg:max-w-[772px]">
+              {roadmapFeatures.map((row, rowIndex) => (
+                <div key={rowIndex} className="flex flex-col gap-3 md:flex-row">
+                  {row.map((feature, featureIndex) => (
+                    <div
+                      key={featureIndex}
+                      className="flex flex-1 items-center gap-2.5 rounded-full border-[0.5px] border-zinc-200 bg-white px-4 py-3">
+                      <feature.icon className="h-6 w-6 shrink-0 text-zinc-400" />
+                      <p className="text-base leading-7 text-black md:text-lg">{feature.text}</p>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}

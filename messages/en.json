@@ -97,6 +97,250 @@
     "documentation": "Documentation",
     "adminPanel": "Admin Panel"
   },
+  "landing": {
+    "nav": {
+      "howItWorks": "How it works",
+      "features": "Features",
+      "whyUs": "Why us",
+      "faq": "FAQ",
+      "joinDiscord": "Join our Discord",
+      "joinForFree": "Start for free"
+    },
+    "hero": {
+      "badge": {
+        "prefix": "Jotlin is an",
+        "highlight": "AI agent",
+        "suffix": "that interviews you."
+      },
+      "title": {
+        "prefix": "Turn Messy Ideas into",
+        "highlight": "Stuctured Specs"
+      },
+      "description": "Jotlin asks clarifying questions to flesh out your idea and generates professional specs as you chat —— so you can get back to the fun part:coding.",
+      "input": {
+        "placeholder": "I want to build a mobile app for fitness tracking...",
+        "hint": "Press Enter to send, Shift+Enter for new line"
+      },
+      "examples": {
+        "0": {
+          "title": "I want to build a mobile app for fitness tracking",
+          "description": "Help me define the core features and user scenarios"
+        },
+        "1": {
+          "title": "I need to create a SaaS platform for team collaboration",
+          "description": "Guide me through requirement gathering process"
+        },
+        "2": {
+          "title": "I have an idea for an e-commerce website",
+          "description": "Let's start with user stories and key features"
+        }
+      }
+    },
+    "features": {
+      "badge": "AI",
+      "title": {
+        "prefix": "It's a Conversation,",
+        "suffix": "Not a Command."
+      },
+      "conversation": {
+        "title": "Natural Dialogue",
+        "description": "Unlike generic chatbots, Jotlin is purpose‑built for requirements analysis. It guides you with polls & follow‑ups to remove ambiguity and surface risks early.",
+        "example": {
+          "user": "I want to create a tool to search for my favorite articles.",
+          "assistant": "Let's start with the project's core objectives."
+        },
+        "placeholder": "Message Jotlin Agent..",
+        "userStory": "User Story",
+        "userScenarios": "User scenarios",
+        "edgeCases": "Edge cases",
+        "draft": "Draft",
+        "final": "Final"
+      },
+      "projects": {
+        "title": "Answer a few clarifying questions",
+        "description": "Jotlin helps you think through edge cases and requirements you might have missed.",
+        "steps": {
+          "0": {
+            "title": "Describe your idea in plain English",
+            "description": "No need for technical jargon or formal templates"
+          },
+          "1": {
+            "title": "Answer clarifying questions",
+            "description": "Jotlin helps you think through edge cases"
+          },
+          "2": {
+            "title": "Get structured documentation",
+            "description": "Receive well-organized specs ready to share"
+          }
+        }
+      },
+      "documentation": {
+        "title": "Go Beyond Documentation, Build Better Products.",
+        "description": "Jotlin doesn't just document what you say - it helps you think through what you need.",
+        "features": {
+          "0": "Structured PRDs",
+          "1": "User stories",
+          "2": "Edge case scenarios"
+        }
+      },
+      "alignment": {
+        "title": "Achieves Unmatched Clarity",
+        "description": "From scattered thoughts to organized specifications that your team can actually use.",
+        "benefits": {
+          "0": {
+            "title": "Find gaps in logic",
+            "description": "Surface hidden assumptions"
+          },
+          "1": {
+            "title": "Identify edge cases",
+            "description": "Think through what could go wrong"
+          },
+          "2": {
+            "title": "Clarify requirements",
+            "description": "Make implicit needs explicit"
+          }
+        }
+      }
+    },
+    "targetAudience": {
+      "title": "Jotlin is for you if…",
+      "subtitle": "Built for the Builder's Mindset",
+      "scenarios": {
+        "vague": "You've experienced the pain of rework caused by vague requirements.",
+        "plan": "You want to turn your next great idea into a tangible plan, today.",
+        "communication": "You believe clear communication is the foundation of a great product.",
+        "code": "You'd rather spend your time on code than on clerical work."
+      },
+      "teamReady": {
+        "title": "Team‑ready from day one",
+        "roadmap": "roadmap"
+      },
+      "roadmap": {
+        "roleAgents": "Role‑based agents: product / PM / UI",
+        "multiUser": "Multi‑user chat",
+        "versioning": "Versioning",
+        "workflow": "approvals & workflow"
+      }
+    },
+    "artifacts": {
+      "title": "Real Artifacts, Not Just Chat Logs",
+      "description": "Every conversation produces tangible deliverables you can share with your team.",
+      "types": {
+        "prd": {
+          "title": "PRD / MRD / BRD",
+          "description": "Standards‑compliant, editable, exportable"
+        },
+        "stories": {
+          "title": "User stories & backlog",
+          "description": "Prioritized with acceptance criteria"
+        },
+        "flows": {
+          "title": "Flows & diagrams",
+          "description": "High‑level interaction maps for clarity"
+        },
+        "risk": {
+          "title": "Risk & assumptions",
+          "description": "Surfaced early to prevent rework"
+        }
+      },
+      "workflow": {
+        "title": "Align Your Entire Team Instantly",
+        "steps": {
+          "0": {
+            "title": "Chat",
+            "description": "Have a natural conversation about your idea"
+          },
+          "1": {
+            "title": "Draft",
+            "description": "Jotlin creates structured docs"
+          },
+          "2": {
+            "title": "Final",
+            "description": "Review, refine, and share with your team"
+          }
+        }
+      },
+      "benefits": {
+        "clarity": {
+          "title": "Achieves Unmatched Clarity",
+          "description": "From scattered ideas to organized specifications",
+          "points": {
+            "0": "Structured PRDs",
+            "1": "User stories",
+            "2": "Edge case analysis"
+          }
+        },
+        "search": {
+          "title": "Searchable for What Matters, Code",
+          "description": "Find the right spec quickly",
+          "points": {
+            "0": "Find user stories by feature",
+            "1": "Search by edge case or scenario",
+            "2": "Track req changes over time"
+          }
+        }
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "description": "Everything you need to know about Jotlin",
+      "items": {
+        "0": {
+          "question": "How is Jotlin different from ChatGPT?",
+          "answer": "Jotlin is specifically designed for product requirements. While ChatGPT is a general-purpose assistant, Jotlin asks clarifying questions, helps you think through edge cases, and produces structured documentation optimized for software teams."
+        },
+        "1": {
+          "question": "What is the format of documents and artifacts Jotlin generates?",
+          "answer": "Jotlin produces industry-standard formats including PRDs, user stories, flow diagrams, and technical specifications. All outputs are designed to integrate with your existing workflow."
+        },
+        "2": {
+          "question": "Is my data and project info private?",
+          "answer": "Yes, all your conversations and documents are private by default. We use enterprise-grade encryption and never share your data with third parties."
+        },
+        "3": {
+          "question": "How do I get started with Jotlin?",
+          "answer": "Simply sign up for free and start a conversation. Describe your project idea in plain language and Jotlin will guide you through the process."
+        },
+        "4": {
+          "question": "Can multiple team members collaborate?",
+          "answer": "Yes! Team collaboration features allow multiple stakeholders to contribute to requirements gathering and review generated documentation together."
+        },
+        "5": {
+          "question": "What if I need to make changes later?",
+          "answer": "All documents support versioning. You can continue the conversation to refine requirements, and Jotlin will update your specs accordingly while maintaining a history of changes."
+        }
+      }
+    },
+    "footer": {
+      "cta": {
+        "title": "Your Next Great Idea is One Conversation Away.",
+        "description": "Try it instantly. No account or credit card required.",
+        "primary": "Start for free",
+        "secondary": "Join our Discord"
+      },
+      "description": "Turn messy ideas into structured specs through natural conversation.",
+      "links": {
+        "product": {
+          "title": "Product",
+          "features": "Features",
+          "howItWorks": "How it works",
+          "whosItFor": "Who it's for",
+          "faq": "FAQ"
+        },
+        "company": {
+          "title": "Company",
+          "github": "GitHub",
+          "discord": "Discord"
+        },
+        "legal": {
+          "title": "Legal",
+          "privacy": "Privacy",
+          "terms": "Terms"
+        }
+      },
+      "copyright": "© {year} Jotlin. All rights reserved."
+    }
+  },
   "feedback": {
     "title": "We Value Your Feedback",
     "description": "Help us improve by sharing your thoughts, reporting bugs, or suggesting new features.",

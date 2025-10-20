@@ -35,15 +35,16 @@ export const useAuth = () => {
     }
   }, [])
 
-  const signIn = (provider: 'github') => {
+  const signIn = (provider: 'github', redirect?: string) => {
     if (provider === 'github') {
-      window.location.href = '/api/auth/github'
+      const redirectParam = redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''
+      window.location.href = `/api/auth/github${redirectParam}`
     }
   }
 
   const signOut = async () => {
     await store.signOut()
-    router.push('/login')
+    router.push('/')
   }
 
   return {

@@ -15,27 +15,27 @@ export async function GET(request: NextRequest) {
     if (error) {
       const errorDescription = searchParams.get('error_description') || error
       console.error('GitHub OAuth error:', errorDescription)
-      return NextResponse.redirect(`${redirectBaseUrl}/login?error=${encodeURIComponent(errorDescription)}`)
+      return NextResponse.redirect(`${redirectBaseUrl}/?error=${encodeURIComponent(errorDescription)}`)
     }
 
     if (!code) {
-      return NextResponse.redirect(`${redirectBaseUrl}/login?error=missing_code`)
+      return NextResponse.redirect(`${redirectBaseUrl}/?error=missing_code`)
     }
 
     // Verify and decode state parameter
     let stateData: { random: string; redirect: string; timestamp: number }
     try {
       if (!state) {
-        return NextResponse.redirect(`${redirectBaseUrl}/login?error=missing_state`)
+        return NextResponse.redirect(`${redirectBaseUrl}/?error=missing_state`)
       }
       stateData = JSON.parse(Buffer.from(state, 'base64').toString())
 
       // Check if state is not too old (10 minutes)
       if (Date.now() - stateData.timestamp > 600000) {
-        return NextResponse.redirect(`${redirectBaseUrl}/login?error=state_expired`)
+        return NextResponse.redirect(`${redirectBaseUrl}/?error=state_expired`)
       }
     } catch {
-      return NextResponse.redirect(`${redirectBaseUrl}/login?error=invalid_state`)
+      return NextResponse.redirect(`${redirectBaseUrl}/?error=invalid_state`)
     }
 
     // Get redirect URL from state
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     const githubUser = await githubOAuth.authenticateWithCode(code)
 
     if (!githubUser.email) {
-      return NextResponse.redirect(`${redirectBaseUrl}/login?error=no_email`)
+      return NextResponse.redirect(`${redirectBaseUrl}/?error=no_email`)
     }
 
     // Create or update user
@@ -68,6 +68,6 @@ export async function GET(request: NextRequest) {
     return response
   } catch (error) {
     console.error('GitHub OAuth callback error:', error)
-    return NextResponse.redirect(`${redirectBaseUrl}/login?error=auth_failed`)
+    return NextResponse.redirect(`${redirectBaseUrl}/?error=auth_failed`)
   }
 }

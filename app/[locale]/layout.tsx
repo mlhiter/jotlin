@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Edu_QLD_Beginner } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { ThemeProvider } from 'next-themes'
@@ -22,6 +22,12 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
+const eduQldBeginner = Edu_QLD_Beginner({
+  variable: '--font-edu-qld-beginner',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+})
+
 export const metadata: Metadata = {
   title: 'Jotlin Agent - Intelligent Chat Assistant',
   description: 'A modern AI-powered chat interface built with Next.js and Vercel AI SDK',
@@ -41,7 +47,7 @@ export default async function RootLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${eduQldBeginner.variable} antialiased`}>
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <NextIntlClientProvider>{children}</NextIntlClientProvider>

@@ -10,7 +10,7 @@ interface AuthGuardProps {
   redirectTo?: string
 }
 
-export function AuthGuard({ children, redirectTo = '/login' }: AuthGuardProps) {
+export function AuthGuard({ children, redirectTo = '/' }: AuthGuardProps) {
   const { user, isLoading, isInitialized } = useAuth()
   const router = useRouter()
 
