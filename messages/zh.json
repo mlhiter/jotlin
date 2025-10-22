@@ -63,7 +63,15 @@
     "failedToLoadChat": "加载对话失败",
     "chatNotFound": "未找到对话",
     "linkExpired": "链接已失效",
-    "linkExpiredDescription": "此分享链接已失效或对话已设为私有"
+    "linkExpiredDescription": "此分享链接已失效或对话已设为私有",
+    "loadingPreview": "正在加载预览...",
+    "loadingCodeViewer": "正在加载代码查看器...",
+    "preview": "预览",
+    "code": "代码",
+    "exitFullscreen": "退出全屏",
+    "fullscreen": "全屏",
+    "noPreviewAvailable": "无可用预览",
+    "noCodeAvailable": "无可用代码"
   },
   "navigation": {
     "parentTitle": "Jotlin Agent"

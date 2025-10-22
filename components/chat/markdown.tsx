@@ -8,7 +8,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import remarkGfm from 'remark-gfm'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/libs/utils/utils'
 
 interface MarkdownProps {
   content: string

@@ -63,7 +63,15 @@
     "failedToLoadChat": "Failed to load chat",
     "chatNotFound": "Chat not found",
     "linkExpired": "Link Expired",
-    "linkExpiredDescription": "This sharing link has expired or the chat has been set to private"
+    "linkExpiredDescription": "This sharing link has expired or the chat has been set to private",
+    "loadingPreview": "Loading preview...",
+    "loadingCodeViewer": "Loading code viewer...",
+    "preview": "Preview",
+    "code": "Code",
+    "exitFullscreen": "Exit fullscreen",
+    "fullscreen": "Fullscreen",
+    "noPreviewAvailable": "No preview available",
+    "noCodeAvailable": "No code available"
   },
   "navigation": {
     "parentTitle": "Jotlin Agent"

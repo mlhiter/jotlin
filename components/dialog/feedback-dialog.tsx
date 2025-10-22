@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
 import { useAuth } from '@/hooks/use-auth'
-import apiClient from '@/lib/axios'
+import apiClient from '@/libs/utils/axios'
 
 interface FeedbackDialogProps {
   open: boolean

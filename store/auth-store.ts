@@ -3,7 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-import apiClient from '@/lib/axios'
+import apiClient from '@/libs/utils/axios'
 import { AuthSession, User } from '@/schema/session'
 
 interface AuthStore {

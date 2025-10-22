@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 
-import apiClient from '@/lib/axios'
+import apiClient from '@/libs/utils/axios'
 import { SealosSession } from '@/schema/session'
 import { useAuthStore } from '@/store/auth-store'
 

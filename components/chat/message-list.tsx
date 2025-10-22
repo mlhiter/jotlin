@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/libs/utils/utils'
 import { MyUIMessage } from '@/schema/chat'
 
 interface MessageListProps {
@@ -65,11 +65,11 @@ export function MessageList({
 
   return (
     <div className="relative flex-1 overflow-hidden">
-      {/* Top blur gradient - avoid scrollbar area */}
-      <div className="pointer-events-none absolute top-0 right-4 left-0 z-10 h-8 bg-gradient-to-b from-background to-transparent" />
+      {/* Top blur gradient */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b from-background to-transparent" />
 
-      {/* Bottom blur gradient - avoid scrollbar area */}
-      <div className="pointer-events-none absolute right-4 bottom-0 left-0 z-10 h-8 bg-gradient-to-t from-background to-transparent" />
+      {/* Bottom blur gradient */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-background to-transparent" />
 
       <ScrollArea ref={scrollAreaRef} className="h-full px-4">
         <div className="mx-auto max-w-3xl space-y-6 py-6">

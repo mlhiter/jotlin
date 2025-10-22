@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { createUser, createAuthSession } from '@/lib/auth'
-import { githubOAuth } from '@/lib/github-oauth'
+import { createUser, createAuthSession } from '@/libs/auth/auth'
+import { githubOAuth } from '@/libs/auth/github-oauth'
 
 const redirectBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 

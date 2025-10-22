@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { useAuth } from '@/hooks/use-auth'
-import apiClient from '@/lib/axios'
+import apiClient from '@/libs/utils/axios'
 
 interface Feedback {
   id: string

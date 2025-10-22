@@ -10,8 +10,8 @@ import { MessageList } from '@/components/chat/message-list'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
-import apiClient from '@/lib/axios'
-import { parseAIResponse } from '@/lib/xml-parser'
+import { parseAIResponse } from '@/libs/ai/xml-parser'
+import apiClient from '@/libs/utils/axios'
 import { MyUIMessage } from '@/schema/chat'
 
 interface PublicChat {

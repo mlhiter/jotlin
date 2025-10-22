@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 
-import apiClient from '@/lib/axios'
+import apiClient from '@/libs/utils/axios'
 
 interface PublicButtonProps {
   chatId: string

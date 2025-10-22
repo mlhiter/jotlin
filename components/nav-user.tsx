@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronsUpDown, LogOut, Sparkles, Sun, Moon, Languages, Check } from 'lucide-react'
+import { ChevronsUpDown, LogOut, Sun, Moon, Languages, Check } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 

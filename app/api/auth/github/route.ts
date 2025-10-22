@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { githubOAuth } from '@/lib/github-oauth'
+import { githubOAuth } from '@/libs/auth/github-oauth'
 
 export async function GET(request: NextRequest) {
   try {

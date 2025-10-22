@@ -2,21 +2,25 @@
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
+import dynamic from 'next/dynamic'
 import { useParams, useSearchParams, notFound } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 
 import { ChatInput } from '@/components/chat/chat-input'
-import { DraftPanel } from '@/components/chat/draft-panel'
 import { MessageList } from '@/components/chat/message-list'
 import { PublicButton } from '@/components/chat/public-button'
 import { PageHeader } from '@/components/page-header'
+import { useSidebar } from '@/components/ui/sidebar'
+
+const DraftPanel = dynamic(() => import('@/components/chat/draft-panel').then((mod) => ({ default: mod.DraftPanel })), {
+  ssr: false,
+})
 
 import { useMessageLimits } from '@/hooks/use-message-limits'
 import { SelectedOption } from '@/hooks/use-selected-options'
-import apiClient from '@/lib/axios'
-import { cn } from '@/lib/utils'
-import { parseAIResponse } from '@/lib/xml-parser'
+import { parseAIResponse } from '@/libs/ai/xml-parser'
+import apiClient from '@/libs/utils/axios'
 import { MyUIMessage } from '@/schema/chat'
 import { useAuthStore } from '@/store/auth-store'
 
@@ -93,6 +97,10 @@ export default function ChatIdPage() {
   const [hasAutoSent, setHasAutoSent] = useState(false)
   const [quotes, setQuotes] = useState<Array<{ id: string; text: string }>>([])
   const [chatData, setChatData] = useState<{ isPublic: boolean } | null>(null)
+  const [draftActiveTab, setDraftActiveTab] = useState('draft')
+  const [sidebarStateBeforeCollapse, setSidebarStateBeforeCollapse] = useState<boolean | null>(null)
+
+  const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar()
 
   useEffect(() => {
     const loadChat = async () => {
@@ -169,6 +177,21 @@ export default function ChatIdPage() {
       setShowRequirementSidebar(true)
     }
   }, [requirementContent.draft, requirementContent.final])
+
+  // Auto-collapse sidebar when viewing code/preview on smaller screens
+  useEffect(() => {
+    const shouldCollapseSidebar = (draftActiveTab === 'preview' || draftActiveTab === 'code') && showRequirementSidebar
+
+    if (shouldCollapseSidebar && typeof window !== 'undefined' && window.innerWidth < 1440) {
+      if (sidebarStateBeforeCollapse === null) {
+        setSidebarStateBeforeCollapse(sidebarOpen)
+      }
+      setSidebarOpen(false)
+    } else if (!shouldCollapseSidebar && sidebarStateBeforeCollapse !== null) {
+      setSidebarOpen(sidebarStateBeforeCollapse)
+      setSidebarStateBeforeCollapse(null)
+    }
+  }, [draftActiveTab, showRequirementSidebar, sidebarOpen, sidebarStateBeforeCollapse, setSidebarOpen])
 
   const cleanupEmptyAssistantMessage = () => {
     if (messages.length === 0) return
@@ -261,14 +284,12 @@ export default function ChatIdPage() {
           chatData && <PublicButton chatId={chatId} isPublic={chatData.isPublic} onPublicChange={handlePublicChange} />
         }
       />
-      <div className="flex-1 overflow-hidden">
-        <div className="relative flex h-full overflow-hidden">
+      <div className="flex flex-1 items-stretch overflow-hidden">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <div
-            className={cn(
-              'flex flex-col overflow-hidden transition-all duration-500 ease-in-out',
-              showRequirementSidebar ? 'pr-[calc(4/9*100%+1rem)]' : 'z-50 pr-0'
-            )}
-            style={{ width: '100%' }}>
+            className={`flex h-full flex-col transition-all duration-700 ease-in-out ${
+              showRequirementSidebar ? 'mx-0' : 'mx-auto w-full max-w-4xl'
+            }`}>
             <MessageList
               messages={filteredMessages}
               status={status}
@@ -287,17 +308,18 @@ export default function ChatIdPage() {
               onRemoveQuote={handleRemoveQuote}
             />
           </div>
-
-          <div className="absolute top-0 right-0 h-full">
-            <DraftPanel
-              draft={requirementContent.draft}
-              final={requirementContent.final}
-              isVisible={showRequirementSidebar}
-              onToggle={() => setShowRequirementSidebar(!showRequirementSidebar)}
-              onQuote={handleQuote}
-            />
-          </div>
         </div>
+
+        <DraftPanel
+          draft={requirementContent.draft}
+          final={requirementContent.final}
+          isVisible={showRequirementSidebar}
+          onToggle={() => setShowRequirementSidebar(!showRequirementSidebar)}
+          onQuote={handleQuote}
+          chatId={chatId}
+          activeTab={draftActiveTab}
+          onActiveTabChange={setDraftActiveTab}
+        />
       </div>
     </div>
   )

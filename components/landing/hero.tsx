@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 
 import { useAuth } from '@/hooks/use-auth'
 import { useRouter } from '@/i18n/navigation'
-import apiClient from '@/lib/axios'
+import apiClient from '@/libs/utils/axios'
 
 const PLACEHOLDER_TEXTS = [
   'I want to build a mobile app for fitness tracking.',

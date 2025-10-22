@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-import apiClient from '@/lib/axios'
+import apiClient from '@/libs/utils/axios'
 
 interface Chat {
   id: string

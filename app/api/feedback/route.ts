@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { getSessionFromRequest } from '@/lib/auth'
-import { canAccessAdminPanel } from '@/lib/permissions'
-import { prisma } from '@/lib/prisma'
+import { getSessionFromRequest } from '@/libs/auth/auth'
+import { canAccessAdminPanel } from '@/libs/utils/permissions'
+import { prisma } from '@/libs/utils/prisma'
 
 export async function POST(request: NextRequest) {
   try {

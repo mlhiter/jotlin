@@ -1,12 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native","linux-musl-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -14,30 +8,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Auth
 model User {
-  id            String    @id
+  id            String     @id
   name          String
-  email         String
-  emailVerified Boolean   @default(false)
+  email         String     @unique
+  emailVerified Boolean    @default(false)
   image         String?
-  role          UserRole  @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  sessions      Session[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @default(now()) @updatedAt
+  messageLimit  Int        @default(200)
+  role          UserRole   @default(USER)
   accounts      Account[]
   chats         Chat[]
   feedbacks     Feedback[]
-  messageLimit  Int       @default(200)
+  sessions      Session[]
 
-  @@unique([email])
   @@map("user")
 }
 
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -45,7 +37,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
@@ -54,7 +45,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -64,6 +54,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
 }
@@ -79,38 +70,52 @@ model Verification {
   @@map("verification")
 }
 
-// Jotlin Agent
 model Chat {
   id        String    @id @default(cuid())
   title     String?
   userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
   isDeleted Boolean   @default(false)
   isPublic  Boolean   @default(false)
-  deletedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  mvp       Mvp?
 
   @@map("chat")
 }
 
 model Message {
   id        String   @id @default(cuid())
-  role      String   // 'user' | 'assistant' | 'system'
-  parts     Json     // UIMessagePart[] - stores text, tool calls, files, etc.
-  metadata  Json?    // Optional metadata for additional message information
+  role      String
   chatId    String
-  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  metadata  Json?
+  parts     Json
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@map("message")
 }
 
-enum UserRole {
-  USER
-  ADMIN
-  SUPER_ADMIN
+model Mvp {
+  id                  String   @id @default(cuid())
+  chatId              String   @unique
+  sandboxId           String?  @unique
+  previewUrl          String?
+  files               Json
+  requirementSnapshot String
+  status              String   @default("running")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  vercelDeploymentId  String?  @unique
+  vercelUrl           String?
+  chat                Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([sandboxId])
+  @@index([vercelDeploymentId])
+  @@map("mvp")
 }
 
 model Feedback {
@@ -120,12 +125,18 @@ model Feedback {
   content   String
   email     String?
   userId    String?
-  user      User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  metadata  Json?        // Browser info, page URL, etc.
+  metadata  Json?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+  user      User?        @relation(fields: [userId], references: [id])
 
   @@map("feedback")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
 }
 
 enum FeedbackType {

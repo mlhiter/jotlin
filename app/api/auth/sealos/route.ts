@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { createUser, createAuthSession } from '@/lib/auth'
-import { sealosAuth } from '@/lib/sealos-auth'
+import { createUser, createAuthSession } from '@/libs/auth/auth'
+import { sealosAuth } from '@/libs/auth/sealos-auth'
 
 export async function POST(request: NextRequest) {
   try {

@@ -242,7 +242,7 @@ All UI components follow the **shadcn/ui** pattern:
 ```typescript
 // components/ui/button.tsx
 import { cva, type VariantProps } from 'class-variance-authority'
-import { cn } from '@/lib/utils'
+import { cn } from '@/libs/utils/utils'
 
 const buttonVariants = cva(
   'focus-visible:border-ring focus-visible:ring-ring/50 inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50',
@@ -461,7 +461,6 @@ Dark mode is managed via `next-themes`:
 ```tsx
 // app/[locale]/layout.tsx
 import { ThemeProvider } from 'next-themes'
-
 ;<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
   {children}
 </ThemeProvider>
@@ -627,7 +626,6 @@ public/
 
 ```tsx
 import Image from 'next/image'
-
 ;<Image
   src="/logo.svg"
   alt="Logo"
@@ -752,7 +750,7 @@ Defined in `tsconfig.json`:
 
 ```tsx
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { cn } from '@/libs/utils/utils'
 import { useAuth } from '@/hooks/use-auth'
 ```
 
@@ -950,7 +948,6 @@ export function InteractiveComponent() {
 ```tsx
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
-
 ;<Suspense fallback={<Skeleton className="h-40 w-full" />}>
   <AsyncComponent />
 </Suspense>

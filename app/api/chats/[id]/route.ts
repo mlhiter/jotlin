@@ -3,9 +3,9 @@ import { InputJsonValue } from '@prisma/client/runtime/library'
 import { streamText, convertToModelMessages, createIdGenerator, validateUIMessages } from 'ai'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { getSessionFromRequest, getUserMessageUsage } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { requirementAnalysisPrompt } from '@/lib/prompt'
+import { requirementAnalysisPrompt } from '@/libs/ai/prompt'
+import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
+import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
 
 const openai = createOpenAI({

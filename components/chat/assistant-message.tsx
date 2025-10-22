@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import { useSelectedOptions } from '@/hooks/use-selected-options'
-import { parseAIResponse, ParsedResponse } from '@/lib/xml-parser'
+import { parseAIResponse, ParsedResponse } from '@/libs/ai/xml-parser'
 import { MyUIMessage } from '@/schema/chat'
 
 interface AssistantMessageProps {

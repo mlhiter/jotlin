@@ -2,8 +2,9 @@ import { NextRequest } from 'next/server'
 
 import { User, AuthSession } from '@/schema/session'
 
+import { prisma } from '../utils/prisma'
+
 import { signJWT, verifyJWT } from './jwt'
-import { prisma } from './prisma'
 
 // Server-side functions
 export async function createUser(userData: Omit<User, 'role' | 'messageLimit'>): Promise<User> {
