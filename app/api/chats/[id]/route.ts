@@ -4,7 +4,11 @@ import { streamText, convertToModelMessages, createIdGenerator, validateUIMessag
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getModelForPhase } from '@/libs/ai/model-config'
-import { requirementAnalysisPrompt, technicalArchitectureAnalysisPrompt, developmentPlanAnalysisPrompt } from '@/libs/ai/prompt'
+import {
+  requirementAnalysisPrompt,
+  technicalArchitectureAnalysisPrompt,
+  developmentPlanAnalysisPrompt,
+} from '@/libs/ai/prompt'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
@@ -50,6 +54,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         userId: session.user.id,
         isDeleted: false,
       },
+      select: {
+        id: true,
+        userId: true,
+        title: true,
+        phase: true,
+        parentId: true,
+        isDeleted: true,
+        isPublic: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+      },
     })
 
     if (!chat) {
@@ -70,6 +86,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         },
         orderBy: {
           createdAt: 'desc',
+        },
+        select: {
+          id: true,
+          userId: true,
+          title: true,
+          phase: true,
+          parentId: true,
+          isDeleted: true,
+          isPublic: true,
+          createdAt: true,
+          updatedAt: true,
+          deletedAt: true,
         },
       })
 
