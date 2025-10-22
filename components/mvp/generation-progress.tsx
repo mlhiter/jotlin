@@ -27,7 +27,7 @@ export function GenerationProgress({ progress, currentStep }: GenerationProgress
   }
 
   return (
-    <Card className="p-4">
+    <Card className="flex h-full flex-col overflow-hidden p-4">
       <div className="mb-4 flex items-center gap-3">
         <Loader2 className="h-5 w-5 animate-spin text-primary" />
         <div className="flex-1">
@@ -40,7 +40,7 @@ export function GenerationProgress({ progress, currentStep }: GenerationProgress
         <div className="h-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
       </div>
 
-      <div className="space-y-2">
+      <div className="flex-1 space-y-2">
         {steps.map((step) => {
           const status = getStepStatus(step.threshold)
           return (

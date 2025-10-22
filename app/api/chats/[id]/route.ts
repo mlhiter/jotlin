@@ -3,7 +3,8 @@ import { InputJsonValue } from '@prisma/client/runtime/library'
 import { streamText, convertToModelMessages, createIdGenerator, validateUIMessages } from 'ai'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { requirementAnalysisPrompt } from '@/libs/ai/prompt'
+import { getModelForPhase } from '@/libs/ai/model-config'
+import { requirementAnalysisPrompt, technicalArchitectureAnalysisPrompt, developmentPlanAnalysisPrompt } from '@/libs/ai/prompt'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
@@ -55,6 +56,43 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
     }
 
+    // Determine the actual chat to use for phase detection
+    let targetChat = chat
+    let targetChatId = chatId
+
+    // If this is a root chat (project container), find the active phase chat
+    if (chat.phase === null && chat.parentId === null) {
+      const activePhaseChat = await prisma.chat.findFirst({
+        where: {
+          parentId: chatId,
+          userId: session.user.id,
+          isDeleted: false,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      })
+
+      if (activePhaseChat) {
+        targetChat = activePhaseChat
+        targetChatId = activePhaseChat.id
+      }
+    }
+
+    // Select system prompt based on chat phase
+    let systemPrompt = requirementAnalysisPrompt
+
+    if (targetChat.phase === 'ARCHITECTURE') {
+      systemPrompt = technicalArchitectureAnalysisPrompt
+    } else if (targetChat.phase === 'DEVELOPMENT') {
+      systemPrompt = developmentPlanAnalysisPrompt
+    } else if (targetChat.phase === 'REQUIREMENT') {
+      systemPrompt = requirementAnalysisPrompt
+    }
+
+    // Select model based on chat phase
+    const modelName = getModelForPhase(targetChat.phase)
+
     const validatedMessages = await validateUIMessages({
       // append the new message to the previous messages
       messages: messages,
@@ -63,8 +101,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       // tools, // if using tools
     })
     const result = streamText({
-      model: openai.chat('gemini-2.5-pro'),
-      system: requirementAnalysisPrompt,
+      model: openai.chat(modelName),
+      system: systemPrompt,
       messages: convertToModelMessages(validatedMessages),
     })
 
@@ -78,10 +116,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         try {
           // Clear existing messages for this chat to avoid duplicates
           await prisma.message.deleteMany({
-            where: { chatId },
+            where: { chatId: targetChatId },
           })
 
-          // Save all messages
+          // Save all messages to the target chat (phase chat if applicable)
           if (messages.length > 0) {
             await prisma.message.createMany({
               data: messages.map((msg) => ({
@@ -89,7 +127,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 role: msg.role,
                 parts: msg.parts as InputJsonValue,
                 metadata: msg.metadata as InputJsonValue,
-                chatId,
+                chatId: targetChatId,
               })),
             })
           }

@@ -1,6 +1,7 @@
 'use client'
 
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -8,17 +9,23 @@ import { Button } from '@/components/ui/button'
 
 import { useAuthStore } from '@/store/auth-store'
 
-import { GenerationLog, LogEntry } from './generation-log'
-import { GenerationProgress } from './generation-progress'
+import { GenerationLog, LogEntry } from '../mvp/generation-log'
+import { GenerationProgress } from '../mvp/generation-progress'
 
-interface GenerateButtonProps {
-  requirements: string
-  chatId: string
-  onSuccess: (data: { files: Record<string, string> }) => void
+interface CodeGenerationButtonProps {
+  documents: {
+    requirement?: { content: string }
+    architecture?: { content: string }
+    development?: { content: string }
+  }
+  rootChatId: string
+  onSuccess: () => void
 }
 
-export function GenerateButton({ requirements, chatId, onSuccess }: GenerateButtonProps) {
+export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeGenerationButtonProps) {
+  const t = useTranslations('project')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentStep, setCurrentStep] = useState('')
   const [logs, setLogs] = useState<LogEntry[]>([])
@@ -29,6 +36,7 @@ export function GenerateButton({ requirements, chatId, onSuccess }: GenerateButt
 
   const handleGenerate = async () => {
     setIsGenerating(true)
+    setIsExpanded(true)
     setProgress(0)
     setLogs([])
     setCurrentStep('Initializing...')
@@ -54,8 +62,10 @@ export function GenerateButton({ requirements, chatId, onSuccess }: GenerateButt
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          requirements,
-          chatId,
+          requirements: documents.requirement?.content || '',
+          architecture: documents.architecture?.content || '',
+          developmentPlan: documents.development?.content || '',
+          chatId: rootChatId,
         }),
       })
 
@@ -65,7 +75,6 @@ export function GenerateButton({ requirements, chatId, onSuccess }: GenerateButt
           const errorData = await response.json()
           errorMessage = errorData.error || errorMessage
         } catch {
-          // If response is not JSON, use status text
           errorMessage = response.statusText || errorMessage
         }
         throw new Error(errorMessage)
@@ -75,7 +84,6 @@ export function GenerateButton({ requirements, chatId, onSuccess }: GenerateButt
         throw new Error('Response body is empty')
       }
 
-      // Read SSE stream
       reader = response.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
@@ -87,7 +95,6 @@ export function GenerateButton({ requirements, chatId, onSuccess }: GenerateButt
         buffer += decoder.decode(value, { stream: true })
         const lines = buffer.split('\n')
 
-        // Keep the last incomplete line in buffer
         buffer = lines.pop() || ''
 
         for (const line of lines) {
@@ -95,12 +102,10 @@ export function GenerateButton({ requirements, chatId, onSuccess }: GenerateButt
             try {
               const data = JSON.parse(line.slice(6))
 
-              // Update progress
               if (data.progress !== undefined) {
                 setProgress(data.progress)
               }
 
-              // Add log entry - handle different event types
               if (data.type === 'step' || data.type === 'info') {
                 if (data.message) {
                   addLog(data.type, data.message)
@@ -112,17 +117,13 @@ export function GenerateButton({ requirements, chatId, onSuccess }: GenerateButt
                 }
               }
 
-              // Handle completion
               if (data.type === 'completed') {
-                toast.success('MVP generated successfully!')
-                if (data.files) {
-                  onSuccess({ files: data.files })
-                }
+                toast.success('Code generated successfully!')
                 setIsGenerating(false)
+                onSuccess()
                 break
               }
 
-              // Handle error
               if (data.type === 'error') {
                 addLog('error', data.error || data.message || 'Generation failed')
                 toast.error(data.error || 'Generation failed')
@@ -142,7 +143,6 @@ export function GenerateButton({ requirements, chatId, onSuccess }: GenerateButt
       toast.error(msg)
       setIsGenerating(false)
     } finally {
-      // Clean up reader
       if (reader) {
         try {
           await reader.cancel()
@@ -154,27 +154,49 @@ export function GenerateButton({ requirements, chatId, onSuccess }: GenerateButt
   }
 
   return (
-    <div className="space-y-4">
-      <Button onClick={handleGenerate} disabled={isGenerating} className="w-full" size="lg">
-        {isGenerating ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Generating...
-          </>
-        ) : (
-          <>
-            <Sparkles className="mr-2 h-4 w-4" />
-            Generate MVP
-          </>
-        )}
-      </Button>
+    <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/20">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-green-900 dark:text-green-100">✓ {t('developmentPlanCompleted')}</p>
+          <p className="text-xs text-green-700 dark:text-green-300">{t('readyToGenerateCode')}</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {logs.length > 0 && !isGenerating && (
+            <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="h-8 w-8 p-0">
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          )}
+          <Button onClick={handleGenerate} disabled={isGenerating} size="sm" className="gap-2">
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t('generating')}
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                {t('generateCode')}
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
 
-      {isGenerating && <GenerationProgress progress={progress} currentStep={currentStep} />}
-
-      {logs.length > 0 && <GenerationLog logs={logs} isGenerating={isGenerating} />}
-
-      {!isGenerating && logs.length === 0 && (
-        <p className="text-center text-xs text-muted-foreground">Generate runnable prototype code from requirements</p>
+      {isExpanded && (
+        <div className="mt-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {isGenerating && (
+              <div className="h-96 overflow-hidden lg:col-span-1">
+                <GenerationProgress progress={progress} currentStep={currentStep} />
+              </div>
+            )}
+            {logs.length > 0 && (
+              <div className={`h-96 overflow-hidden ${isGenerating ? 'lg:col-span-1' : 'lg:col-span-2'}`}>
+                <GenerationLog logs={logs} isGenerating={isGenerating} />
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )

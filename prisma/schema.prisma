@@ -71,17 +71,22 @@ model Verification {
 }
 
 model Chat {
-  id        String    @id @default(cuid())
+  id        String     @id @default(cuid())
   title     String?
   userId    String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  parentId  String?
+  phase     ChatPhase?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   deletedAt DateTime?
-  isDeleted Boolean   @default(false)
-  isPublic  Boolean   @default(false)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isDeleted Boolean    @default(false)
+  isPublic  Boolean    @default(false)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages  Message[]
   mvp       Mvp?
+  parent    Chat?      @relation("ProjectPhases", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Chat[]     @relation("ProjectPhases")
+  documents Document[]
 
   @@map("chat")
 }
@@ -133,6 +138,20 @@ model Feedback {
   @@map("feedback")
 }
 
+model Document {
+  id           String         @id @default(cuid())
+  chatId       String
+  phase        ChatPhase
+  content      String         @db.Text
+  status       DocumentStatus @default(DRAFT)
+  sourceChatId String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  chat         Chat           @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@map("document")
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -145,4 +164,16 @@ enum FeedbackType {
   GENERAL
   COMPLAINT
   COMPLIMENT
+}
+
+enum ChatPhase {
+  REQUIREMENT
+  ARCHITECTURE
+  DEVELOPMENT
+}
+
+enum DocumentStatus {
+  DRAFT
+  COMPLETED
+  ARCHIVED
 }

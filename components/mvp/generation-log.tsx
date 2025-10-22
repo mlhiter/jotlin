@@ -19,11 +19,17 @@ interface GenerationLogProps {
 
 export function GenerationLog({ logs, isGenerating }: GenerationLogProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const logsEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [logs])
+    if (logs.length > 0 && scrollAreaRef.current) {
+      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')
+      if (viewport) {
+        requestAnimationFrame(() => {
+          viewport.scrollTop = viewport.scrollHeight
+        })
+      }
+    }
+  }, [logs.length])
 
   const formatTimestamp = (timestamp: number) => {
     const date = new Date(timestamp)
@@ -31,8 +37,8 @@ export function GenerationLog({ logs, isGenerating }: GenerationLogProps) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card/50 backdrop-blur-sm">
-      <div className="border-b border-border bg-muted/30 px-4 py-2.5">
+    <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card/50 backdrop-blur-sm">
+      <div className="shrink-0 border-b border-border bg-muted/30 px-4 py-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
@@ -47,7 +53,7 @@ export function GenerationLog({ logs, isGenerating }: GenerationLogProps) {
         </div>
       </div>
 
-      <ScrollArea ref={scrollAreaRef} className="h-[320px]">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 overflow-hidden">
         <div className="space-y-1 p-3 font-mono text-xs">
           {logs.length === 0 ? (
             <div className="flex items-center gap-2 py-8 text-center text-muted-foreground">
@@ -103,14 +109,13 @@ export function GenerationLog({ logs, isGenerating }: GenerationLogProps) {
                   </div>
                 )
               })}
-              <div ref={logsEndRef} />
             </>
           )}
         </div>
       </ScrollArea>
 
       {logs.length > 0 && (
-        <div className="border-t border-border bg-muted/20 px-4 py-2">
+        <div className="shrink-0 border-t border-border bg-muted/20 px-4 py-2">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">
               {isGenerating ? (

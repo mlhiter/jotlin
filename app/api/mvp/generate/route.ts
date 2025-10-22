@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const { requirements, chatId } = await req.json()
+  const { requirements, architecture, developmentPlan, chatId } = await req.json()
 
   // Create a ReadableStream for SSE
   const encoder = new TextEncoder()
@@ -49,7 +49,16 @@ export async function POST(req: NextRequest) {
 
         currentProgress = 5
 
-        for await (const progressEvent of generateProjectWithClaudeAgent(requirements, modelConfig)) {
+        // Combine all documents for better context
+        const fullContext = [
+          requirements && `# Requirements Analysis Document\n\n${requirements}`,
+          architecture && `\n\n# Technical Architecture Document\n\n${architecture}`,
+          developmentPlan && `\n\n# Development Plan Document\n\n${developmentPlan}`,
+        ]
+          .filter(Boolean)
+          .join('\n\n')
+
+        for await (const progressEvent of generateProjectWithClaudeAgent(fullContext, modelConfig)) {
           if (progressEvent.type === 'completed' && progressEvent.files) {
             files = progressEvent.files
             cost = progressEvent.cost || 0

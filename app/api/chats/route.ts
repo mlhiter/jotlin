@@ -11,10 +11,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Only fetch root chats (project containers)
     const chats = await prisma.chat.findMany({
       where: {
         userId: session.user.id,
         isDeleted: false,
+        parentId: null, // Only root chats
       },
       orderBy: { updatedAt: 'desc' },
       include: {
@@ -44,14 +46,28 @@ export async function POST(request: NextRequest) {
 
     const { title } = await request.json()
 
-    const chat = await prisma.chat.create({
+    // 1. Create root chat (project container)
+    const rootChat = await prisma.chat.create({
       data: {
         title: title || null,
         userId: session.user.id,
+        parentId: null,
+        phase: null,
       },
     })
 
-    return NextResponse.json(chat)
+    // 2. Create requirement phase chat
+    await prisma.chat.create({
+      data: {
+        title: `${title || 'New Project'} - Requirements`,
+        userId: session.user.id,
+        parentId: rootChat.id,
+        phase: 'REQUIREMENT',
+      },
+    })
+
+    // Return root chat
+    return NextResponse.json(rootChat)
   } catch (error) {
     console.error('Failed to create chat:', error)
     return NextResponse.json({ error: 'Failed to create chat' }, { status: 500 })
