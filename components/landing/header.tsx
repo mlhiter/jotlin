@@ -74,7 +74,7 @@ export function LandingHeader() {
         </div>
       </nav>
 
-      <AuthDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} />
+      <AuthDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} redirectTo="/chat" />
     </header>
   )
 }

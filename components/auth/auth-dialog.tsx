@@ -11,15 +11,15 @@ import { useAuth } from '@/hooks/use-auth'
 interface AuthDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  redirectTo?: string
 }
 
-export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange, redirectTo = '/' }: AuthDialogProps) {
   const tAuth = useTranslations('auth')
   const { signIn, isLoading } = useAuth()
 
   const handleSignIn = () => {
-    // Redirect to home page after login so HeroSection can handle pendingMessage
-    signIn('github', '/')
+    signIn('github', redirectTo)
     onOpenChange(false)
   }
 

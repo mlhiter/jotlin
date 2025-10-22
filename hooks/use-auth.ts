@@ -44,7 +44,7 @@ export const useAuth = () => {
 
   const signOut = async () => {
     await store.signOut()
-    router.push('/')
+    window.location.href = '/'
   }
 
   return {
