@@ -25,12 +25,10 @@ export function NextPhaseButton({ rootChatId, currentPhase, finalDocument, onSuc
   const handleStartNextPhase = async () => {
     setIsLoading(true)
     try {
-      const response = await apiClient.post(`/api/projects/${rootChatId}/next-phase`, {
+      await apiClient.post(`/api/projects/${rootChatId}/next-phase`, {
         currentPhase,
         finalDocument,
       })
-
-      const { nextPhaseChat } = response.data
 
       toast.success(t('phaseTransitionSuccess'))
 

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // With JWT tokens stored on client-side, logout is handled client-side
     // Server just needs to confirm the logout request

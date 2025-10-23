@@ -3,11 +3,9 @@
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 
-import { useRouter } from '@/i18n/navigation'
 import { useAuthStore } from '@/store/auth-store'
 
 export const useAuth = () => {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const hasInitialized = useRef(false)
 
