@@ -57,6 +57,8 @@ interface DraftPanelProps {
   activeTab?: string
   onActiveTabChange?: (tab: string) => void
   currentPhase?: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+  liveDraft?: string
+  liveFinal?: string
 }
 
 export function DraftPanel({
@@ -68,6 +70,8 @@ export function DraftPanel({
   activeTab: externalActiveTab,
   onActiveTabChange,
   currentPhase,
+  liveDraft,
+  liveFinal,
 }: DraftPanelProps) {
   const tChat = useTranslations('chat')
   const tProject = useTranslations('project')
@@ -81,34 +85,62 @@ export function DraftPanel({
     'requirement'
   )
 
-  // Compute effective active tab
-  const hasAnyDocument = !!(documents.requirement || documents.architecture || documents.development)
+  // Compute live content: if liveFinal exists, use it; otherwise use liveDraft
+  const liveContent = liveFinal || liveDraft
+
+  // Compute effective active tab - include live content in the check
+  const hasAnyDocument = !!(
+    documents.requirement ||
+    documents.architecture ||
+    documents.development ||
+    liveContent
+  )
   const effectiveActiveTab =
     externalActiveTab ?? internalActiveTab ?? (hasAnyDocument ? 'documents' : mvpData ? 'preview' : 'documents')
 
   const setActiveTab = onActiveTabChange ?? setInternalActiveTab
+
+  // Determine which document content to show based on current phase and live content
+  const getDocumentContent = (
+    phase: 'requirement' | 'architecture' | 'development',
+    savedContent?: string
+  ): string | undefined => {
+    const phaseMap = {
+      requirement: 'REQUIREMENT',
+      architecture: 'ARCHITECTURE',
+      development: 'DEVELOPMENT',
+    }
+
+    // If current phase matches and there's live content, prefer live content
+    if (currentPhase === phaseMap[phase] && liveContent) {
+      return liveContent
+    }
+
+    // Otherwise use saved content
+    return savedContent
+  }
 
   // Dynamic tab list based on available documents
   const documentTabs = [
     {
       value: 'requirement',
       label: tProject('phaseRequirement'),
-      content: documents.requirement?.content,
-      available: !!documents.requirement,
+      content: getDocumentContent('requirement', documents.requirement?.content),
+      available: !!(documents.requirement || (currentPhase === 'REQUIREMENT' && liveContent)),
       icon: FileText,
     },
     {
       value: 'architecture',
       label: tProject('phaseArchitecture'),
-      content: documents.architecture?.content,
-      available: !!documents.architecture,
+      content: getDocumentContent('architecture', documents.architecture?.content),
+      available: !!(documents.architecture || (currentPhase === 'ARCHITECTURE' && liveContent)),
       icon: FileText,
     },
     {
       value: 'development',
       label: tProject('phaseDevelopment'),
-      content: documents.development?.content,
-      available: !!documents.development,
+      content: getDocumentContent('development', documents.development?.content),
+      available: !!(documents.development || (currentPhase === 'DEVELOPMENT' && liveContent)),
       icon: FileText,
     },
   ]
@@ -125,11 +157,15 @@ export function DraftPanel({
 
   // Compute effective document sub-tab
   const effectiveDocumentTab = (() => {
-    if (currentPhase === 'DEVELOPMENT' && documents.development) return 'development'
-    if (currentPhase === 'ARCHITECTURE' && documents.architecture) return 'architecture'
-    if (currentPhase === 'REQUIREMENT' && documents.requirement) return 'requirement'
+    // Priority 1: Current phase with content (saved or live)
+    if (currentPhase === 'DEVELOPMENT' && (documents.development || liveContent)) return 'development'
+    if (currentPhase === 'ARCHITECTURE' && (documents.architecture || liveContent)) return 'architecture'
+    if (currentPhase === 'REQUIREMENT' && (documents.requirement || liveContent)) return 'requirement'
+    // Priority 2: Any saved documents (reverse order to show latest)
     if (documents.development) return 'development'
     if (documents.architecture) return 'architecture'
+    if (documents.requirement) return 'requirement'
+    // Priority 3: Default to requirement (for when only live content exists)
     return 'requirement'
   })()
 
@@ -281,10 +317,7 @@ export function DraftPanel({
                 <div className="relative p-4" data-selection-container>
                   <Markdown
                     content={
-                      (activeDocumentTab === 'requirement' && documents.requirement?.content) ||
-                      (activeDocumentTab === 'architecture' && documents.architecture?.content) ||
-                      (activeDocumentTab === 'development' && documents.development?.content) ||
-                      ''
+                      documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''
                     }
                   />
                   <TextSelectionMenu onQuote={onQuote} />
@@ -432,10 +465,7 @@ export function DraftPanel({
                   <div className="relative p-4" data-selection-container>
                     <Markdown
                       content={
-                        (activeDocumentTab === 'requirement' && documents.requirement?.content) ||
-                        (activeDocumentTab === 'architecture' && documents.architecture?.content) ||
-                        (activeDocumentTab === 'development' && documents.development?.content) ||
-                        ''
+                        documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''
                       }
                     />
                     <TextSelectionMenu onQuote={onQuote} />

@@ -312,7 +312,8 @@ export default function ChatIdPage() {
       requirementContent.draft ||
       requirementContent.final ||
       projectData?.documents?.requirement ||
-      projectData?.documents?.architecture
+      projectData?.documents?.architecture ||
+      projectData?.documents?.development
 
     if (hasContent) {
       setShowRequirementSidebar(true)
@@ -626,6 +627,8 @@ export default function ChatIdPage() {
           activeTab={draftActiveTab}
           onActiveTabChange={setDraftActiveTab}
           currentPhase={projectData?.currentPhase}
+          liveDraft={requirementContent.draft}
+          liveFinal={requirementContent.final}
         />
       </div>
     </div>
