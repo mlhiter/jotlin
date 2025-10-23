@@ -21,18 +21,18 @@ export function PhaseProgress({ phases }: PhaseProgressProps) {
   }
 
   return (
-    <div className="flex justify-center px-6 py-2">
-      <div className="flex items-center gap-3">
+    <div className="flex w-full justify-center overflow-hidden px-2 py-2 md:px-6">
+      <div className="flex min-w-0 items-center gap-1.5 md:gap-2 lg:gap-3">
           {phases.map((phase, index) => (
-            <div key={phase.phase} className="flex items-center gap-3">
+            <div key={phase.phase} className="flex min-w-0 items-center gap-1.5 md:gap-2 lg:gap-3">
               {/* Phase status */}
-              <div className="flex items-center gap-2">
-                {phase.status === 'completed' && <CheckCircle2 className="h-5 w-5 text-green-500" />}
-                {phase.status === 'in-progress' && <CircleDot className="h-5 w-5 text-blue-500" />}
-                {phase.status === 'pending' && <Circle className="h-5 w-5 text-muted-foreground/50" />}
-                <div className="flex flex-col">
+              <div className="flex min-w-0 items-center gap-1 md:gap-1.5 lg:gap-2">
+                {phase.status === 'completed' && <CheckCircle2 className="h-4 w-4 shrink-0 md:h-5 md:w-5 text-green-500" />}
+                {phase.status === 'in-progress' && <CircleDot className="h-4 w-4 shrink-0 md:h-5 md:w-5 text-blue-500" />}
+                {phase.status === 'pending' && <Circle className="h-4 w-4 shrink-0 md:h-5 md:w-5 text-muted-foreground/50" />}
+                <div className="flex min-w-0 flex-col">
                   <span
-                    className={`text-sm font-medium ${
+                    className={`truncate text-xs md:text-sm font-medium ${
                       phase.status === 'completed'
                         ? 'text-foreground'
                         : phase.status === 'in-progress'
@@ -42,7 +42,7 @@ export function PhaseProgress({ phases }: PhaseProgressProps) {
                     {getPhaseLabel(phase.phase)}
                   </span>
                   <span
-                    className={`text-xs ${
+                    className={`truncate text-[10px] md:text-xs ${
                       phase.status === 'completed'
                         ? 'text-muted-foreground'
                         : phase.status === 'in-progress'
@@ -58,7 +58,7 @@ export function PhaseProgress({ phases }: PhaseProgressProps) {
 
               {/* Connector line */}
               {index < phases.length - 1 && (
-                <div className={`h-0.5 w-12 transition-colors ${phase.status === 'completed' ? 'bg-green-500' : 'bg-border'}`} />
+                <div className={`h-0.5 w-4 md:w-8 lg:w-12 shrink-0 transition-colors ${phase.status === 'completed' ? 'bg-green-500' : 'bg-border'}`} />
               )}
             </div>
           ))}
