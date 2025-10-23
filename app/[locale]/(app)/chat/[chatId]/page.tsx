@@ -237,8 +237,13 @@ export default function ChatIdPage() {
         message.parts.forEach((part) => {
           if (part.type === 'text') {
             const parsed = parseAIResponse(part.text)
-            if (parsed.draft || parsed.final) {
-              acc = { draft: parsed.draft, final: parsed.final }
+            // If we find a final tag, update final (preserve it across messages)
+            if (parsed.final) {
+              acc.final = parsed.final
+            }
+            // Draft always uses the latest one (can be overwritten)
+            if (parsed.draft) {
+              acc.draft = parsed.draft
             }
           }
         })

@@ -111,13 +111,22 @@ export function DraftPanel({
       development: 'DEVELOPMENT',
     }
 
-    // If current phase matches and there's live content, prefer live content
-    if (currentPhase === phaseMap[phase] && liveContent) {
-      return liveContent
+    // Priority 1: Saved final document (most reliable)
+    if (savedContent) {
+      return savedContent
     }
 
-    // Otherwise use saved content
-    return savedContent
+    // Priority 2: Current phase with live final content
+    if (currentPhase === phaseMap[phase] && liveFinal) {
+      return liveFinal
+    }
+
+    // Priority 3: Current phase with live draft (preview only)
+    if (currentPhase === phaseMap[phase] && liveDraft) {
+      return liveDraft
+    }
+
+    return undefined
   }
 
   // Dynamic tab list based on available documents
