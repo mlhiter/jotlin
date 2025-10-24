@@ -4,7 +4,7 @@ import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import dynamicImport from 'next/dynamic'
 import { useParams, useSearchParams, notFound } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import { ChatInput } from '@/components/chat/chat-input'
 import { MessageList } from '@/components/chat/message-list'
@@ -100,6 +100,10 @@ export default function ChatIdPage() {
   const [chatData, setChatData] = useState<{ isPublic: boolean } | null>(null)
   const [draftActiveTab, setDraftActiveTab] = useState('documents')
   const [sidebarStateBeforeCollapse, setSidebarStateBeforeCollapse] = useState<boolean | null>(null)
+  const [windowWidth, setWindowWidth] = useState(0)
+  const prevSidebarOpenRef = useRef<boolean | null>(null)
+  const autoCollapsedRef = useRef(false)
+  const userManuallyOpenedRef = useRef(false)
   const [projectData, setProjectData] = useState<{
     rootChatId: string
     phaseChats: Array<{
@@ -325,20 +329,85 @@ export default function ChatIdPage() {
     }
   }, [requirementContent.draft, requirementContent.final, projectData?.documents])
 
-  // Auto-collapse sidebar when viewing code/preview on smaller screens
+  // Monitor window width
   useEffect(() => {
-    const shouldCollapseSidebar = (draftActiveTab === 'preview' || draftActiveTab === 'code') && showRequirementSidebar
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth)
+    }
 
-    if (shouldCollapseSidebar && typeof window !== 'undefined' && window.innerWidth < 1440) {
-      if (sidebarStateBeforeCollapse === null) {
-        setSidebarStateBeforeCollapse(sidebarOpen)
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Reset manual flag when switching chats
+  useEffect(() => {
+    userManuallyOpenedRef.current = false
+    setSidebarStateBeforeCollapse(null)
+    autoCollapsedRef.current = false
+    prevSidebarOpenRef.current = null
+  }, [chatId])
+
+  // Detect user manual sidebar operations
+  useEffect(() => {
+    const prevOpen = prevSidebarOpenRef.current
+
+    if (prevOpen === false && sidebarOpen === true && autoCollapsedRef.current) {
+      userManuallyOpenedRef.current = true
+      if (sidebarStateBeforeCollapse !== null) {
+        setSidebarStateBeforeCollapse(null)
       }
+    } else if (prevOpen === true && sidebarOpen === false && userManuallyOpenedRef.current) {
+      userManuallyOpenedRef.current = false
+      if (sidebarStateBeforeCollapse !== null) {
+        setSidebarStateBeforeCollapse(null)
+      }
+    }
+
+    prevSidebarOpenRef.current = sidebarOpen
+  }, [sidebarOpen, sidebarStateBeforeCollapse])
+
+  // Auto-collapse sidebar based on available space
+  useEffect(() => {
+    if (windowWidth === 0) return
+    if (userManuallyOpenedRef.current) return
+
+    const SIDEBAR_WIDTH = 256
+    let DRAFT_PANEL_WIDTH = 0
+
+    if (showRequirementSidebar) {
+      if (draftActiveTab === 'documents') {
+        DRAFT_PANEL_WIDTH = Math.min(windowWidth * 0.4, 600)
+      } else {
+        DRAFT_PANEL_WIDTH = Math.min(windowWidth * 0.65, 1200)
+      }
+    }
+
+    const MIN_CHAT_WIDTH = 600
+    const availableWidth = sidebarOpen
+      ? windowWidth - SIDEBAR_WIDTH - DRAFT_PANEL_WIDTH
+      : windowWidth - DRAFT_PANEL_WIDTH
+    const shouldCollapseSidebar = availableWidth < MIN_CHAT_WIDTH && sidebarOpen
+    const hasSpaceConstraint = windowWidth - SIDEBAR_WIDTH - DRAFT_PANEL_WIDTH < MIN_CHAT_WIDTH
+
+    if (shouldCollapseSidebar) {
+      if (sidebarStateBeforeCollapse === null) {
+        setSidebarStateBeforeCollapse(true)
+      }
+      autoCollapsedRef.current = true
       setSidebarOpen(false)
     } else if (!shouldCollapseSidebar && sidebarStateBeforeCollapse !== null) {
-      setSidebarOpen(sidebarStateBeforeCollapse)
-      setSidebarStateBeforeCollapse(null)
+      if (windowWidth - SIDEBAR_WIDTH - DRAFT_PANEL_WIDTH >= MIN_CHAT_WIDTH) {
+        autoCollapsedRef.current = false
+        setSidebarOpen(sidebarStateBeforeCollapse)
+        setSidebarStateBeforeCollapse(null)
+      }
+    } else if (hasSpaceConstraint && !sidebarOpen) {
+      autoCollapsedRef.current = true
+    } else if (!hasSpaceConstraint && !sidebarOpen) {
+      autoCollapsedRef.current = false
     }
-  }, [draftActiveTab, showRequirementSidebar, sidebarOpen, sidebarStateBeforeCollapse, setSidebarOpen])
+  }, [windowWidth, showRequirementSidebar, draftActiveTab, sidebarOpen, sidebarStateBeforeCollapse, setSidebarOpen])
 
   const cleanupEmptyAssistantMessage = () => {
     if (messages.length === 0) return
@@ -542,7 +611,7 @@ export default function ChatIdPage() {
 
       <div className="flex flex-1 items-stretch overflow-hidden">
         {/* Left side: Phase Progress + Chat Area */}
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden" data-chat-area>
           {/* Phase Progress Bar */}
           {projectData && <PhaseProgress phases={phaseProgress} />}
 

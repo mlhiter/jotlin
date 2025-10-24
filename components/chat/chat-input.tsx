@@ -98,16 +98,16 @@ export function ChatInput({
   }, [input])
 
   return (
-    <div className="mt-1 mb-2 px-4">
+    <div className="mb-2 mt-1 px-4">
       <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
         {quotes.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
             {quotes.map((quote) => (
               <div
                 key={quote.id}
-                className="flex w-48 items-center gap-1 rounded border-1 border-border bg-muted/30 px-2 py-1">
-                <TextAlignStart className="h-3 w-3 flex-shrink-0 text-accent-foreground/70" />
-                <div className="flex-1 truncate text-xs text-muted-foreground">{quote.text}</div>
+                className="border-1 border-border bg-muted/30 flex w-48 items-center gap-1 rounded px-2 py-1">
+                <TextAlignStart className="text-accent-foreground/70 h-3 w-3 flex-shrink-0" />
+                <div className="text-muted-foreground flex-1 truncate text-xs">{quote.text}</div>
                 {onRemoveQuote && (
                   <Button
                     type="button"
@@ -126,13 +126,13 @@ export function ChatInput({
         {selectedOptions.length > 0 && (
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="text-xs text-muted-foreground">Selected options:</div>
+              <div className="text-muted-foreground text-xs">Selected options:</div>
               <div className="flex flex-wrap gap-2">
                 {selectedOptions.map((option, index) => (
                   <div
                     key={`${option.value}-${index}`}
-                    className="flex items-center gap-2 rounded border border-border bg-accent/30 px-2 py-1 text-sm">
-                    <span className="text-xs font-medium text-muted-foreground">{option.value}</span>
+                    className="border-border bg-accent/30 flex items-center gap-2 rounded border px-2 py-1 text-sm">
+                    <span className="text-muted-foreground text-xs font-medium">{option.value}</span>
                     <Button
                       type="button"
                       size="sm"
@@ -150,7 +150,7 @@ export function ChatInput({
               size="sm"
               variant="ghost"
               onClick={clearOptions}
-              className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground">
+              className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs">
               Clear all
             </Button>
           </div>
@@ -173,14 +173,13 @@ export function ChatInput({
               onClick={status === 'streaming' ? handleStop : undefined}
               disabled={status !== 'streaming' && !input.trim() && selectedOptions.length === 0}
               size="sm"
-              className="absolute right-2 bottom-2 h-8 w-8 p-0">
+              className="absolute bottom-2 right-2 h-8 w-8 p-0">
               {status === 'streaming' ? <Square className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
             </Button>
           </div>
         </div>
         <div className="mt-2 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">Press Enter to send, Shift+Enter for new line</p>
-          <p className="text-xs text-muted-foreground">Powered by Gemini-2.5-pro</p>
+          <p className="text-muted-foreground text-xs">Press Enter to send, Shift+Enter for new line</p>
         </div>
       </form>
     </div>
