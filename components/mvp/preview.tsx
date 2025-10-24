@@ -23,6 +23,25 @@ export function Preview({ files }: PreviewProps) {
   const logsRef = useRef<HTMLDivElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
+  // Block window.open calls to prevent browser extensions from opening new tabs
+  useEffect(() => {
+    const originalOpen = window.open
+    window.open = function (...args) {
+      const url = args[0]?.toString() || ''
+
+      // Block WebContainer URLs to prevent auto-opening by extensions
+      if (url.includes('webcontainer') || url.includes('local-credentialless')) {
+        return null
+      }
+
+      return originalOpen.apply(this, args)
+    }
+
+    return () => {
+      window.open = originalOpen
+    }
+  }, [])
+
   const log = (msg: string) => {
     const time = new Date().toLocaleTimeString()
     setLogs((prev) => [...prev, `[${time}] ${msg}`])
@@ -88,7 +107,6 @@ export function Preview({ files }: PreviewProps) {
         wc.on('server-ready', (port, u) => {
           if (!cleanup) {
             log(`✓ Server started on port ${port}`)
-            log(`✓ URL: ${u}`)
             serverUrl = u
           }
         })
@@ -99,7 +117,10 @@ export function Preview({ files }: PreviewProps) {
         inst.output.pipeTo(
           new WritableStream({
             write(data) {
-              if (!cleanup) log(data)
+              if (!cleanup) {
+                const sanitized = data.replace(/https?:\/\/[^\s]+/g, '[URL]')
+                log(sanitized)
+              }
             },
           })
         )
@@ -118,7 +139,8 @@ export function Preview({ files }: PreviewProps) {
           new WritableStream({
             write(data) {
               if (!cleanup) {
-                log(data)
+                const sanitized = data.replace(/https?:\/\/[^\s]+/g, '[URL]')
+                log(sanitized)
                 if (
                   !serverReady &&
                   serverUrl &&
@@ -127,8 +149,12 @@ export function Preview({ files }: PreviewProps) {
                   serverReady = true
                   log('🎉 Next.js fully started!')
                   log('✓ Loading preview')
-                  setUrl(serverUrl)
-                  setStatus('ready')
+                  setTimeout(() => {
+                    if (!cleanup) {
+                      setUrl(serverUrl)
+                      setStatus('ready')
+                    }
+                  }, 500)
                 }
               }
             },
@@ -238,7 +264,9 @@ export function Preview({ files }: PreviewProps) {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-muted/30 px-3 py-2">
-        <span className="flex-1 truncate text-xs text-muted-foreground">{url || 'No URL'}</span>
+        <span className="flex-1 truncate text-xs text-muted-foreground">
+          {url ? 'Preview Running' : 'No URL'}
+        </span>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={handleRefresh} title="Refresh preview">
             <RefreshCw className="h-3 w-3" />
@@ -256,7 +284,7 @@ export function Preview({ files }: PreviewProps) {
             ref={iframeRef}
             key={url}
             src={url}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups-to-escape-sandbox"
+            allow="cross-origin-isolated"
             className="h-full w-full border-0"
             onLoad={() => log('✓ iframe loaded successfully')}
             onError={() => log('✗ iframe loading failed')}

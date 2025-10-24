@@ -151,8 +151,8 @@ export function DraftPanel({
   // Outer level tabs (with Documents as a single tab)
   const availableTabs = [
     { value: 'documents', label: 'Documents', available: hasAnyDocument, icon: FileText },
-    { value: 'preview', label: 'Preview', available: !!mvpData, icon: Eye },
-    { value: 'code', label: 'Code', available: !!mvpData, icon: Code },
+    { value: 'preview', label: 'Preview', available: !!documents.development, icon: Eye },
+    { value: 'code', label: 'Code', available: !!documents.development, icon: Code },
   ].filter((t) => t.available)
 
   // Inner document tabs (for the nested tabs inside Documents)
@@ -179,9 +179,9 @@ export function DraftPanel({
     }
   }, [effectiveDocumentTab])
 
-  // Fetch MVP data if available (only when development phase is complete)
+  // Fetch MVP data only when user switches to preview or code tab
   useEffect(() => {
-    if (chatId && documents.development) {
+    if (chatId && documents.development && (effectiveActiveTab === 'preview' || effectiveActiveTab === 'code')) {
       apiClient
         .get(`/api/mvp/${chatId}`)
         .then((res) => {
@@ -193,7 +193,7 @@ export function DraftPanel({
         })
         .catch(() => {})
     }
-  }, [chatId, documents.development])
+  }, [chatId, documents.development, effectiveActiveTab])
 
   // If no tabs available, don't render
   if (availableTabs.length === 0) {
@@ -329,11 +329,7 @@ export function DraftPanel({
             </div>
           </TabsContent>
 
-          <TabsContent
-            value="preview"
-            className="mt-0 flex-1 overflow-hidden"
-            forceMount
-            hidden={effectiveActiveTab !== 'preview'}>
+          <TabsContent value="preview" className="mt-0 flex-1 overflow-hidden">
             {mvpData ? (
               <Preview files={mvpData.files} />
             ) : (
@@ -343,11 +339,7 @@ export function DraftPanel({
             )}
           </TabsContent>
 
-          <TabsContent
-            value="code"
-            className="mt-0 flex-1 overflow-hidden"
-            forceMount
-            hidden={effectiveActiveTab !== 'code'}>
+          <TabsContent value="code" className="mt-0 flex-1 overflow-hidden">
             {mvpData ? (
               <CodeViewer files={mvpData.files} />
             ) : (
