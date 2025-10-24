@@ -45,13 +45,13 @@ export function GenerationProgress({ progress, currentStep }: GenerationProgress
           const status = getStepStatus(step.threshold)
           return (
             <div key={step.id} className="flex items-center gap-2">
-              {status === 'completed' && <Check className="h-4 w-4 text-green-500" />}
+              {status === 'completed' && <Check className="h-4 w-4 text-green-600 dark:text-green-500" />}
               {status === 'current' && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
               {status === 'pending' && <Circle className="h-4 w-4 text-muted-foreground/30" />}
               <span
                 className={cn(
                   'text-sm',
-                  status === 'completed' && 'text-green-600',
+                  status === 'completed' && 'text-green-600 dark:text-green-500',
                   status === 'current' && 'font-medium text-foreground',
                   status === 'pending' && 'text-muted-foreground'
                 )}>

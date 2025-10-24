@@ -77,7 +77,7 @@ export function GenerationLog({ logs, isGenerating }: GenerationLogProps) {
 
                     {log.type === 'file_created' && (
                       <>
-                        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
+                        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-600 dark:text-green-500" />
                         <div className="flex flex-1 items-center gap-1.5">
                           <span className="text-muted-foreground">Created</span>
                           <code className="rounded bg-primary/10 px-1.5 py-0.5 text-[11px] text-primary">
@@ -95,7 +95,7 @@ export function GenerationLog({ logs, isGenerating }: GenerationLogProps) {
 
                     {log.type === 'info' && (
                       <>
-                        <FileText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-400" />
+                        <FileText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/70" />
                         <span className="text-foreground/90">{log.message}</span>
                       </>
                     )}
@@ -121,14 +121,14 @@ export function GenerationLog({ logs, isGenerating }: GenerationLogProps) {
               {isGenerating ? (
                 <span className="flex items-center gap-1.5">
                   <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 dark:bg-green-600 opacity-75"></span>
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-green-600 dark:bg-green-500"></span>
                   </span>
                   In progress...
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3 w-3 text-green-500" />
+                  <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-500" />
                   Completed
                 </span>
               )}

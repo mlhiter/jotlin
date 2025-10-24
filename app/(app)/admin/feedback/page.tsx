@@ -63,13 +63,13 @@ function FeedbackAdminPageContent() {
 
   const getTypeColor = (type: string) => {
     const colorMap: Record<string, string> = {
-      BUG_REPORT: 'bg-red-100 text-red-800',
-      FEATURE_REQUEST: 'bg-blue-100 text-blue-800',
-      GENERAL: 'bg-gray-100 text-gray-800',
-      COMPLAINT: 'bg-orange-100 text-orange-800',
-      COMPLIMENT: 'bg-green-100 text-green-800',
+      BUG_REPORT: 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-300',
+      FEATURE_REQUEST: 'bg-blue-100 text-blue-800 dark:bg-blue-950/30 dark:text-blue-300',
+      GENERAL: 'bg-muted text-muted-foreground',
+      COMPLAINT: 'bg-orange-100 text-orange-800 dark:bg-orange-950/30 dark:text-orange-300',
+      COMPLIMENT: 'bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-300',
     }
-    return colorMap[type] || 'bg-gray-100 text-gray-800'
+    return colorMap[type] || 'bg-muted text-muted-foreground'
   }
 
   const getColumns = (): ColumnDef<Feedback>[] => [
@@ -122,7 +122,7 @@ function FeedbackAdminPageContent() {
             {shouldTruncate && (
               <button
                 onClick={() => toggleExpanded?.(rowId)}
-                className="mt-1 text-xs text-blue-600 underline hover:text-blue-800 focus:outline-none">
+                className="mt-1 text-xs text-primary underline hover:text-primary/80 focus:outline-none">
                 {isExpanded ? 'Show less' : 'Show more'}
               </button>
             )}
@@ -139,7 +139,7 @@ function FeedbackAdminPageContent() {
           <div className="text-sm">
             <div className="font-medium">{feedback.user?.name || 'Anonymous'}</div>
             {(feedback.user?.email || feedback.email) && (
-              <div className="text-gray-500">{feedback.user?.email || feedback.email}</div>
+              <div className="text-muted-foreground">{feedback.user?.email || feedback.email}</div>
             )}
           </div>
         )
@@ -235,7 +235,7 @@ function FeedbackAdminPageContent() {
       <div className="p-6 text-center">
         <h1 className="mb-4 text-2xl font-bold">Access Denied</h1>
         <p>You don&apos;t have permission to access this page.</p>
-        <p className="mt-2 text-sm text-gray-500">Required role: ADMIN or SUPER_ADMIN</p>
+        <p className="mt-2 text-sm text-muted-foreground">Required role: ADMIN or SUPER_ADMIN</p>
       </div>
     )
   }
