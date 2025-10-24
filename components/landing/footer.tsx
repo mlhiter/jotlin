@@ -2,17 +2,16 @@
 
 import { Sparkles } from 'lucide-react'
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { AuthDialog } from '@/components/auth/auth-dialog'
 import { Button } from '@/components/ui/button'
 
 import { useAuth } from '@/hooks/use-auth'
-import { Link, useRouter } from '@/i18n/navigation'
 
 export function LandingFooter() {
-  const t = useTranslations('landing.footer')
   const { isAuthenticated } = useAuth()
   const router = useRouter()
   const [showLoginDialog, setShowLoginDialog] = useState(false)
@@ -33,14 +32,14 @@ export function LandingFooter() {
 
       <div className="relative container mx-auto max-w-full px-12 py-10">
         <div className="mb-20 text-center">
-          <h2 className="mb-6 text-4xl font-medium text-white">{t('cta.title')}</h2>
-          <p className="mb-10 text-xl text-zinc-500">{t('cta.description')}</p>
+          <h2 className="mb-6 text-4xl font-medium text-white">Your Next Great Idea is One Conversation Away.</h2>
+          <p className="mb-10 text-xl text-zinc-500">Try it instantly. No account or credit card required.</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Button
               size="lg"
               className="h-11 rounded-xl bg-zinc-50 px-8 text-zinc-900 hover:bg-zinc-50/90"
               onClick={handleStartClick}>
-              {t('cta.primary')}
+              Start for free
               <Sparkles className="size-4" />
             </Button>
             <Button
@@ -50,7 +49,7 @@ export function LandingFooter() {
               asChild>
               <a href="https://discord.gg/jotlin" target="_blank" rel="noopener noreferrer">
                 <Image src="/landing/discord-icon.svg" alt="" width={16} height={16} className="invert" />
-                {t('cta.secondary')}
+                Join our Discord
               </a>
             </Button>
           </div>
@@ -66,26 +65,26 @@ export function LandingFooter() {
               <Link
                 href="#how-it-works"
                 className="rounded-md px-2 py-1 text-base text-zinc-500 transition-colors hover:text-zinc-400">
-                {t('links.product.howItWorks')}
+                How it works
               </Link>
               <Link
                 href="#features"
                 className="rounded-md px-2 py-1 text-base text-zinc-500 transition-colors hover:text-zinc-400">
-                {t('links.product.features')}
+                Features
               </Link>
               <Link
                 href="#who-its-for"
                 className="rounded-md px-2 py-1 text-base text-zinc-500 transition-colors hover:text-zinc-400">
-                {t('links.product.whosItFor')}
+                Who it&apos;s for
               </Link>
               <Link
                 href="#faq"
                 className="rounded-md px-2 py-1 text-base text-zinc-500 transition-colors hover:text-zinc-400">
-                {t('links.product.faq')}
+                FAQ
               </Link>
             </nav>
 
-            <p className="text-base text-zinc-500">{t('copyright', { year: new Date().getFullYear() })}</p>
+            <p className="text-base text-zinc-500">© {new Date().getFullYear()} Jotlin. All rights reserved.</p>
           </div>
         </div>
       </div>

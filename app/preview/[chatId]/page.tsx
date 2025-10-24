@@ -2,8 +2,9 @@
 
 import { Calendar, User } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import { useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
+
+export const dynamic = 'force-dynamic'
 
 import { Markdown } from '@/components/chat/markdown'
 import { MessageList } from '@/components/chat/message-list'
@@ -24,7 +25,6 @@ interface PublicChat {
 }
 
 export default function ChatPreviewPage() {
-  const t = useTranslations('chat')
   const params = useParams()
   const chatId = params.chatId as string
 
@@ -43,12 +43,12 @@ export default function ChatPreviewPage() {
           if (axiosError.response?.status === 404) {
             // 404 is expected when chat is not public or doesn't exist
             // Don't log this as an error to avoid console noise
-            setError(t('linkExpired'))
+            setError('Link Expired')
             return
           }
         }
         console.error('Failed to load public chat:', error)
-        setError(t('failedToLoadChat'))
+        setError('Failed to load chat')
       } finally {
         setIsLoading(false)
       }
@@ -57,14 +57,14 @@ export default function ChatPreviewPage() {
     if (chatId) {
       loadPublicChat()
     }
-  }, [chatId, t])
+  }, [chatId])
 
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="space-y-4 text-center">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
-          <div className="text-muted-foreground">{t('loadingChat')}</div>
+          <div className="text-muted-foreground">Loading chat...</div>
         </div>
       </div>
     )
@@ -90,8 +90,8 @@ export default function ChatPreviewPage() {
             </svg>
           </div>
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-foreground">{t('linkExpired')}</h3>
-            <p className="text-sm text-muted-foreground">{t('linkExpiredDescription')}</p>
+            <h3 className="text-lg font-semibold text-foreground">Link Expired</h3>
+            <p className="text-sm text-muted-foreground">This sharing link has expired or the chat has been set to private</p>
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@ export default function ChatPreviewPage() {
     <div className="flex h-screen flex-col overflow-hidden">
       {/* Header */}
       <header className="flex h-16 shrink-0 items-center gap-2 px-18 py-4">
-        <h1 className="text-lg font-semibold">{chat.title || t('untitledChat')}</h1>
+        <h1 className="text-lg font-semibold">{chat.title || 'Untitled Chat'}</h1>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <User className="h-3 w-3" />
@@ -148,7 +148,7 @@ export default function ChatPreviewPage() {
       <div className="flex-1 overflow-hidden">
         {filteredMessages.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <div className="text-muted-foreground">{t('noMessages')}</div>
+            <div className="text-muted-foreground">No messages in this chat</div>
           </div>
         ) : (
           <div className="relative flex h-full overflow-hidden py-2">
@@ -178,11 +178,11 @@ export default function ChatPreviewPage() {
                     <div className="flex items-center justify-between border-b border-border px-4 py-2">
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-semibold text-card-foreground">
-                          {documentContent.final ? t('final') : t('draft')}
+                          {documentContent.final ? 'Final' : 'Draft'}
                         </h4>
                         {!documentContent.final && (
                           <Badge variant="secondary" className="text-xs">
-                            {t('draft')}
+                            Draft
                           </Badge>
                         )}
                       </div>
@@ -202,7 +202,7 @@ export default function ChatPreviewPage() {
 
       {/* Footer */}
       <div className="px-4 py-2">
-        <div className="text-center text-xs text-muted-foreground">{t('previewFooter')}</div>
+        <div className="text-center text-xs text-muted-foreground">This is a read-only preview of a public chat conversation.</div>
       </div>
     </div>
   )

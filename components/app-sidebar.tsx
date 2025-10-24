@@ -2,7 +2,6 @@
 
 import { BookOpen, Bot, MessageSquare, PieChart, Send, Settings2, SquareTerminal, Shield } from 'lucide-react'
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
 import { ComponentProps, useState } from 'react'
 
 import { FeedbackDialog } from '@/components/dialog/feedback-dialog'
@@ -24,7 +23,6 @@ import { useAuth } from '@/hooks/use-auth'
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { user, isAdmin } = useAuth()
-  const t = useTranslations('sidebar')
   const [feedbackOpen, setFeedbackOpen] = useState(false)
 
   const data = {
@@ -35,38 +33,38 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
     },
     navMain: [
       {
-        title: t('chat'),
+        title: 'Chat',
         url: '/chat',
         icon: MessageSquare,
         isActive: true,
         items: [
           {
-            title: t('newChat'),
+            title: 'New Chat',
             url: '/chat',
           },
           {
-            title: t('chatHistory'),
+            title: 'Chat History',
             url: '/chat/history',
           },
         ],
       },
       {
-        title: t('dashboard'),
+        title: 'Dashboard',
         url: '/dashboard',
         icon: SquareTerminal,
         items: [
           {
-            title: t('overview'),
+            title: 'Overview',
             url: '/dashboard',
           },
           {
-            title: t('analytics'),
+            title: 'Analytics',
             url: '/dashboard/analytics',
           },
         ],
       },
       {
-        title: t('models'),
+        title: 'Models',
         url: '#',
         icon: Bot,
         items: [
@@ -85,20 +83,20 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         ],
       },
       {
-        title: t('settings'),
+        title: 'Settings',
         url: '/settings',
         icon: Settings2,
         items: [
           {
-            title: t('profile'),
+            title: 'Profile',
             url: '/settings/profile',
           },
           {
-            title: t('preferences'),
+            title: 'Preferences',
             url: '/settings/preferences',
           },
           {
-            title: t('apiKeys'),
+            title: 'API Keys',
             url: '/settings/api-keys',
           },
         ],
@@ -106,7 +104,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
     ],
     navSecondary: [
       {
-        title: t('feedback'),
+        title: 'Feedback',
         url: '#',
         icon: Send,
         onClick: () => setFeedbackOpen(true),
@@ -114,7 +112,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       ...(user && isAdmin
         ? [
             {
-              title: t('adminPanel'),
+              title: 'Admin Panel',
               url: '/admin/feedback',
               icon: Shield,
             },
@@ -123,12 +121,12 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
     ],
     projects: [
       {
-        name: t('analytics'),
+        name: 'Analytics',
         url: '/dashboard/analytics',
         icon: PieChart,
       },
       {
-        name: t('documentation'),
+        name: 'Documentation',
         url: '/docs',
         icon: BookOpen,
       },
@@ -146,8 +144,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                   <Image src="/logo-white.svg" alt="Jotlin Agent" width={16} height={16} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{t('appName')}</span>
-                  <span className="truncate text-xs">{t('appDescription')}</span>
+                  <span className="truncate font-medium">Jotlin Agent</span>
+                  <span className="truncate text-xs">Chat Assistant</span>
                 </div>
               </a>
             </SidebarMenuButton>

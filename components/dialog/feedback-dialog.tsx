@@ -1,6 +1,5 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -27,15 +26,14 @@ interface FeedbackFormData {
 
 export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
   const { user } = useAuth()
-  const t = useTranslations('feedback')
 
   const getFeedbackTypes = () =>
     [
-      { value: 'BUG_REPORT', label: t('types.bugReport'), icon: '🐛' },
-      { value: 'FEATURE_REQUEST', label: t('types.featureRequest'), icon: '💡' },
-      { value: 'GENERAL', label: t('types.general'), icon: '💬' },
-      { value: 'COMPLAINT', label: t('types.complaint'), icon: '😞' },
-      { value: 'COMPLIMENT', label: t('types.compliment'), icon: '👍' },
+      { value: 'BUG_REPORT', label: 'Bug Report', icon: '🐛' },
+      { value: 'FEATURE_REQUEST', label: 'Feature Request', icon: '💡' },
+      { value: 'GENERAL', label: 'General Feedback', icon: '💬' },
+      { value: 'COMPLAINT', label: 'Complaint', icon: '😞' },
+      { value: 'COMPLIMENT', label: 'Compliment', icon: '👍' },
     ] as const
 
   const [formData, setFormData] = useState<FeedbackFormData>({
@@ -70,15 +68,15 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
       })
 
       if (response.status === 200) {
-        toast.success(t('successMessage'))
+        toast.success('Thank you for your feedback!')
         resetForm()
         onOpenChange(false)
       } else {
-        toast.error(t('errorMessage'))
+        toast.error('Failed to submit feedback. Please try again.')
       }
     } catch (error) {
       console.error('Failed to submit feedback:', error)
-      toast.error(t('errorMessage'))
+      toast.error('Failed to submit feedback. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -88,14 +86,14 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
-          <DialogDescription>{t('description')}</DialogDescription>
+          <DialogTitle>We Value Your Feedback</DialogTitle>
+          <DialogDescription>Help us improve by sharing your thoughts, reporting bugs, or suggesting new features.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Feedback Type */}
           <div>
-            <label className="text-sm font-medium">{t('type')}</label>
+            <label className="text-sm font-medium">Feedback Type</label>
             <div className="mt-2 flex flex-wrap gap-2">
               {getFeedbackTypes().map((type) => (
                 <Badge
@@ -112,13 +110,13 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           {/* Title */}
           <div>
             <label htmlFor="feedback-title" className="text-sm font-medium">
-              {t('titleLabel')}
+              Title
             </label>
             <Input
               id="feedback-title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder={t('titlePlaceholder')}
+              placeholder="Brief summary of your feedback"
               required
             />
           </div>
@@ -126,14 +124,14 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           {/* Content */}
           <div>
             <label htmlFor="feedback-content" className="text-sm font-medium">
-              {t('detailsLabel')}
+              Details
             </label>
             <Textarea
               id="feedback-content"
               className="max-h-50 resize-none"
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              placeholder={t('detailsPlaceholder')}
+              placeholder="Please provide detailed information..."
               rows={4}
               required
             />
@@ -143,24 +141,24 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           {!user && (
             <div>
               <label htmlFor="feedback-email" className="text-sm font-medium">
-                {t('emailLabel')}
+                Email (Optional)
               </label>
               <Input
                 id="feedback-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder={t('emailPlaceholder')}
+                placeholder="your@email.com"
               />
             </div>
           )}
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              {t('cancel')}
+              Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting} className="flex-1">
-              {isSubmitting ? t('submitting') : t('submit')}
+              {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
             </Button>
           </div>
         </form>

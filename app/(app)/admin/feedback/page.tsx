@@ -13,8 +13,7 @@ import {
   VisibilityState,
 } from '@tanstack/react-table'
 import { ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -24,6 +23,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 import { useAuth } from '@/hooks/use-auth'
 import apiClient from '@/libs/utils/axios'
+
+export const dynamic = 'force-dynamic'
 
 interface Feedback {
   id: string
@@ -40,9 +41,8 @@ interface Feedback {
   updatedAt: string
 }
 
-export default function FeedbackAdminPage() {
+function FeedbackAdminPageContent() {
   const { user, isLoading, isAdmin } = useAuth()
-  const t = useTranslations('feedback')
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
   const [loading, setLoading] = useState(true)
   const [sorting, setSorting] = useState<SortingState>([])
@@ -52,11 +52,11 @@ export default function FeedbackAdminPage() {
 
   const getTypeLabel = (type: string) => {
     const typeMap: Record<string, string> = {
-      BUG_REPORT: t('types.bugReport'),
-      FEATURE_REQUEST: t('types.featureRequest'),
-      GENERAL: t('types.general'),
-      COMPLAINT: t('types.complaint'),
-      COMPLIMENT: t('types.compliment'),
+      BUG_REPORT: 'Bug Report',
+      FEATURE_REQUEST: 'Feature Request',
+      GENERAL: 'General Feedback',
+      COMPLAINT: 'Complaint',
+      COMPLIMENT: 'Compliment',
     }
     return typeMap[type] || type
   }
@@ -75,7 +75,7 @@ export default function FeedbackAdminPage() {
   const getColumns = (): ColumnDef<Feedback>[] => [
     {
       accessorKey: 'type',
-      header: t('admin.columns.type'),
+      header: 'Type',
       cell: ({ row }) => {
         const type = row.getValue('type') as string
         return (
@@ -92,7 +92,7 @@ export default function FeedbackAdminPage() {
           <div
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="flex cursor-pointer items-center">
-            {t('admin.columns.title')}
+            Title
             <ArrowUpDown className="h-4 w-4" />
           </div>
         )
@@ -102,7 +102,7 @@ export default function FeedbackAdminPage() {
     {
       id: 'content',
       accessorKey: 'content',
-      header: t('admin.columns.content'),
+      header: 'Content',
       cell: ({ row, table }) => {
         const content = row.getValue('content') as string
         const rowId = row.id
@@ -123,7 +123,7 @@ export default function FeedbackAdminPage() {
               <button
                 onClick={() => toggleExpanded?.(rowId)}
                 className="mt-1 text-xs text-blue-600 underline hover:text-blue-800 focus:outline-none">
-                {isExpanded ? t('admin.showLess') : t('admin.showMore')}
+                {isExpanded ? 'Show less' : 'Show more'}
               </button>
             )}
           </div>
@@ -132,12 +132,12 @@ export default function FeedbackAdminPage() {
     },
     {
       id: 'submitter',
-      header: t('admin.columns.submitter'),
+      header: 'Submitter',
       cell: ({ row }) => {
         const feedback = row.original
         return (
           <div className="text-sm">
-            <div className="font-medium">{feedback.user?.name || t('admin.anonymous')}</div>
+            <div className="font-medium">{feedback.user?.name || 'Anonymous'}</div>
             {(feedback.user?.email || feedback.email) && (
               <div className="text-gray-500">{feedback.user?.email || feedback.email}</div>
             )}
@@ -152,7 +152,7 @@ export default function FeedbackAdminPage() {
           <div
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             className="flex cursor-pointer items-center">
-            {t('admin.columns.date')}
+            Date
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </div>
         )
@@ -178,7 +178,7 @@ export default function FeedbackAdminPage() {
       setFeedbacks(response.data)
     } catch (error) {
       console.error('Failed to fetch feedbacks:', error)
-      toast.error(t('admin.failedToLoad'))
+      toast.error('Failed to load feedbacks')
     } finally {
       setLoading(false)
     }
@@ -225,7 +225,7 @@ export default function FeedbackAdminPage() {
   if (isLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-muted-foreground">{t('admin.loading')}</div>
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     )
   }
@@ -233,9 +233,9 @@ export default function FeedbackAdminPage() {
   if (!user || !isAdmin) {
     return (
       <div className="p-6 text-center">
-        <h1 className="mb-4 text-2xl font-bold">{t('admin.accessDenied')}</h1>
-        <p>{t('admin.noPermission')}</p>
-        <p className="mt-2 text-sm text-gray-500">{t('admin.requiredRole')}</p>
+        <h1 className="mb-4 text-2xl font-bold">Access Denied</h1>
+        <p>You don&apos;t have permission to access this page.</p>
+        <p className="mt-2 text-sm text-gray-500">Required role: ADMIN or SUPER_ADMIN</p>
       </div>
     )
   }
@@ -243,13 +243,13 @@ export default function FeedbackAdminPage() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">{t('admin.title')}</h1>
+        <h1 className="text-3xl font-bold">User Feedback</h1>
       </div>
 
       <div className="w-full">
         <div className="flex items-center py-4">
           <Input
-            placeholder={t('admin.filterPlaceholder')}
+            placeholder="Filter titles..."
             value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
             onChange={(event) => table.getColumn('title')?.setFilterValue(event.target.value)}
             className="max-w-sm shadow-none"
@@ -282,7 +282,7 @@ export default function FeedbackAdminPage() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={getColumns().length} className="h-24 text-center">
-                    {t('admin.noFeedback')}
+                    No feedback submitted yet.
                   </TableCell>
                 </TableRow>
               )}
@@ -291,13 +291,13 @@ export default function FeedbackAdminPage() {
         </div>
         <div className="flex items-center justify-between py-4">
           <div className="text-sm text-muted-foreground">
-            {t('admin.showing')} {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}{' '}
-            {t('admin.to')}{' '}
+            Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}{' '}
+            to{' '}
             {Math.min(
               (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
               table.getFilteredRowModel().rows.length
             )}{' '}
-            {t('admin.of')} {table.getFilteredRowModel().rows.length} {t('admin.feedbacks')}
+            of {table.getFilteredRowModel().rows.length} feedback(s)
           </div>
 
           <div className="flex items-center space-x-2">
@@ -307,7 +307,7 @@ export default function FeedbackAdminPage() {
               className="hidden h-8 w-8 lg:flex"
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}>
-              <span className="sr-only">{t('admin.pagination.first')}</span>
+              <span className="sr-only">Go to first page</span>
               <ChevronsLeft className="h-4 w-4" />
             </Button>
             <Button
@@ -316,7 +316,7 @@ export default function FeedbackAdminPage() {
               className="h-8 w-8"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}>
-              <span className="sr-only">{t('admin.pagination.previous')}</span>
+              <span className="sr-only">Go to previous page</span>
               <ChevronLeft className="h-4 w-4" />
             </Button>
 
@@ -356,7 +356,7 @@ export default function FeedbackAdminPage() {
               className="h-8 w-8"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}>
-              <span className="sr-only">{t('admin.pagination.next')}</span>
+              <span className="sr-only">Go to next page</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
             <Button
@@ -365,12 +365,20 @@ export default function FeedbackAdminPage() {
               className="hidden h-8 w-8 lg:flex"
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}>
-              <span className="sr-only">{t('admin.pagination.last')}</span>
+              <span className="sr-only">Go to last page</span>
               <ChevronsRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function FeedbackAdminPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}>
+      <FeedbackAdminPageContent />
+    </Suspense>
   )
 }

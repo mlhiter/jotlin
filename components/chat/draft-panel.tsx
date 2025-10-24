@@ -2,7 +2,6 @@
 
 import { ChevronsLeft, ChevronsRight, Copy, FileText, Eye, Code, Maximize2, Minimize2, Files } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 
@@ -17,10 +16,9 @@ import apiClient from '@/libs/utils/axios'
 
 // NOTE: turbopack will cause dev refresh error,so I do not use turbopack to solve this problem
 const PreviewLoader = () => {
-  const tChat = useTranslations('chat')
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="text-sm text-muted-foreground">{tChat('loadingPreview')}</div>
+      <div className="text-sm text-muted-foreground">Loading preview...</div>
     </div>
   )
 }
@@ -31,10 +29,9 @@ const Preview = dynamic(() => import('@/components/mvp/preview').then((mod) => (
 })
 
 const CodeViewerLoader = () => {
-  const tChat = useTranslations('chat')
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="text-sm text-muted-foreground">{tChat('loadingCodeViewer')}</div>
+      <div className="text-sm text-muted-foreground">Loading code viewer...</div>
     </div>
   )
 }
@@ -73,9 +70,6 @@ export function DraftPanel({
   liveDraft,
   liveFinal,
 }: DraftPanelProps) {
-  const tChat = useTranslations('chat')
-  const tProject = useTranslations('project')
-
   const [mvpData, setMvpData] = useState<{
     files: Record<string, string>
   } | null>(null)
@@ -133,21 +127,21 @@ export function DraftPanel({
   const documentTabs = [
     {
       value: 'requirement',
-      label: tProject('phaseRequirement'),
+      label: 'Requirements',
       content: getDocumentContent('requirement', documents.requirement?.content),
       available: !!(documents.requirement || (currentPhase === 'REQUIREMENT' && liveContent)),
       icon: FileText,
     },
     {
       value: 'architecture',
-      label: tProject('phaseArchitecture'),
+      label: 'Architecture',
       content: getDocumentContent('architecture', documents.architecture?.content),
       available: !!(documents.architecture || (currentPhase === 'ARCHITECTURE' && liveContent)),
       icon: FileText,
     },
     {
       value: 'development',
-      label: tProject('phaseDevelopment'),
+      label: 'Development',
       content: getDocumentContent('development', documents.development?.content),
       available: !!(documents.development || (currentPhase === 'DEVELOPMENT' && liveContent)),
       icon: FileText,
@@ -156,9 +150,9 @@ export function DraftPanel({
 
   // Outer level tabs (with Documents as a single tab)
   const availableTabs = [
-    { value: 'documents', label: tChat('documents'), available: hasAnyDocument, icon: FileText },
-    { value: 'preview', label: tChat('preview'), available: !!mvpData, icon: Eye },
-    { value: 'code', label: tChat('code'), available: !!mvpData, icon: Code },
+    { value: 'documents', label: 'Documents', available: hasAnyDocument, icon: FileText },
+    { value: 'preview', label: 'Preview', available: !!mvpData, icon: Eye },
+    { value: 'code', label: 'Code', available: !!mvpData, icon: Code },
   ].filter((t) => t.available)
 
   // Inner document tabs (for the nested tabs inside Documents)
@@ -230,10 +224,10 @@ export function DraftPanel({
     if (content) {
       try {
         await navigator.clipboard.writeText(content)
-        toast.success(type === 'current' ? tChat('copiedCurrentDocument') : tChat('copiedAllDocuments'))
+        toast.success(type === 'current' ? 'Copied current document' : 'Copied all documents')
       } catch (err) {
         console.error('Failed to copy text: ', err)
-        toast.error(tChat('failedToCopyText'))
+        toast.error('Failed to copy text')
       }
     }
   }
@@ -260,7 +254,7 @@ export function DraftPanel({
               {effectiveActiveTab === 'documents' && (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button size="icon" variant="ghost" className="h-8 w-8" title={tChat('copyDocument')}>
+                    <Button size="icon" variant="ghost" className="h-8 w-8" title="Copy document">
                       <Copy className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </PopoverTrigger>
@@ -272,7 +266,7 @@ export function DraftPanel({
                         className="justify-start gap-2"
                         onClick={() => handleCopy('current')}>
                         <FileText className="h-4 w-4" />
-                        {tChat('copyCurrentDocument')}
+                        Copy current document
                       </Button>
                       <Button
                         variant="ghost"
@@ -280,7 +274,7 @@ export function DraftPanel({
                         className="justify-start gap-2"
                         onClick={() => handleCopy('all')}>
                         <Files className="h-4 w-4" />
-                        {tChat('copyAllDocuments')}
+                        Copy all documents
                       </Button>
                     </div>
                   </PopoverContent>
@@ -292,7 +286,7 @@ export function DraftPanel({
                   variant="ghost"
                   onClick={() => setIsFullscreen(false)}
                   className="h-8 w-8"
-                  title={tChat('exitFullscreen')}>
+                  title="Exit fullscreen">
                   <Minimize2 className="h-4 w-4 text-muted-foreground" />
                 </Button>
               )}
@@ -344,7 +338,7 @@ export function DraftPanel({
               <Preview files={mvpData.files} />
             ) : (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-muted-foreground">{tChat('noPreviewAvailable')}</p>
+                <p className="text-sm text-muted-foreground">No preview available</p>
               </div>
             )}
           </TabsContent>
@@ -358,7 +352,7 @@ export function DraftPanel({
               <CodeViewer files={mvpData.files} />
             ) : (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-muted-foreground">{tChat('noCodeAvailable')}</p>
+                <p className="text-sm text-muted-foreground">No code available</p>
               </div>
             )}
           </TabsContent>
@@ -408,7 +402,7 @@ export function DraftPanel({
                 {effectiveActiveTab === 'documents' && (
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button size="icon" variant="ghost" className="h-8 w-8" title={tChat('copyDocument')}>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" title="Copy document">
                         <Copy className="h-4 w-4 text-muted-foreground" />
                       </Button>
                     </PopoverTrigger>
@@ -420,7 +414,7 @@ export function DraftPanel({
                           className="justify-start gap-2"
                           onClick={() => handleCopy('current')}>
                           <FileText className="h-4 w-4" />
-                          {tChat('copyCurrentDocument')}
+                          Copy current document
                         </Button>
                         <Button
                           variant="ghost"
@@ -428,7 +422,7 @@ export function DraftPanel({
                           className="justify-start gap-2"
                           onClick={() => handleCopy('all')}>
                           <Files className="h-4 w-4" />
-                          {tChat('copyAllDocuments')}
+                          Copy all documents
                         </Button>
                       </div>
                     </PopoverContent>
@@ -440,7 +434,7 @@ export function DraftPanel({
                     variant="ghost"
                     onClick={() => setIsFullscreen(true)}
                     className="h-8 w-8"
-                    title={tChat('fullscreen')}>
+                    title="Fullscreen">
                     <Maximize2 className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 )}
@@ -492,7 +486,7 @@ export function DraftPanel({
                 <Preview files={mvpData.files} />
               ) : (
                 <div className="flex h-full items-center justify-center">
-                  <p className="text-sm text-muted-foreground">{tChat('noPreviewAvailable')}</p>
+                  <p className="text-sm text-muted-foreground">No preview available</p>
                 </div>
               )}
             </TabsContent>
@@ -506,7 +500,7 @@ export function DraftPanel({
                 <CodeViewer files={mvpData.files} />
               ) : (
                 <div className="flex h-full items-center justify-center">
-                  <p className="text-sm text-muted-foreground">{tChat('noCodeAvailable')}</p>
+                  <p className="text-sm text-muted-foreground">No code available</p>
                 </div>
               )}
             </TabsContent>

@@ -46,19 +46,6 @@ const eslintConfig = [
           message: 'Please use axios or other HTTP client instead of fetch.',
         },
       ],
-      // Consistently import navigation APIs from `@/i18n/navigation`
-      'no-restricted-imports': [
-        'error',
-        {
-          name: 'next/link',
-          message: 'Please import from `@/i18n/navigation` instead.',
-        },
-        {
-          name: 'next/navigation',
-          importNames: ['redirect', 'permanentRedirect', 'useRouter', 'usePathname'],
-          message: 'Please import from `@/i18n/navigation` instead.',
-        },
-      ],
     },
   },
 ]

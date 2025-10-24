@@ -1,8 +1,8 @@
-import createMiddleware from 'next-intl/middleware'
+import { NextResponse } from 'next/server'
 
-import { routing } from './i18n/routing'
-
-export default createMiddleware(routing)
+export function middleware() {
+  return NextResponse.next()
+}
 
 export const config = {
   matcher: [

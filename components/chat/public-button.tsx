@@ -1,7 +1,6 @@
 'use client'
 
 import { Globe, Lock, Copy, Check } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -19,7 +18,6 @@ interface PublicButtonProps {
 }
 
 export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonProps) {
-  const t = useTranslations('chat')
   const [isLoading, setIsLoading] = useState(false)
   const [showDialog, setShowDialog] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -38,11 +36,11 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
         if (!isPublic) {
           setShowDialog(true)
         }
-        toast.success(!isPublic ? t('publicSuccess') : t('privateSuccess'))
+        toast.success(!isPublic ? 'Chat is now public' : 'Chat is now private')
       }
     } catch (error) {
       console.error('Failed to toggle public status:', error)
-      toast.error(t('publicError'))
+      toast.error('Failed to update chat visibility')
     } finally {
       setIsLoading(false)
     }
@@ -52,11 +50,11 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
     try {
       await navigator.clipboard.writeText(previewUrl)
       setCopied(true)
-      toast.success(t('linkCopied'))
+      toast.success('Link copied to clipboard')
       setTimeout(() => setCopied(false), 2000)
     } catch (error) {
       console.error('Failed to copy link:', error)
-      toast.error(t('copyError'))
+      toast.error('Failed to copy link')
     }
   }
 
@@ -68,12 +66,12 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
             {isPublic ? (
               <>
                 <Globe className="h-4 w-4" />
-                {t('public')}
+                Public
               </>
             ) : (
               <>
                 <Lock className="h-4 w-4" />
-                {t('private')}
+                Private
               </>
             )}
           </Button>
@@ -83,19 +81,19 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
             {isPublic ? (
               <>
                 <Lock className="mr-2 h-4 w-4" />
-                {t('makePrivate')}
+                Make Private
               </>
             ) : (
               <>
                 <Globe className="mr-2 h-4 w-4" />
-                {t('makePublic')}
+                Make Public
               </>
             )}
           </DropdownMenuItem>
           {isPublic && (
             <DropdownMenuItem onClick={() => setShowDialog(true)}>
               <Copy className="mr-2 h-4 w-4" />
-              {t('copyPreviewLink')}
+              Copy Preview Link
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -104,8 +102,8 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('shareChat')}</DialogTitle>
-            <DialogDescription>{t('shareChatDescription')}</DialogDescription>
+            <DialogTitle>Share Chat</DialogTitle>
+            <DialogDescription>Anyone with this link can view this chat conversation.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
@@ -114,7 +112,7 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">{t('previewLinkNote')}</p>
+            <p className="text-sm text-muted-foreground">This link allows read-only access to your chat. The viewer cannot send messages or interact with the chat.</p>
           </div>
         </DialogContent>
       </Dialog>

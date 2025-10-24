@@ -1,5 +1,3 @@
-import { useTranslations } from 'next-intl'
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,8 +17,7 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ title, parentTitle, parentHref = '/', actions }: PageHeaderProps) {
-  const t = useTranslations('navigation')
-  const defaultParentTitle = parentTitle || t('parentTitle')
+  const defaultParentTitle = parentTitle || 'Jotlin Agent'
   return (
     <header className="flex h-16 shrink-0 items-center gap-2">
       <div className="flex items-center gap-2 px-4">

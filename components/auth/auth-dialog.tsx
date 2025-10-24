@@ -1,7 +1,6 @@
 'use client'
 
 import { Github } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -15,7 +14,6 @@ interface AuthDialogProps {
 }
 
 export function AuthDialog({ open, onOpenChange, redirectTo = '/' }: AuthDialogProps) {
-  const tAuth = useTranslations('auth')
   const { signIn, isLoading } = useAuth()
 
   const handleSignIn = () => {
@@ -27,13 +25,13 @@ export function AuthDialog({ open, onOpenChange, redirectTo = '/' }: AuthDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{tAuth('welcome')}</DialogTitle>
-          <DialogDescription>{tAuth('signInToContinue')}</DialogDescription>
+          <DialogTitle>Welcome to Jotlin</DialogTitle>
+          <DialogDescription>Sign in to your account to continue</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <Button onClick={handleSignIn} disabled={isLoading} className="w-full" size="lg">
             <Github className="mr-2 h-4 w-4" />
-            {isLoading ? tAuth('signingIn') : tAuth('continueWithGithub')}
+            {isLoading ? 'Signing in...' : 'Continue with GitHub'}
           </Button>
         </div>
       </DialogContent>

@@ -1,17 +1,15 @@
 'use client'
 
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
 
 export function ArtifactsSection() {
-  const t = useTranslations('landing.artifacts')
 
   return (
     <section className="py-24">
       <div className="container mx-auto max-w-7xl px-6">
         <div className="relative mb-16">
           <h2 className="relative text-left text-4xl leading-[1.5] font-medium tracking-tight">
-            {t('title')}
+            Real Artifacts, Not Just Chat Logs
             <Image
               src="/landing/title-decoration-icon.svg"
               alt=""
@@ -28,8 +26,8 @@ export function ArtifactsSection() {
               <Image src="/landing/card-prd-preview.svg" alt="PRD document preview" fill className="object-cover" />
             </div>
             <div className="flex flex-col gap-2 p-6">
-              <h3 className="text-xl leading-7 font-medium">{t('types.prd.title')}</h3>
-              <p className="text-base leading-6 text-muted-foreground">{t('types.prd.description')}</p>
+              <h3 className="text-xl leading-7 font-medium">PRD / MRD / BRD</h3>
+              <p className="text-base leading-6 text-muted-foreground">Standards‑compliant, editable, exportable</p>
             </div>
           </div>
 
@@ -43,8 +41,8 @@ export function ArtifactsSection() {
               />
             </div>
             <div className="flex flex-col gap-2 p-6">
-              <h3 className="text-xl leading-7 font-medium">{t('types.stories.title')}</h3>
-              <p className="text-base leading-6 text-muted-foreground">{t('types.stories.description')}</p>
+              <h3 className="text-xl leading-7 font-medium">User stories & backlog</h3>
+              <p className="text-base leading-6 text-muted-foreground">Prioritized with acceptance criteria</p>
             </div>
           </div>
 
@@ -58,8 +56,8 @@ export function ArtifactsSection() {
               />
             </div>
             <div className="flex flex-col gap-2 p-6">
-              <h3 className="text-xl leading-7 font-medium">{t('types.flows.title')}</h3>
-              <p className="text-base leading-6 text-muted-foreground">{t('types.flows.description')}</p>
+              <h3 className="text-xl leading-7 font-medium">Flows & diagrams</h3>
+              <p className="text-base leading-6 text-muted-foreground">High‑level interaction maps for clarity</p>
             </div>
           </div>
 
@@ -73,8 +71,8 @@ export function ArtifactsSection() {
               />
             </div>
             <div className="flex flex-col gap-2 p-6">
-              <h3 className="text-xl leading-7 font-medium">{t('types.risk.title')}</h3>
-              <p className="text-base leading-6 text-muted-foreground">{t('types.risk.description')}</p>
+              <h3 className="text-xl leading-7 font-medium">Risk & assumptions</h3>
+              <p className="text-base leading-6 text-muted-foreground">Surfaced early to prevent rework</p>
             </div>
           </div>
         </div>

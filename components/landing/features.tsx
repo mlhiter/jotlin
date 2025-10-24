@@ -1,11 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
 import { useState, useEffect, useCallback } from 'react'
 
 export function FeaturesSection() {
-  const t = useTranslations('landing.features')
   const [activeStep, setActiveStep] = useState(0)
   const [isScrolling, setIsScrolling] = useState(false)
 
@@ -49,9 +47,9 @@ export function FeaturesSection() {
           <div className="relative inline-flex flex-col items-start self-center">
             <div className="flex items-center gap-11">
               <h2 className="w-[338px] text-4xl leading-[1.5] font-medium text-black dark:text-white">
-                {t('title.prefix')} {t('title.suffix')}
+                It&apos;s a Conversation, Not a Command.
               </h2>
-              <p className="w-[412px] text-base leading-6 text-zinc-500">{t('conversation.description')}</p>
+              <p className="w-[412px] text-base leading-6 text-zinc-500">Unlike generic chatbots, Jotlin is purpose‑built for requirements analysis. It guides you with polls & follow‑ups to remove ambiguity and surface risks early.</p>
             </div>
             <Image
               src="/landing/title-decoration-icon.svg"
@@ -102,12 +100,12 @@ export function FeaturesSection() {
                   <div className="relative h-[310px] overflow-hidden bg-zinc-50 px-[52px] pt-[38px] dark:bg-zinc-800">
                     <div className="mb-4 rounded-2xl bg-[#ececed] px-5 py-5 dark:bg-zinc-700">
                       <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">
-                        {t('conversation.example.user')}
+                        I want to create a tool to search for my favorite articles.
                       </p>
                     </div>
                     <div className="rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
                       <div className="h-[81px] px-5 pt-4">
-                        <p className="text-lg leading-7 text-zinc-500">{t('conversation.placeholder')}</p>
+                        <p className="text-lg leading-7 text-zinc-500">Message Jotlin Agent..</p>
                       </div>
                       <div className="flex justify-end px-3 pb-2.5">
                         <div className="flex items-center justify-center rounded-[10px] bg-zinc-800 p-2 opacity-40">
@@ -127,9 +125,9 @@ export function FeaturesSection() {
                   </div>
                   <div className="flex h-[150px] flex-col gap-2 p-6">
                     <h3 className="text-xl leading-7 font-medium text-black dark:text-white">
-                      {t('projects.steps.0.title')}
+                      Describe your idea in plain English
                     </h3>
-                    <p className="text-base leading-6 text-zinc-500">{t('projects.steps.0.description')}</p>
+                    <p className="text-base leading-6 text-zinc-500">No need for technical jargon or formal templates</p>
                   </div>
                 </div>
               </div>
@@ -148,7 +146,7 @@ export function FeaturesSection() {
                         <Image src="/landing/avatar-icon.svg" alt="" width={24} height={24} />
                       </div>
                       <p className="flex-1 pt-4 text-lg leading-7 text-zinc-900 dark:text-zinc-100">
-                        {t('conversation.example.assistant')}
+                        Let&apos;s start with the project&apos;s core objectives.
                       </p>
                     </div>
                     <div className="ml-[72px] space-y-3">
@@ -181,7 +179,7 @@ export function FeaturesSection() {
                       <div className="flex items-center gap-2 rounded-full border-[0.5px] border-zinc-200 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900">
                         <Image src="/landing/icon-book.svg" alt="" width={20} height={20} />
                         <span className="text-base text-zinc-900 dark:text-zinc-100">
-                          {t('conversation.userStory')}
+                          User Story
                         </span>
                       </div>
                     </div>
@@ -189,7 +187,7 @@ export function FeaturesSection() {
                       <div className="flex items-center gap-2 rounded-full border-[0.5px] border-zinc-200 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900">
                         <Image src="/landing/icon-image.svg" alt="" width={20} height={20} />
                         <span className="text-base text-zinc-900 dark:text-zinc-100">
-                          {t('conversation.userScenarios')}
+                          User scenarios
                         </span>
                       </div>
                     </div>
@@ -197,7 +195,7 @@ export function FeaturesSection() {
                       <div className="flex items-center gap-2 rounded-full border-[0.5px] border-zinc-200 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900">
                         <Image src="/landing/icon-brackets.svg" alt="" width={20} height={20} />
                         <span className="text-base text-zinc-900 dark:text-zinc-100">
-                          {t('conversation.edgeCases')}
+                          Edge cases
                         </span>
                       </div>
                     </div>
@@ -207,9 +205,9 @@ export function FeaturesSection() {
                   </div>
                   <div className="flex h-[150px] flex-col gap-2 p-6">
                     <h3 className="text-xl leading-7 font-medium text-black dark:text-white">
-                      {t('projects.steps.1.title')}
+                      Answer clarifying questions
                     </h3>
-                    <p className="text-base leading-6 text-zinc-500">{t('projects.steps.1.description')}</p>
+                    <p className="text-base leading-6 text-zinc-500">Jotlin helps you think through edge cases</p>
                   </div>
                 </div>
               </div>
@@ -229,7 +227,7 @@ export function FeaturesSection() {
                         style={{ transform: 'rotate(14.564deg) skewX(-0.531deg)' }}>
                         <div className="flex items-center gap-2">
                           <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">
-                            {t('conversation.draft')}
+                            Draft
                           </p>
                           <span className="rounded-full border-[0.5px] border-zinc-200 bg-zinc-50 px-1.5 py-0 text-sm leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800">
                             v1.0.0
@@ -245,7 +243,7 @@ export function FeaturesSection() {
                         style={{ transform: 'rotate(14.564deg) skewX(-0.531deg)' }}>
                         <div className="flex items-center gap-2">
                           <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">
-                            {t('conversation.draft')}
+                            Draft
                           </p>
                           <span className="rounded-full border-[0.5px] border-zinc-200 bg-zinc-50 px-1.5 py-0 text-sm leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800">
                             v1.0.1
@@ -260,7 +258,7 @@ export function FeaturesSection() {
                         className="absolute top-[36px] left-[225px] z-10 w-full origin-top-left rounded-xl border-2 border-teal-400 bg-white p-5 dark:bg-zinc-900"
                         style={{ transform: 'rotate(14.564deg) skewX(-0.531deg)' }}>
                         <p className="text-lg leading-7 font-bold text-zinc-900 dark:text-zinc-100">
-                          {t('conversation.final')}
+                          Final
                         </p>
                         <div className="mt-6 space-y-3">
                           <div className="h-2 w-[556px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
@@ -276,9 +274,9 @@ export function FeaturesSection() {
                   </div>
                   <div className="flex h-[150px] flex-col gap-2 p-6">
                     <h3 className="text-xl leading-7 font-medium text-black dark:text-white">
-                      {t('projects.steps.2.title')}
+                      Get structured documentation
                     </h3>
-                    <p className="text-sm leading-5 text-zinc-500">{t('projects.steps.2.description')}</p>
+                    <p className="text-sm leading-5 text-zinc-500">Receive well-organized specs ready to share</p>
                   </div>
                 </div>
               </div>

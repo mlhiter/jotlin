@@ -1,4 +1,5 @@
 import { type LucideIcon } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
 import {
@@ -8,8 +9,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-
-import { useRouter } from '@/i18n/navigation'
 
 export function NavSecondary({
   items,

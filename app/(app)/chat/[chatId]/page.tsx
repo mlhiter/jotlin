@@ -2,9 +2,8 @@
 
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 import { useParams, useSearchParams, notFound } from 'next/navigation'
-import { useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 
 import { ChatInput } from '@/components/chat/chat-input'
@@ -16,9 +15,11 @@ import { NextPhaseButton } from '@/components/project/next-phase-button'
 import { PhaseProgress } from '@/components/project/phase-progress'
 import { useSidebar } from '@/components/ui/sidebar'
 
-const DraftPanel = dynamic(() => import('@/components/chat/draft-panel').then((mod) => ({ default: mod.DraftPanel })), {
+const DraftPanel = dynamicImport(() => import('@/components/chat/draft-panel').then((mod) => ({ default: mod.DraftPanel })), {
   ssr: false,
 })
+
+export const dynamic = 'force-dynamic'
 
 import { useMessageLimits } from '@/hooks/use-message-limits'
 import { SelectedOption } from '@/hooks/use-selected-options'
@@ -28,7 +29,6 @@ import { MyUIMessage } from '@/schema/chat'
 import { useAuthStore } from '@/store/auth-store'
 
 export default function ChatIdPage() {
-  const t = useTranslations('chat')
   const params = useParams()
   const searchParams = useSearchParams()
   const chatId = params.chatId as string
@@ -523,9 +523,9 @@ export default function ChatIdPage() {
   if (isLoading) {
     return (
       <div className="flex h-[calc(100vh-3rem)] flex-col overflow-hidden">
-        <PageHeader title={t('title')} />
+        <PageHeader title="Chat" />
         <div className="flex flex-1 items-center justify-center">
-          <div className="text-muted-foreground">{t('loadingChat')}</div>
+          <div className="text-muted-foreground">Loading chat...</div>
         </div>
       </div>
     )
@@ -534,7 +534,7 @@ export default function ChatIdPage() {
   return (
     <div className="flex h-[calc(100vh-3rem)] flex-col overflow-hidden">
       <PageHeader
-        title={t('title')}
+        title="Chat"
         actions={
           chatData && <PublicButton chatId={chatId} isPublic={chatData.isPublic} onPublicChange={handlePublicChange} />
         }

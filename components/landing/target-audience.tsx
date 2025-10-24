@@ -2,42 +2,40 @@
 
 import { Clock, MapPin, HeartCrack, MessageCircleMore, CircleUser, Users, Tag, GitCompare } from 'lucide-react'
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
 
 export function TargetAudienceSection() {
-  const t = useTranslations('landing.targetAudience')
 
   const scenarios = [
     {
       icon: HeartCrack,
-      text: t('scenarios.vague'),
+      text: 'You\'ve experienced the pain of rework caused by vague requirements.',
       position: 'top-[46px] right-0',
     },
     {
       icon: MapPin,
-      text: t('scenarios.plan'),
+      text: 'You want to turn your next great idea into a tangible plan, today.',
       position: 'top-[145px] right-[296px]',
     },
     {
       icon: MessageCircleMore,
-      text: t('scenarios.communication'),
+      text: 'You believe clear communication is the foundation of a great product.',
       position: 'top-[244px] right-[2px]',
     },
     {
       icon: Clock,
-      text: t('scenarios.code'),
+      text: 'You\'d rather spend your time on code than on clerical work.',
       position: 'top-[273px] right-[637px]',
     },
   ]
 
   const roadmapFeatures = [
     [
-      { icon: CircleUser, text: t('roadmap.roleAgents') },
-      { icon: Users, text: t('roadmap.multiUser') },
+      { icon: CircleUser, text: 'Role-based agents: product / PM / UI' },
+      { icon: Users, text: 'Multi-user chat' },
     ],
     [
-      { icon: Tag, text: t('roadmap.versioning') },
-      { icon: GitCompare, text: t('roadmap.workflow') },
+      { icon: Tag, text: 'Versioning' },
+      { icon: GitCompare, text: 'approvals & workflow' },
     ],
   ]
 
@@ -50,9 +48,9 @@ export function TargetAudienceSection() {
           </div>
 
           <div className="relative z-10 min-h-[400px] px-4 pt-12 pb-0 md:px-8 md:pt-[92px] lg:px-[57px]">
-            <h2 className="text-2xl leading-none font-medium text-white md:text-4xl">{t('title')}</h2>
+            <h2 className="text-2xl leading-none font-medium text-white md:text-4xl">Jotlin is for you if…</h2>
             <p className="mt-4 font-edu text-xl leading-[1.5] font-medium text-teal-400 md:ml-12 md:text-2xl">
-              {t('subtitle')}
+              Built for the Builder&apos;s Mindset
             </p>
 
             <div className="hidden lg:block">
@@ -82,10 +80,10 @@ export function TargetAudienceSection() {
         <div className="rounded-b-[32px] border border-t-0 border-zinc-950 bg-[#f6f6f7] px-4 py-6 md:px-8 md:py-[41px] lg:px-[56px]">
           <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
             <div className="w-full lg:w-auto">
-              <h3 className="text-xl leading-8 font-medium text-zinc-900 md:text-2xl">{t('teamReady.title')}</h3>
+              <h3 className="text-xl leading-8 font-medium text-zinc-900 md:text-2xl">Team-ready from day one</h3>
               <div className="mt-2 flex items-center gap-2">
                 <p className="font-edu text-xl leading-[1.5] font-medium text-teal-500 md:text-2xl">
-                  {t('teamReady.roadmap')}
+                  roadmap
                 </p>
                 <Image src="/landing/roadmap-arrow.svg" alt="" width={18} height={24} />
               </div>

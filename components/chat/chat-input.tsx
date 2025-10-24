@@ -2,7 +2,6 @@
 
 import { ChatStatus } from 'ai'
 import { ArrowUp, Square, X, TextAlignStart } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 import { useState, useRef, useEffect } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -35,7 +34,6 @@ export function ChatInput({
   onRemoveQuote,
   onMarkMessageAnswered,
 }: ChatInputProps) {
-  const t = useTranslations('chat')
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -128,7 +126,7 @@ export function ChatInput({
         {selectedOptions.length > 0 && (
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="text-xs text-muted-foreground">{t('selectedOptions')}</div>
+              <div className="text-xs text-muted-foreground">Selected options:</div>
               <div className="flex flex-wrap gap-2">
                 {selectedOptions.map((option, index) => (
                   <div
@@ -153,7 +151,7 @@ export function ChatInput({
               variant="ghost"
               onClick={clearOptions}
               className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground">
-              {t('clearAll')}
+              Clear all
             </Button>
           </div>
         )}
@@ -165,7 +163,7 @@ export function ChatInput({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={t('placeholder')}
+              placeholder="Message Jotlin Agent..."
               disabled={status === 'submitted' || status === 'streaming' || disabled}
               className="max-h-[200px] resize-none py-3 pr-12"
               rows={1}
@@ -181,8 +179,8 @@ export function ChatInput({
           </div>
         </div>
         <div className="mt-2 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">{t('sendHint')}</p>
-          <p className="text-xs text-muted-foreground">{t('poweredBy')}</p>
+          <p className="text-xs text-muted-foreground">Press Enter to send, Shift+Enter for new line</p>
+          <p className="text-xs text-muted-foreground">Powered by Gemini-2.5-pro</p>
         </div>
       </form>
     </div>

@@ -1,7 +1,6 @@
 'use client'
 
 import { Sparkles, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -23,7 +22,6 @@ interface CodeGenerationButtonProps {
 }
 
 export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeGenerationButtonProps) {
-  const t = useTranslations('project')
   const [isGenerating, setIsGenerating] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -157,8 +155,8 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
     <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/20">
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1">
-          <p className="text-sm font-medium text-green-900 dark:text-green-100">✓ {t('developmentPlanCompleted')}</p>
-          <p className="text-xs text-green-700 dark:text-green-300">{t('readyToGenerateCode')}</p>
+          <p className="text-sm font-medium text-green-900 dark:text-green-100">✓ Development plan completed</p>
+          <p className="text-xs text-green-700 dark:text-green-300">Ready to generate code</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {logs.length > 0 && !isGenerating && (
@@ -170,12 +168,12 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
             {isGenerating ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {t('generating')}
+                Generating...
               </>
             ) : (
               <>
                 <Sparkles className="h-4 w-4" />
-                {t('generateCode')}
+                Generate Code
               </>
             )}
           </Button>

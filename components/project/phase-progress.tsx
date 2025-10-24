@@ -1,7 +1,6 @@
 'use client'
 
 import { CheckCircle2, Circle, CircleDot } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 
 interface PhaseProgressProps {
   phases: Array<{
@@ -11,13 +10,18 @@ interface PhaseProgressProps {
 }
 
 export function PhaseProgress({ phases }: PhaseProgressProps) {
-  const t = useTranslations('project')
-
   const getPhaseLabel = (phase: string) => {
-    if (phase === 'REQUIREMENT') return t('phaseRequirement')
-    if (phase === 'ARCHITECTURE') return t('phaseArchitecture')
-    if (phase === 'DEVELOPMENT') return t('phaseDevelopment')
+    if (phase === 'REQUIREMENT') return 'Requirements'
+    if (phase === 'ARCHITECTURE') return 'Architecture'
+    if (phase === 'DEVELOPMENT') return 'Development'
     return phase
+  }
+
+  const getStatusLabel = (status: string) => {
+    if (status === 'completed') return 'Completed'
+    if (status === 'in-progress') return 'In Progress'
+    if (status === 'pending') return 'Not Started'
+    return status
   }
 
   return (
@@ -49,9 +53,7 @@ export function PhaseProgress({ phases }: PhaseProgressProps) {
                           ? 'text-blue-400'
                           : 'text-muted-foreground/40'
                     }`}>
-                    {phase.status === 'completed' && t('statusCompleted')}
-                    {phase.status === 'in-progress' && t('statusInProgress')}
-                    {phase.status === 'pending' && t('statusPending')}
+                    {getStatusLabel(phase.status)}
                   </span>
                 </div>
               </div>

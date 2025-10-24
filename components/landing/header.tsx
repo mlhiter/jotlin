@@ -2,16 +2,15 @@
 
 import { Sparkles } from 'lucide-react'
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { AuthDialog } from '@/components/auth/auth-dialog'
 
 import { useAuth } from '@/hooks/use-auth'
-import { Link, useRouter } from '@/i18n/navigation'
 
 export function LandingHeader() {
-  const t = useTranslations('landing')
   const { isAuthenticated } = useAuth()
   const router = useRouter()
   const [showLoginDialog, setShowLoginDialog] = useState(false)
@@ -36,22 +35,22 @@ export function LandingHeader() {
             <Link
               href="#how-it-works"
               className="rounded-md px-2 py-1 text-base leading-6 text-black transition-colors hover:bg-zinc-100">
-              {t('nav.howItWorks')}
+              How it works
             </Link>
             <Link
               href="#features"
               className="rounded-md px-2 py-1 text-base leading-6 text-black transition-colors hover:bg-zinc-100">
-              {t('nav.features')}
+              Features
             </Link>
             <Link
               href="#why-us"
               className="rounded-md px-2 py-1 text-base leading-6 text-black transition-colors hover:bg-zinc-100">
-              {t('nav.whyUs')}
+              Why us
             </Link>
             <Link
               href="#faq"
               className="rounded-md px-2 py-1 text-base leading-6 text-black transition-colors hover:bg-zinc-100">
-              {t('nav.faq')}
+              FAQ
             </Link>
           </div>
         </div>
@@ -63,12 +62,12 @@ export function LandingHeader() {
             rel="noopener noreferrer"
             className="flex h-10 items-center justify-center gap-2 rounded-xl border border-white bg-gradient-to-b from-[#fcfcfc] to-[#fafafa] px-4 py-2 text-sm leading-5 font-medium text-zinc-900 transition-colors hover:from-[#f9f9f9] hover:to-[#f5f5f5]">
             <Image src="/landing/discord-icon.svg" alt="" width={16} height={16} />
-            {t('nav.joinDiscord')}
+            Join our Discord
           </a>
           <button
             onClick={handleStartClick}
             className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-black bg-black px-4 py-2 text-sm leading-5 font-medium text-white transition-colors hover:bg-zinc-900">
-            {t('nav.joinForFree')}
+            Start for free
             <Sparkles className="size-4" strokeWidth={1.5} />
           </button>
         </div>

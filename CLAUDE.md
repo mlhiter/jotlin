@@ -11,7 +11,6 @@ This document outlines the design system structure, patterns, and conventions us
 - [Icon System](#icon-system)
 - [Asset Management](#asset-management)
 - [Project Structure](#project-structure)
-- [Internationalization](#internationalization)
 - [Best Practices](#best-practices)
 
 ---
@@ -58,7 +57,7 @@ This document outlines the design system structure, patterns, and conventions us
 
 ### Location
 
-Design tokens are defined in `/app/[locale]/globals.css` using CSS custom properties.
+Design tokens are defined in `/app/globals.css` using CSS custom properties.
 
 ### Token Structure
 
@@ -650,20 +649,18 @@ import Image from 'next/image'
 ```
 jotlin/
 ├── app/                          # Next.js App Router
-│   ├── [locale]/                 # Internationalization wrapper
-│   │   ├── (app)/               # Authenticated app routes
-│   │   │   ├── admin/
-│   │   │   ├── chat/[chatId]/
-│   │   │   └── layout.tsx       # App layout with sidebar
-│   │   ├── login/               # Authentication pages
-│   │   ├── preview/             # Public preview pages
-│   │   ├── layout.tsx           # Root layout
-│   │   ├── globals.css          # Global styles
-│   │   └── page.tsx             # Landing page
+│   ├── (app)/                   # Authenticated app routes
+│   │   ├── admin/
+│   │   ├── chat/[chatId]/
+│   │   └── layout.tsx           # App layout with sidebar
+│   ├── preview/                 # Public preview pages
 │   ├── api/                     # API routes
 │   │   ├── auth/
 │   │   ├── chats/
 │   │   └── feedback/
+│   ├── layout.tsx               # Root layout
+│   ├── globals.css              # Global styles
+│   ├── page.tsx                 # Landing page
 │   └── favicon.ico
 │
 ├── components/                   # React components
@@ -684,15 +681,6 @@ jotlin/
 │   ├── auth.ts
 │   ├── prisma.ts
 │   └── ...
-│
-├── i18n/                         # Internationalization
-│   ├── routing.ts
-│   ├── navigation.ts
-│   └── request.ts
-│
-├── messages/                     # Translation files
-│   ├── en.json
-│   └── zh.json
 │
 ├── prisma/                       # Database schema
 │   ├── schema.prisma
@@ -719,7 +707,7 @@ jotlin/
 **1. `(app)` - Authenticated Routes:**
 
 ```
-app/[locale]/(app)/
+app/(app)/
 ├── chat/[chatId]/page.tsx
 ├── admin/feedback/page.tsx
 └── layout.tsx               # Includes sidebar, auth guard
@@ -728,8 +716,7 @@ app/[locale]/(app)/
 **2. Public Routes:**
 
 ```
-app/[locale]/
-├── login/page.tsx
+app/
 ├── preview/[chatId]/page.tsx
 └── page.tsx                 # Landing
 ```
@@ -761,70 +748,6 @@ import { useAuth } from '@/hooks/use-auth'
 - **API Routes**: `route.ts`
 - **Pages**: `page.tsx`
 - **Layouts**: `layout.tsx`
-
----
-
-## Internationalization
-
-### Configuration
-
-**Routing Setup (`i18n/routing.ts`):**
-
-```typescript
-import { defineRouting } from 'next-intl/routing'
-
-export const routing = defineRouting({
-  locales: ['en', 'zh'],
-  defaultLocale: 'en',
-  localeDetection: false,
-})
-```
-
-### Translation Files
-
-Located in `/messages/`:
-
-- `en.json` - English translations
-- `zh.json` - Chinese translations
-
-**Example structure:**
-
-```json
-{
-  "chat": {
-    "placeholder": "Type your message...",
-    "sendHint": "Press Enter to send",
-    "poweredBy": "Powered by AI"
-  }
-}
-```
-
-### Usage in Components
-
-```tsx
-'use client'
-
-import { useTranslations } from 'next-intl'
-
-export function ChatInput() {
-  const t = useTranslations('chat')
-
-  return <input placeholder={t('placeholder')} />
-}
-```
-
-### Layout Integration
-
-```tsx
-// app/[locale]/layout.tsx
-import { NextIntlClientProvider } from 'next-intl'
-
-export default async function RootLayout({ params }) {
-  const { locale } = await params
-
-  return <NextIntlClientProvider>{children}</NextIntlClientProvider>
-}
-```
 
 ---
 
