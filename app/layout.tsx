@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/next'
 import { Geist, Geist_Mono, Edu_QLD_Beginner } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: Props) {
             <Toaster />
           </ThemeProvider>
         </QueryProvider>
+        <Analytics />
       </body>
     </html>
   )
