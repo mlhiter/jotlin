@@ -481,6 +481,16 @@ export default function ChatIdPage() {
     setChatData((prev) => (prev ? { ...prev, isPublic } : null))
   }
 
+  const handlePhaseSwitch = (phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT') => {
+    if (!projectData) return
+
+    const targetPhaseChat = projectData.phaseChats.find((pc) => pc.phase === phase)
+    if (targetPhaseChat && targetPhaseChat.messages) {
+      setMessages(targetPhaseChat.messages as MyUIMessage[])
+      setProjectData((prev) => (prev ? { ...prev, currentPhase: phase } : null))
+    }
+  }
+
   // Calculate phase progress
   const phaseProgress = projectData
     ? [
@@ -613,7 +623,14 @@ export default function ChatIdPage() {
         {/* Left side: Phase Progress + Chat Area */}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden" data-chat-area>
           {/* Phase Progress Bar */}
-          {projectData && <PhaseProgress phases={phaseProgress} />}
+          {projectData && (
+            <PhaseProgress
+              phases={phaseProgress}
+              currentPhase={projectData.currentPhase}
+              onPhaseClick={handlePhaseSwitch}
+              clickable={true}
+            />
+          )}
 
           <div
             className={`flex h-full flex-col overflow-hidden transition-all duration-700 ease-in-out ${

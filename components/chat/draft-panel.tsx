@@ -56,6 +56,7 @@ interface DraftPanelProps {
   currentPhase?: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
   liveDraft?: string
   liveFinal?: string
+  readOnly?: boolean
 }
 
 export function DraftPanel({
@@ -69,6 +70,7 @@ export function DraftPanel({
   currentPhase,
   liveDraft,
   liveFinal,
+  readOnly = false,
 }: DraftPanelProps) {
   const [mvpData, setMvpData] = useState<{
     files: Record<string, string>
@@ -151,8 +153,8 @@ export function DraftPanel({
   // Outer level tabs (with Documents as a single tab)
   const availableTabs = [
     { value: 'documents', label: 'Documents', available: hasAnyDocument, icon: FileText },
-    { value: 'preview', label: 'Preview', available: !!documents.development, icon: Eye },
-    { value: 'code', label: 'Code', available: !!documents.development, icon: Code },
+    { value: 'preview', label: 'Preview', available: !readOnly && !!documents.development, icon: Eye },
+    { value: 'code', label: 'Code', available: !readOnly && !!documents.development, icon: Code },
   ].filter((t) => t.available)
 
   // Inner document tabs (for the nested tabs inside Documents)
