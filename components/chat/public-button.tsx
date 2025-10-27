@@ -1,12 +1,11 @@
 'use client'
 
-import { Globe, Lock, Copy, Check } from 'lucide-react'
+import { Share2, Copy, Check, Lock } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 
 import apiClient from '@/libs/utils/axios'
@@ -24,25 +23,51 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
 
   const previewUrl = `${window.location.origin}/preview/${chatId}`
 
-  const handleTogglePublic = async () => {
+  const handleMakePublic = async () => {
     setIsLoading(true)
     try {
       const response = await apiClient.patch(`/api/chats/${chatId}`, {
-        isPublic: !isPublic,
+        isPublic: true,
       })
 
       if (response.status === 200) {
-        onPublicChange(!isPublic)
-        if (!isPublic) {
-          setShowDialog(true)
-        }
-        toast.success(!isPublic ? 'Chat is now public' : 'Chat is now private')
+        onPublicChange(true)
+        setShowDialog(true)
+        toast.success('Chat is now public')
       }
     } catch (error) {
-      console.error('Failed to toggle public status:', error)
+      console.error('Failed to make chat public:', error)
       toast.error('Failed to update chat visibility')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleMakePrivate = async () => {
+    setIsLoading(true)
+    try {
+      const response = await apiClient.patch(`/api/chats/${chatId}`, {
+        isPublic: false,
+      })
+
+      if (response.status === 200) {
+        onPublicChange(false)
+        setShowDialog(false)
+        toast.success('Chat is now private')
+      }
+    } catch (error) {
+      console.error('Failed to make chat private:', error)
+      toast.error('Failed to update chat visibility')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleShareClick = () => {
+    if (isPublic) {
+      setShowDialog(true)
+    } else {
+      handleMakePublic()
     }
   }
 
@@ -60,44 +85,11 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" disabled={isLoading} className="gap-2 shadow-none">
-            {isPublic ? (
-              <>
-                <Globe className="h-4 w-4" />
-                Public
-              </>
-            ) : (
-              <>
-                <Lock className="h-4 w-4" />
-                Private
-              </>
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleTogglePublic} disabled={isLoading}>
-            {isPublic ? (
-              <>
-                <Lock className="mr-2 h-4 w-4" />
-                Make Private
-              </>
-            ) : (
-              <>
-                <Globe className="mr-2 h-4 w-4" />
-                Make Public
-              </>
-            )}
-          </DropdownMenuItem>
-          {isPublic && (
-            <DropdownMenuItem onClick={() => setShowDialog(true)}>
-              <Copy className="mr-2 h-4 w-4" />
-              Copy Preview Link
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Button variant="outline" size="sm" disabled={isLoading} onClick={handleShareClick} className="relative gap-2 shadow-none">
+        <Share2 className="h-4 w-4" />
+        Share
+        {isPublic && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-green-500" />}
+      </Button>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
@@ -114,6 +106,12 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
             </div>
             <p className="text-sm text-muted-foreground">This link allows read-only access to your chat. The viewer cannot send messages or interact with the chat.</p>
           </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={handleMakePrivate} disabled={isLoading} className="gap-2">
+              <Lock className="h-4 w-4" />
+              Make Private
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
