@@ -2,8 +2,18 @@
 
 This document outlines the design system structure, patterns, and conventions used in the Jotlin codebase for AI assistants and developers integrating Figma designs.
 
+## AI Assistant Guidelines
+
+### Development Server Management
+
+- **DO NOT** run `npm run dev` or any development server commands in background tasks
+- The user will manage the development server themselves
+- Only check the status of already running servers if necessary, but do not start new ones
+- If you need to test changes, inform the user to restart the development server
+
 ## Table of Contents
 
+- [AI Assistant Guidelines](#ai-assistant-guidelines)
 - [Technology Stack](#technology-stack)
 - [Design Tokens](#design-tokens)
 - [Component Architecture](#component-architecture)
