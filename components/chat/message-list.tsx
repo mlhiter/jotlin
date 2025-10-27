@@ -70,10 +70,10 @@ export function MessageList({
   return (
     <div className="relative flex-1 overflow-hidden">
       {/* Top blur gradient */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b from-background to-transparent" />
+      <div className="pointer-events-none absolute left-0 right-3 top-0 z-10 h-8 bg-gradient-to-b from-background to-transparent" />
 
       {/* Bottom blur gradient */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-background to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-3 z-10 h-8 bg-gradient-to-t from-background to-transparent" />
 
       <ScrollArea ref={scrollAreaRef} className="h-full px-4">
         <div className="mx-auto max-w-3xl space-y-6 py-6">
