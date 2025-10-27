@@ -34,6 +34,7 @@ export function MessageList({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const [showScrollButton, setShowScrollButton] = useState(false)
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -46,14 +47,17 @@ export function MessageList({
     if (!scrollContainer) return
 
     const { scrollTop, scrollHeight, clientHeight } = scrollContainer
-    const isAtBottom = scrollHeight - scrollTop - clientHeight < 100 // 100px threshold
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 100
 
     setShowScrollButton(!isAtBottom)
+    setShouldAutoScroll(isAtBottom)
   }
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    if (shouldAutoScroll) {
+      scrollToBottom()
+    }
+  }, [messages, shouldAutoScroll])
 
   useEffect(() => {
     const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')

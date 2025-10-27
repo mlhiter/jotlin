@@ -101,6 +101,7 @@ export default function ChatIdPage() {
   const [draftActiveTab, setDraftActiveTab] = useState('documents')
   const [sidebarStateBeforeCollapse, setSidebarStateBeforeCollapse] = useState<boolean | null>(null)
   const [windowWidth, setWindowWidth] = useState(0)
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null)
   const prevSidebarOpenRef = useRef<boolean | null>(null)
   const autoCollapsedRef = useRef(false)
   const userManuallyOpenedRef = useRef(false)
@@ -192,6 +193,14 @@ export default function ChatIdPage() {
       loadChat()
     }
   }, [chatId])
+
+  // Auto-send pending message when status is ready
+  useEffect(() => {
+    if (pendingMessage && status === 'ready') {
+      sendMessage({ text: pendingMessage })
+      setPendingMessage(null)
+    }
+  }, [pendingMessage, status, sendMessage])
 
   // Auto-send initial message if provided in URL
   useEffect(() => {
@@ -570,19 +579,15 @@ export default function ChatIdPage() {
         setMessages([])
       }
 
-      // Auto-send initial message with previous phase document(s)
+      // Queue auto-send message
       if (activeChat && activeChat.phase === 'ARCHITECTURE' && documents.requirement) {
-        setTimeout(() => {
-          sendMessage({
-            text: `Based on the requirement document below, please help me design the technical architecture:\n\n${documents.requirement.content}`,
-          })
-        }, 500)
+        setPendingMessage(
+          `Based on the requirement document below, please help me design the technical architecture:\n\n${documents.requirement.content}`
+        )
       } else if (activeChat && activeChat.phase === 'DEVELOPMENT' && documents.requirement && documents.architecture) {
-        setTimeout(() => {
-          sendMessage({
-            text: `Based on the following documents, please generate a development plan:\n\n【Requirements Analysis Document】\n${documents.requirement.content}\n\n【Technical Architecture Document】\n${documents.architecture.content}`,
-          })
-        }, 500)
+        setPendingMessage(
+          `Based on the following documents, please generate a development plan:\n\n【Requirements Analysis Document】\n${documents.requirement.content}\n\n【Technical Architecture Document】\n${documents.architecture.content}`
+        )
       }
 
       // Auto-open draft panel if there's content
