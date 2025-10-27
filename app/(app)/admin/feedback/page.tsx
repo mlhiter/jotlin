@@ -116,7 +116,10 @@ function FeedbackAdminPageContent() {
 
         return (
           <div className="max-w-md">
-            <div className="text-sm leading-relaxed break-words whitespace-pre-wrap">
+            <div
+              className={`text-sm leading-relaxed break-words whitespace-pre-wrap ${
+                isExpanded ? 'max-h-96 overflow-y-auto' : ''
+              }`}>
               {shouldTruncate && !isExpanded ? content.substring(0, maxLength) + '...' : content}
             </div>
             {shouldTruncate && (
@@ -241,22 +244,23 @@ function FeedbackAdminPageContent() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8">
+    <div className="flex h-screen flex-col overflow-hidden">
+      <div className="shrink-0 border-b p-6">
         <h1 className="text-3xl font-bold">User Feedback</h1>
       </div>
 
-      <div className="w-full">
-        <div className="flex items-center py-4">
-          <Input
-            placeholder="Filter titles..."
-            value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
-            onChange={(event) => table.getColumn('title')?.setFilterValue(event.target.value)}
-            className="max-w-sm shadow-none"
-          />
-        </div>
-        <div className="rounded-md border">
-          <Table>
+      <div className="flex-1 overflow-y-auto">
+        <div className="container mx-auto p-6">
+          <div className="flex items-center pb-4">
+            <Input
+              placeholder="Filter titles..."
+              value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
+              onChange={(event) => table.getColumn('title')?.setFilterValue(event.target.value)}
+              className="max-w-sm shadow-none"
+            />
+          </div>
+          <div className="rounded-md border">
+            <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -369,6 +373,7 @@ function FeedbackAdminPageContent() {
               <ChevronsRight className="h-4 w-4" />
             </Button>
           </div>
+        </div>
         </div>
       </div>
     </div>
