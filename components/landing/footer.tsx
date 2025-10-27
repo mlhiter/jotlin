@@ -26,11 +26,11 @@ export function LandingFooter() {
 
   return (
     <footer className="relative overflow-hidden bg-[#09090b]">
-      <div className="pointer-events-none absolute top-0 left-1/2 h-24 w-[3524px] -translate-x-1/2">
+      <div className="pointer-events-none absolute left-1/2 top-0 h-24 w-[3524px] -translate-x-1/2">
         <Image src="/landing/footer-bg.svg" alt="" fill className="object-cover" />
       </div>
 
-      <div className="relative container mx-auto max-w-full px-12 py-10">
+      <div className="container relative mx-auto max-w-full px-12 py-10">
         <div className="mb-20 text-center">
           <h2 className="mb-6 text-4xl font-medium text-white">Your Next Great Idea is One Conversation Away.</h2>
           <p className="mb-10 text-xl text-zinc-500">Try it instantly. No account or credit card required.</p>
@@ -47,7 +47,7 @@ export function LandingFooter() {
               variant="outline"
               className="h-11 rounded-xl border-white/20 bg-transparent text-white hover:border-white/30 hover:bg-white/10 hover:text-white"
               asChild>
-              <a href="https://discord.gg/jotlin" target="_blank" rel="noopener noreferrer">
+              <a href="https://discord.gg/44NTBsAYx9" target="_blank" rel="noopener noreferrer">
                 <Image src="/landing/discord-icon.svg" alt="" width={16} height={16} className="invert" />
                 Join our Discord
               </a>
