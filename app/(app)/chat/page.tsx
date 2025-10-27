@@ -33,7 +33,7 @@ export default function ChatPage() {
           <div className="flex-1 overflow-y-auto">
             <EmptyState onSendMessage={handleSendMessage} />
           </div>
-          <ChatInput onSendMessage={handleSendMessage} onStop={() => {}} status="ready" />
+          <ChatInput onSendMessage={handleSendMessage} onStop={() => {}} status="ready" autoFocus />
         </div>
       </div>
     </div>

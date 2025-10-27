@@ -23,6 +23,7 @@ interface ChatInputProps {
   onAddQuote?: (quote: Quote) => void
   onRemoveQuote?: (id: string) => void
   onMarkMessageAnswered?: (messageId: string, selectedOptions: SelectedOption[]) => void
+  autoFocus?: boolean
 }
 
 export function ChatInput({
@@ -33,11 +34,18 @@ export function ChatInput({
   quotes = [],
   onRemoveQuote,
   onMarkMessageAnswered,
+  autoFocus = false,
 }: ChatInputProps) {
   const [input, setInput] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const { selectedOptions, clearOptions, removeOption, currentAssistantMessageId } = useSelectedOptions()
+
+  useEffect(() => {
+    if (autoFocus && textareaRef.current) {
+      textareaRef.current.focus()
+    }
+  }, [autoFocus])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
