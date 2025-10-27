@@ -35,10 +35,12 @@ export default function ChatIdPage() {
   const initialMessage = searchParams.get('message')
   const { handleMessageSent, handleLimitError } = useMessageLimits()
 
-  // TODO: we need messages
+  const [initialMessages, setInitialMessages] = useState<MyUIMessage[]>([])
+  const [chatReady, setChatReady] = useState(false)
+
   const { messages, sendMessage, status, stop, setMessages } = useChat<MyUIMessage>({
     id: chatId,
-    messages: [],
+    messages: initialMessages,
     transport: new DefaultChatTransport({
       api: `/api/chats/${chatId}`,
       headers: () => ({
@@ -87,6 +89,10 @@ export default function ChatIdPage() {
 
   // Simple regenerate function - resend last user message (kept for retry button)
   const handleRetry = () => {
+    if (!chatReady || status !== 'ready') {
+      console.warn('Chat not ready for retry')
+      return
+    }
     const lastUserMessage = messages.findLast((m) => m.role === 'user')
     if (lastUserMessage) {
       sendMessage({ text: lastUserMessage.parts.find((p) => p.type === 'text')?.text || '' })
@@ -170,19 +176,22 @@ export default function ChatIdPage() {
             currentPhase: activeChat?.phase || null,
           })
 
-          // Load active chat messages
+          // Load active chat messages - use setInitialMessages for proper initialization
           if (activeChat?.messages && activeChat.messages.length > 0) {
+            setInitialMessages(activeChat.messages)
             setMessages(activeChat.messages)
           }
         } else {
-          // Regular chat, load messages directly
+          // Regular chat, load messages directly - use setInitialMessages for proper initialization
           if (chatData.messages && chatData.messages.length > 0) {
+            setInitialMessages(chatData.messages)
             setMessages(chatData.messages)
           }
         }
 
         setChatData(chatData)
         setIsLoading(false)
+        setChatReady(true)
       } catch (error) {
         console.error('Failed to load chat:', error)
         notFound()
@@ -190,21 +199,23 @@ export default function ChatIdPage() {
     }
 
     if (chatId) {
+      setChatReady(false)
+      setPendingMessage(null)
       loadChat()
     }
   }, [chatId])
 
-  // Auto-send pending message when status is ready
+  // Auto-send pending message when status is ready and chat is initialized
   useEffect(() => {
-    if (pendingMessage && status === 'ready') {
+    if (pendingMessage && status === 'ready' && chatReady) {
       sendMessage({ text: pendingMessage })
       setPendingMessage(null)
     }
-  }, [pendingMessage, status, sendMessage])
+  }, [pendingMessage, status, chatReady, sendMessage])
 
   // Auto-send initial message if provided in URL
   useEffect(() => {
-    if (initialMessage && !hasAutoSent && !isLoading && status === 'ready') {
+    if (initialMessage && !hasAutoSent && !isLoading && status === 'ready' && chatReady) {
       sendMessage({ text: initialMessage })
       setHasAutoSent(true)
 
@@ -213,7 +224,7 @@ export default function ChatIdPage() {
       url.searchParams.delete('message')
       window.history.replaceState({}, '', url.toString())
     }
-  }, [initialMessage, hasAutoSent, isLoading, status, sendMessage])
+  }, [initialMessage, hasAutoSent, isLoading, status, chatReady, sendMessage])
 
   // Auto-inject requirement document for architecture phase if no messages
   useEffect(() => {
@@ -221,6 +232,7 @@ export default function ChatIdPage() {
       !hasAutoSent &&
       !isLoading &&
       status === 'ready' &&
+      chatReady &&
       projectData?.currentPhase === 'ARCHITECTURE' &&
       projectData?.documents?.requirement &&
       messages.length === 0
@@ -232,7 +244,7 @@ export default function ChatIdPage() {
         })
       }, 500)
     }
-  }, [hasAutoSent, isLoading, status, projectData, messages.length, sendMessage])
+  }, [hasAutoSent, isLoading, status, chatReady, projectData, messages.length, sendMessage])
 
   // Filter empty assistant messages
   const filteredMessages = messages.filter((message) => {
@@ -454,6 +466,10 @@ export default function ChatIdPage() {
   }
 
   const handleSendMessage = (message: { text: string }) => {
+    if (!chatReady || status !== 'ready') {
+      console.warn('Chat not ready, message queued')
+      return
+    }
     setQuotes([])
     sendMessage(message)
   }
@@ -495,8 +511,11 @@ export default function ChatIdPage() {
 
     const targetPhaseChat = projectData.phaseChats.find((pc) => pc.phase === phase)
     if (targetPhaseChat && targetPhaseChat.messages) {
+      setChatReady(false)
+      setInitialMessages(targetPhaseChat.messages as MyUIMessage[])
       setMessages(targetPhaseChat.messages as MyUIMessage[])
       setProjectData((prev) => (prev ? { ...prev, currentPhase: phase } : null))
+      setChatReady(true)
     }
   }
 
@@ -548,6 +567,8 @@ export default function ChatIdPage() {
   const handleNextPhaseSuccess = async () => {
     // Reload data instead of full page reload
     try {
+      setChatReady(false)
+
       const [phaseChatsRes, documentsRes] = await Promise.all([
         apiClient.get(`/api/projects/${chatId}/chats`),
         apiClient.get(`/api/projects/${chatId}/documents`),
@@ -572,30 +593,38 @@ export default function ChatIdPage() {
         currentPhase: activeChat?.phase || null,
       })
 
-      // Load new active chat messages
-      if (activeChat?.messages && activeChat.messages.length > 0) {
+      // Load new active chat messages - use both setInitialMessages and setMessages
+      const hasExistingMessages = activeChat?.messages && activeChat.messages.length > 0
+      if (hasExistingMessages) {
+        setInitialMessages(activeChat.messages)
         setMessages(activeChat.messages)
       } else {
+        setInitialMessages([])
         setMessages([])
       }
 
-      // Queue auto-send message
-      if (activeChat && activeChat.phase === 'ARCHITECTURE' && documents.requirement) {
-        setPendingMessage(
-          `Based on the requirement document below, please help me design the technical architecture:\n\n${documents.requirement.content}`
-        )
-      } else if (activeChat && activeChat.phase === 'DEVELOPMENT' && documents.requirement && documents.architecture) {
-        setPendingMessage(
-          `Based on the following documents, please generate a development plan:\n\n【Requirements Analysis Document】\n${documents.requirement.content}\n\n【Technical Architecture Document】\n${documents.architecture.content}`
-        )
+      // Queue auto-send message only if there are no existing messages
+      if (!hasExistingMessages) {
+        if (activeChat && activeChat.phase === 'ARCHITECTURE' && documents.requirement) {
+          setPendingMessage(
+            `Based on the requirement document below, please help me design the technical architecture:\n\n${documents.requirement.content}`
+          )
+        } else if (activeChat && activeChat.phase === 'DEVELOPMENT' && documents.requirement && documents.architecture) {
+          setPendingMessage(
+            `Based on the following documents, please generate a development plan:\n\n【Requirements Analysis Document】\n${documents.requirement.content}\n\n【Technical Architecture Document】\n${documents.architecture.content}`
+          )
+        }
       }
 
       // Auto-open draft panel if there's content
       if (documents.requirement || documents.architecture) {
         setShowRequirementSidebar(true)
       }
+
+      setChatReady(true)
     } catch (error) {
       console.error('Failed to reload project data:', error)
+      setChatReady(true)
     }
   }
 
