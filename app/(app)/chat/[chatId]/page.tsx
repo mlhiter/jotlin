@@ -122,12 +122,7 @@ export default function ChatIdPage() {
       title: string | null
       phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
       createdAt: string
-      messages: Array<{
-        id: string
-        role: string
-        parts: unknown
-        createdAt: string
-      }>
+      messages: MyUIMessage[]
     }>
     documents: {
       requirement?: { id: string; content: string; status: string }
@@ -160,7 +155,13 @@ export default function ChatIdPage() {
             apiClient.get(`/api/projects/${chatId}/documents`),
           ])
 
-          const phaseChats = phaseChatsRes.data
+          const phaseChats: Array<{
+            id: string
+            title: string | null
+            phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+            createdAt: string
+            messages: MyUIMessage[]
+          }> = phaseChatsRes.data
           const documentsData = documentsRes.data
 
           // Try to restore the last viewed phase from localStorage
@@ -173,7 +174,7 @@ export default function ChatIdPage() {
           // Find the active chat: either saved phase or the last one
           let activeChat = phaseChats[phaseChats.length - 1]
           if (savedPhase) {
-            const savedPhaseChat = phaseChats.find((pc: any) => pc.phase === savedPhase)
+            const savedPhaseChat = phaseChats.find((pc) => pc.phase === savedPhase)
             if (savedPhaseChat) {
               activeChat = savedPhaseChat
             }
@@ -619,7 +620,7 @@ export default function ChatIdPage() {
 
         // Create updated phaseChats with current messages saved
         const updatedPhaseChats = prev.phaseChats.map((pc) =>
-          pc.phase === prev.currentPhase ? { ...pc, messages: messages as any[] } : pc
+          pc.phase === prev.currentPhase ? { ...pc, messages } : pc
         )
 
         // Find target phase chat from updated array
