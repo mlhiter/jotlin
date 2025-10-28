@@ -1,6 +1,6 @@
 'use client'
 
-import { Sparkles, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/store/auth-store'
 
 import { GenerationLog, LogEntry } from '../mvp/generation-log'
-import { GenerationProgress } from '../mvp/generation-progress'
 
 interface CodeGenerationButtonProps {
   documents: {
@@ -23,8 +22,6 @@ interface CodeGenerationButtonProps {
 
 export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeGenerationButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [progress, setProgress] = useState(0)
   const [currentStep, setCurrentStep] = useState('')
   const [logs, setLogs] = useState<LogEntry[]>([])
 
@@ -34,8 +31,6 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
 
   const handleGenerate = async () => {
     setIsGenerating(true)
-    setIsExpanded(true)
-    setProgress(0)
     setLogs([])
     setCurrentStep('Initializing...')
 
@@ -100,10 +95,6 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
             try {
               const data = JSON.parse(line.slice(6))
 
-              if (data.progress !== undefined) {
-                setProgress(data.progress)
-              }
-
               if (data.type === 'step' || data.type === 'info') {
                 if (data.message) {
                   addLog(data.type, data.message)
@@ -151,51 +142,26 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
     }
   }
 
+  if (isGenerating || logs.length > 0) {
+    return (
+      <div className="h-96 animate-in fade-in slide-in-from-top-4 duration-500">
+        <GenerationLog logs={logs} isGenerating={isGenerating} currentStep={currentStep} />
+      </div>
+    )
+  }
+
   return (
-    <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/20">
+    <div className="animate-in fade-in slide-in-from-top-2 duration-300 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/20">
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1">
           <p className="text-sm font-medium text-green-900 dark:text-green-100">✓ Development plan completed</p>
           <p className="text-xs text-green-700 dark:text-green-300">Ready to generate code</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          {logs.length > 0 && !isGenerating && (
-            <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="h-8 w-8 p-0">
-              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
-          )}
-          <Button onClick={handleGenerate} disabled={isGenerating} size="sm" className="gap-2">
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4" />
-                Generate Code
-              </>
-            )}
-          </Button>
-        </div>
+        <Button onClick={handleGenerate} disabled={isGenerating} size="sm" className="gap-2">
+          <Sparkles className="h-4 w-4" />
+          Generate Code
+        </Button>
       </div>
-
-      {isExpanded && (
-        <div className="mt-4">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {isGenerating && (
-              <div className="h-96 overflow-hidden lg:col-span-1">
-                <GenerationProgress progress={progress} currentStep={currentStep} />
-              </div>
-            )}
-            {logs.length > 0 && (
-              <div className={`h-96 overflow-hidden ${isGenerating ? 'lg:col-span-1' : 'lg:col-span-2'}`}>
-                <GenerationLog logs={logs} isGenerating={isGenerating} />
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
