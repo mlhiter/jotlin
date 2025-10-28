@@ -8,15 +8,19 @@ import { useState, useEffect } from 'react'
 export const dynamic = 'force-dynamic'
 
 import { MessageList } from '@/components/chat/message-list'
+import { TryButton } from '@/components/preview/try-button'
 import { PhaseProgress } from '@/components/project/phase-progress'
 
 import { parseAIResponse } from '@/libs/ai/xml-parser'
 import apiClient from '@/libs/utils/axios'
 import { MyUIMessage } from '@/schema/chat'
 
-const DraftPanel = dynamicImport(() => import('@/components/chat/draft-panel').then((mod) => ({ default: mod.DraftPanel })), {
-  ssr: false,
-})
+const DraftPanel = dynamicImport(
+  () => import('@/components/chat/draft-panel').then((mod) => ({ default: mod.DraftPanel })),
+  {
+    ssr: false,
+  }
+)
 
 interface PublicChat {
   id: string
@@ -119,7 +123,7 @@ export default function ChatPreviewPage() {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="space-y-4 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+          <div className="border-primary mx-auto h-8 w-8 animate-spin rounded-full border-b-2"></div>
           <div className="text-muted-foreground">Loading chat...</div>
         </div>
       </div>
@@ -130,9 +134,9 @@ export default function ChatPreviewPage() {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="mx-auto max-w-md space-y-4 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+          <div className="bg-muted mx-auto flex h-16 w-16 items-center justify-center rounded-full">
             <svg
-              className="h-8 w-8 text-muted-foreground"
+              className="text-muted-foreground h-8 w-8"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -146,8 +150,10 @@ export default function ChatPreviewPage() {
             </svg>
           </div>
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-foreground">Link Expired</h3>
-            <p className="text-sm text-muted-foreground">This sharing link has expired or the chat has been set to private</p>
+            <h3 className="text-foreground text-lg font-semibold">Link Expired</h3>
+            <p className="text-muted-foreground text-sm">
+              This sharing link has expired or the chat has been set to private
+            </p>
           </div>
         </div>
       </div>
@@ -233,15 +239,18 @@ export default function ChatPreviewPage() {
       {/* Header */}
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-6 py-4">
         <h1 className="text-lg font-semibold">{chat.title || 'Untitled Chat'}</h1>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <User className="h-3 w-3" />
-            {chat.author}
+        <div className="flex flex-1 items-center justify-between">
+          <div className="text-muted-foreground flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-1">
+              <User className="h-3 w-3" />
+              {chat.author}
+            </div>
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              {new Date(chat.createdAt).toLocaleDateString()}
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            {new Date(chat.createdAt).toLocaleDateString()}
-          </div>
+          <TryButton />
         </div>
       </header>
 
@@ -301,7 +310,7 @@ export default function ChatPreviewPage() {
 
       {/* Footer */}
       <div className="border-t px-4 py-2">
-        <div className="text-center text-xs text-muted-foreground">
+        <div className="text-muted-foreground text-center text-xs">
           This is a read-only preview of a public chat conversation.
         </div>
       </div>

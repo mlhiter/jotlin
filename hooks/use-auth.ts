@@ -17,7 +17,8 @@ export const useAuth = () => {
       // Handle OAuth callback token
       const tokenFromUrl = searchParams.get('token')
       if (tokenFromUrl) {
-        useAuthStore.setState({ token: tokenFromUrl })
+        // Set loading state immediately to prevent AuthGuard from redirecting
+        useAuthStore.setState({ token: tokenFromUrl, isLoading: true, isInitialized: false })
         store.fetchSession()
 
         // Clean URL

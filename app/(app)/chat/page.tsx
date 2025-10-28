@@ -1,6 +1,7 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
 import { toast } from 'sonner'
 
 import { ChatInput } from '@/components/chat/chat-input'
@@ -11,9 +12,32 @@ import { useChats } from '@/hooks/use-chat'
 
 export const dynamic = 'force-dynamic'
 
+const PENDING_MESSAGE_KEY = 'jotlin_pending_message'
+
 export default function ChatPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { createChat } = useChats()
+  const fromPreview = searchParams.get('from') === 'preview'
+
+  useEffect(() => {
+    if (fromPreview) {
+      const pendingMessage = sessionStorage.getItem(PENDING_MESSAGE_KEY)
+      if (pendingMessage) {
+        const createChatFromPending = async () => {
+          try {
+            sessionStorage.removeItem(PENDING_MESSAGE_KEY)
+            const chat = await createChat(pendingMessage.slice(0, 50))
+            router.replace(`/chat/${chat.id}?message=${encodeURIComponent(pendingMessage)}`)
+          } catch (error) {
+            console.error('Failed to create chat from pending message:', error)
+            toast.error('Failed to create chat')
+          }
+        }
+        createChatFromPending()
+      }
+    }
+  }, [fromPreview, createChat, router])
 
   const handleSendMessage = async (message: { text: string }) => {
     try {

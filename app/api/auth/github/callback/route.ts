@@ -62,8 +62,11 @@ export async function GET(request: NextRequest) {
     // Create auth session
     const token = await createAuthSession(user)
 
-    // Redirect to client with token as query parameter (will be handled by client-side to store in localStorage)
-    const response = NextResponse.redirect(`${redirectBaseUrl}${redirectUrl}?token=${encodeURIComponent(token)}`)
+    // Construct final redirect URL with token
+    const separator = redirectUrl.includes('?') ? '&' : '?'
+    const finalRedirectUrl = `${redirectBaseUrl}${redirectUrl}${separator}token=${encodeURIComponent(token)}`
+
+    const response = NextResponse.redirect(finalRedirectUrl)
 
     return response
   } catch (error) {
