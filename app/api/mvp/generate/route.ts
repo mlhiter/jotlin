@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 
-import { generateProjectWithClaudeAgent } from '@/libs/ai/claude-agent-generator'
+import { generateProjectWithVercelAI } from '@/libs/ai/vercel-ai-code-generator'
 import { getSessionFromRequest } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
           .filter(Boolean)
           .join('\n\n')
 
-        for await (const progressEvent of generateProjectWithClaudeAgent(fullContext, modelConfig)) {
+        for await (const progressEvent of generateProjectWithVercelAI(fullContext, modelConfig)) {
           if (progressEvent.type === 'completed' && progressEvent.files) {
             files = progressEvent.files
             cost = progressEvent.cost || 0
