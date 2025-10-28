@@ -1,5 +1,6 @@
 'use client'
 
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area'
 import JSZip from 'jszip'
 import { Download } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -9,6 +10,9 @@ import { oneDark, oneLight } from 'react-syntax-highlighter/dist/cjs/styles/pris
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+
+import { FileTree } from './file-tree'
 
 interface CodeViewerProps {
   files: Record<string, string>
@@ -52,7 +56,6 @@ export function CodeViewer({ files }: CodeViewerProps) {
   const { theme } = useTheme()
   const [selectedFile, setSelectedFile] = useState(Object.keys(files)[0])
   const [isDownloading, setIsDownloading] = useState(false)
-  const fileNames = Object.keys(files).sort()
 
   const handleDownload = () => {
     try {
@@ -101,70 +104,53 @@ export function CodeViewer({ files }: CodeViewerProps) {
   }
 
   return (
-    <div className="bg-background flex h-full flex-col overflow-hidden">
-      {/* Header */}
-      <div className="border-border bg-card flex items-center justify-between border-b px-4 py-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-foreground text-sm font-medium">Code View</h3>
-          <span className="text-muted-foreground text-xs">
-            {fileNames.length} {fileNames.length === 1 ? 'file' : 'files'}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleDownload} className="gap-2" disabled={isDownloading}>
-            <Download className="h-3 w-3" />
-            Download File
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleDownloadAll} className="gap-2" disabled={isDownloading}>
-            <Download className="h-3 w-3" />
-            Download All (ZIP)
-          </Button>
-        </div>
+    <div className="bg-background flex h-full overflow-hidden">
+      {/* File Tree */}
+      <div className="border-border bg-card w-70 shrink-0 border-r">
+        <ScrollArea className="h-full pr-1">
+          <FileTree files={files} selectedFile={selectedFile} onFileSelect={setSelectedFile} />
+        </ScrollArea>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* File List */}
-        <div className="border-border bg-card w-1/4 min-w-48 max-w-72 overflow-y-auto border-r">
-          <div className="space-y-1 p-2">
-            {fileNames.map((fileName) => (
-              <button
-                key={fileName}
-                onClick={() => setSelectedFile(fileName)}
-                className={`w-full truncate rounded px-3 py-2 text-left font-mono text-sm transition-colors ${
-                  selectedFile === fileName
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-accent hover:text-accent-foreground'
-                }`}
-                title={fileName}>
-                {fileName}
-              </button>
-            ))}
+      {/* Code Content */}
+      <div className="bg-background flex flex-1 flex-col overflow-hidden">
+        <div className="border-border bg-card flex shrink-0 items-center justify-between border-b px-4 py-2">
+          <span className="text-muted-foreground truncate font-mono text-xs">{selectedFile}</span>
+          <div className="ml-4 flex shrink-0 items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleDownload} className="gap-2" disabled={isDownloading}>
+              <Download className="h-3 w-3" />
+              Download File
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDownloadAll} className="gap-2" disabled={isDownloading}>
+              <Download className="h-3 w-3" />
+              Download All (ZIP)
+            </Button>
           </div>
         </div>
-
-        {/* Code Content */}
-        <div className="bg-background flex-1 overflow-auto">
-          <div className="border-border bg-card sticky top-0 z-10 border-b px-4 py-2">
-            <span className="text-muted-foreground font-mono text-xs">{selectedFile}</span>
-          </div>
-          <SyntaxHighlighter
-            language={detectLanguage(selectedFile)}
-            style={theme === 'dark' ? oneDark : oneLight}
-            showLineNumbers
-            customStyle={{
-              margin: 0,
-              fontSize: '13px',
-              borderRadius: 0,
-              background: 'transparent',
-            }}
-            codeTagProps={{
-              style: {
-                fontFamily: 'var(--font-geist-mono), ui-monospace, monospace',
-              },
-            }}>
-            {files[selectedFile] || ''}
-          </SyntaxHighlighter>
-        </div>
+        <ScrollAreaPrimitive.Root className="relative flex-1 overflow-hidden">
+          <ScrollAreaPrimitive.Viewport className="size-full overflow-scroll">
+            <SyntaxHighlighter
+              language={detectLanguage(selectedFile)}
+              style={theme === 'dark' ? oneDark : oneLight}
+              showLineNumbers
+              customStyle={{
+                margin: 0,
+                fontSize: '13px',
+                borderRadius: 0,
+                background: 'transparent',
+              }}
+              codeTagProps={{
+                style: {
+                  fontFamily: 'var(--font-geist-mono), ui-monospace, monospace',
+                },
+              }}>
+              {files[selectedFile] || ''}
+            </SyntaxHighlighter>
+          </ScrollAreaPrimitive.Viewport>
+          <ScrollBar orientation="vertical" />
+          <ScrollBar orientation="horizontal" />
+          <ScrollAreaPrimitive.Corner />
+        </ScrollAreaPrimitive.Root>
       </div>
     </div>
   )
