@@ -5,7 +5,14 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 
 import apiClient from '@/libs/utils/axios'
@@ -85,7 +92,12 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
 
   return (
     <>
-      <Button variant="outline" size="sm" disabled={isLoading} onClick={handleShareClick} className="relative gap-2 shadow-none">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={isLoading}
+        onClick={handleShareClick}
+        className="relative gap-2 shadow-none">
         <Share2 className="h-4 w-4" />
         Share
         {isPublic && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-green-500" />}
@@ -104,7 +116,9 @@ export function PublicButton({ chatId, isPublic, onPublicChange }: PublicButtonP
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">This link allows read-only access to your chat. The viewer cannot send messages or interact with the chat.</p>
+            <p className="text-muted-foreground text-sm">
+              This link allows read-only access to your chat. The viewer cannot send messages or interact with the chat.
+            </p>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={handleMakePrivate} disabled={isLoading} className="gap-2">

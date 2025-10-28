@@ -197,7 +197,7 @@ export function Preview({ files }: PreviewProps) {
             <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
             <p className="mt-4 text-sm text-red-600">{error}</p>
             {error.includes('Cross-origin isolation') && (
-              <div className="mt-4 rounded-lg bg-muted p-4 text-left text-xs">
+              <div className="bg-muted mt-4 rounded-lg p-4 text-left text-xs">
                 <p className="font-semibold">Why this happened:</p>
                 <p className="mt-2">
                   WebContainer requires special security headers (COEP/COOP) that were causing issues with the main
@@ -212,11 +212,11 @@ export function Preview({ files }: PreviewProps) {
           </div>
         </div>
         {logs.length > 0 && (
-          <div className="border-t bg-muted/30 p-4">
+          <div className="bg-muted/30 border-t p-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-semibold text-foreground">Error Logs</span>
+              <span className="text-foreground text-xs font-semibold">Error Logs</span>
             </div>
-            <div className="max-h-48 overflow-auto rounded border bg-background p-3 font-mono text-xs text-muted-foreground">
+            <div className="bg-background text-muted-foreground max-h-48 overflow-auto rounded border p-3 font-mono text-xs">
               {logs.map((l, i) => (
                 <div key={i} className="py-0.5 leading-relaxed">
                   {l}
@@ -234,21 +234,21 @@ export function Preview({ files }: PreviewProps) {
       <div className="flex h-full flex-col">
         <div className="flex flex-1 flex-col items-center justify-center gap-4">
           <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
-          <span className="text-sm text-muted-foreground">Starting up, please wait...</span>
+          <span className="text-muted-foreground text-sm">Starting up, please wait...</span>
         </div>
         {logs.length > 0 && (
-          <div className="border-t bg-muted/30 p-4">
+          <div className="bg-muted/30 border-t p-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-semibold text-foreground">Startup Logs</span>
+              <span className="text-foreground text-xs font-semibold">Startup Logs</span>
               <Button variant="ghost" size="sm" onClick={() => setShowLogs(!showLogs)}>
                 <Terminal className="h-3 w-3" />
                 <span className="ml-1 text-xs">{showLogs ? 'Hide' : 'Show'}</span>
               </Button>
             </div>
             {showLogs && (
-              <div ref={logsRef} className="max-h-48 overflow-auto rounded border bg-background p-3 font-mono text-xs">
+              <div ref={logsRef} className="bg-background max-h-48 overflow-auto rounded border p-3 font-mono text-xs">
                 {logs.map((l, i) => (
-                  <div key={i} className="py-0.5 leading-relaxed text-muted-foreground">
+                  <div key={i} className="text-muted-foreground py-0.5 leading-relaxed">
                     {l}
                   </div>
                 ))}
@@ -263,10 +263,8 @@ export function Preview({ files }: PreviewProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b bg-muted/30 px-3 py-2">
-        <span className="flex-1 truncate text-xs text-muted-foreground">
-          {url ? 'Preview Running' : 'No URL'}
-        </span>
+      <div className="bg-muted/30 flex items-center justify-between border-b px-3 py-2">
+        <span className="text-muted-foreground flex-1 truncate text-xs">{url ? 'Preview Running' : 'No URL'}</span>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={handleRefresh} title="Refresh preview">
             <RefreshCw className="h-3 w-3" />
@@ -290,22 +288,22 @@ export function Preview({ files }: PreviewProps) {
             onError={() => log('✗ iframe loading failed')}
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground">Waiting for URL...</div>
+          <div className="text-muted-foreground flex h-full items-center justify-center">Waiting for URL...</div>
         )}
       </div>
 
       {/* Logs Panel */}
       {showLogs && (
-        <div className="border-t bg-muted/30">
+        <div className="bg-muted/30 border-t">
           <div className="flex items-center justify-between border-b px-3 py-2">
-            <span className="text-xs font-semibold text-foreground">Logs</span>
+            <span className="text-foreground text-xs font-semibold">Logs</span>
             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowLogs(false)}>
               <X className="h-3 w-3" />
             </Button>
           </div>
           <div ref={logsRef} className="max-h-64 overflow-auto p-3 font-mono text-xs">
             {logs.map((l, i) => (
-              <div key={i} className="py-0.5 leading-relaxed text-muted-foreground">
+              <div key={i} className="text-muted-foreground py-0.5 leading-relaxed">
                 {l}
               </div>
             ))}

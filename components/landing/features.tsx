@@ -46,17 +46,20 @@ export function FeaturesSection() {
         <div className="mb-10 flex flex-col gap-10">
           <div className="relative inline-flex flex-col items-start self-center">
             <div className="flex items-center gap-11">
-              <h2 className="w-[338px] text-4xl leading-[1.5] font-medium text-black dark:text-white">
+              <h2 className="w-[338px] text-4xl font-medium leading-[1.5] text-black dark:text-white">
                 It&apos;s a Conversation, Not a Command.
               </h2>
-              <p className="w-[412px] text-base leading-6 text-zinc-500">Unlike generic chatbots, Jotlin is purpose‑built for requirements analysis. It guides you with polls & follow‑ups to remove ambiguity and surface risks early.</p>
+              <p className="w-[412px] text-base leading-6 text-zinc-500">
+                Unlike generic chatbots, Jotlin is purpose‑built for requirements analysis. It guides you with polls &
+                follow‑ups to remove ambiguity and surface risks early.
+              </p>
             </div>
             <Image
               src="/landing/title-decoration-icon.svg"
               alt=""
               width={47}
               height={37}
-              className="absolute top-0 left-[41%]"
+              className="absolute left-[41%] top-0"
             />
           </div>
 
@@ -119,15 +122,17 @@ export function FeaturesSection() {
                         </div>
                       </div>
                     </div>
-                    <div className="absolute right-0 bottom-0 left-0 h-10">
+                    <div className="absolute bottom-0 left-0 right-0 h-10">
                       <Image src="/landing/carousel-gradient-1.png" alt="" fill className="object-cover" />
                     </div>
                   </div>
                   <div className="flex h-[150px] flex-col gap-2 p-6">
-                    <h3 className="text-xl leading-7 font-medium text-black dark:text-white">
+                    <h3 className="text-xl font-medium leading-7 text-black dark:text-white">
                       Describe your idea in plain English
                     </h3>
-                    <p className="text-base leading-6 text-zinc-500">No need for technical jargon or formal templates</p>
+                    <p className="text-base leading-6 text-zinc-500">
+                      No need for technical jargon or formal templates
+                    </p>
                   </div>
                 </div>
               </div>
@@ -157,7 +162,7 @@ export function FeaturesSection() {
                           alt=""
                           width={20}
                           height={20}
-                          className="absolute top-6 right-5"
+                          className="absolute right-5 top-6"
                         />
                         <div className="mt-1 space-y-2">
                           <div className="h-2 w-[340px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
@@ -175,36 +180,30 @@ export function FeaturesSection() {
                         <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">C.</p>
                       </div>
                     </div>
-                    <div className="absolute top-[64px] right-[33px]">
+                    <div className="absolute right-[33px] top-[64px]">
                       <div className="flex items-center gap-2 rounded-full border-[0.5px] border-zinc-200 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900">
                         <Image src="/landing/icon-book.svg" alt="" width={20} height={20} />
-                        <span className="text-base text-zinc-900 dark:text-zinc-100">
-                          User Story
-                        </span>
+                        <span className="text-base text-zinc-900 dark:text-zinc-100">User Story</span>
                       </div>
                     </div>
-                    <div className="absolute top-[160px] left-[33px]">
+                    <div className="absolute left-[33px] top-[160px]">
                       <div className="flex items-center gap-2 rounded-full border-[0.5px] border-zinc-200 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900">
                         <Image src="/landing/icon-image.svg" alt="" width={20} height={20} />
-                        <span className="text-base text-zinc-900 dark:text-zinc-100">
-                          User scenarios
-                        </span>
+                        <span className="text-base text-zinc-900 dark:text-zinc-100">User scenarios</span>
                       </div>
                     </div>
-                    <div className="absolute right-[33px] bottom-[50px]">
+                    <div className="absolute bottom-[50px] right-[33px]">
                       <div className="flex items-center gap-2 rounded-full border-[0.5px] border-zinc-200 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900">
                         <Image src="/landing/icon-brackets.svg" alt="" width={20} height={20} />
-                        <span className="text-base text-zinc-900 dark:text-zinc-100">
-                          Edge cases
-                        </span>
+                        <span className="text-base text-zinc-900 dark:text-zinc-100">Edge cases</span>
                       </div>
                     </div>
-                    <div className="absolute right-0 bottom-0 left-0 h-10">
+                    <div className="absolute bottom-0 left-0 right-0 h-10">
                       <Image src="/landing/carousel-gradient-1.png" alt="" fill className="object-cover" />
                     </div>
                   </div>
                   <div className="flex h-[150px] flex-col gap-2 p-6">
-                    <h3 className="text-xl leading-7 font-medium text-black dark:text-white">
+                    <h3 className="text-xl font-medium leading-7 text-black dark:text-white">
                       Answer clarifying questions
                     </h3>
                     <p className="text-base leading-6 text-zinc-500">Jotlin helps you think through edge cases</p>
@@ -223,12 +222,10 @@ export function FeaturesSection() {
                   <div className="relative h-[310px] overflow-hidden bg-zinc-50 px-[52px] pt-[38px] dark:bg-zinc-800">
                     <div className="relative h-[220px]">
                       <div
-                        className="absolute top-[158px] left-0 w-full origin-top-left rounded-xl border-[0.5px] border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900"
+                        className="absolute left-0 top-[158px] w-full origin-top-left rounded-xl border-[0.5px] border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900"
                         style={{ transform: 'rotate(14.564deg) skewX(-0.531deg)' }}>
                         <div className="flex items-center gap-2">
-                          <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">
-                            Draft
-                          </p>
+                          <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">Draft</p>
                           <span className="rounded-full border-[0.5px] border-zinc-200 bg-zinc-50 px-1.5 py-0 text-sm leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800">
                             v1.0.0
                           </span>
@@ -239,12 +236,10 @@ export function FeaturesSection() {
                         </div>
                       </div>
                       <div
-                        className="absolute top-[94px] left-[99px] w-full origin-top-left rounded-xl border-[0.5px] border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900"
+                        className="absolute left-[99px] top-[94px] w-full origin-top-left rounded-xl border-[0.5px] border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900"
                         style={{ transform: 'rotate(14.564deg) skewX(-0.531deg)' }}>
                         <div className="flex items-center gap-2">
-                          <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">
-                            Draft
-                          </p>
+                          <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">Draft</p>
                           <span className="rounded-full border-[0.5px] border-zinc-200 bg-zinc-50 px-1.5 py-0 text-sm leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800">
                             v1.0.1
                           </span>
@@ -255,11 +250,9 @@ export function FeaturesSection() {
                         </div>
                       </div>
                       <div
-                        className="absolute top-[36px] left-[225px] z-10 w-full origin-top-left rounded-xl border-2 border-teal-400 bg-white p-5 dark:bg-zinc-900"
+                        className="absolute left-[225px] top-[36px] z-10 w-full origin-top-left rounded-xl border-2 border-teal-400 bg-white p-5 dark:bg-zinc-900"
                         style={{ transform: 'rotate(14.564deg) skewX(-0.531deg)' }}>
-                        <p className="text-lg leading-7 font-bold text-zinc-900 dark:text-zinc-100">
-                          Final
-                        </p>
+                        <p className="text-lg font-bold leading-7 text-zinc-900 dark:text-zinc-100">Final</p>
                         <div className="mt-6 space-y-3">
                           <div className="h-2 w-[556px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
                           <div className="h-2 w-[489px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
@@ -268,12 +261,12 @@ export function FeaturesSection() {
                         </div>
                       </div>
                     </div>
-                    <div className="absolute right-0 bottom-0 left-0 h-10">
+                    <div className="absolute bottom-0 left-0 right-0 h-10">
                       <Image src="/landing/carousel-gradient-2.png" alt="" fill className="object-cover" />
                     </div>
                   </div>
                   <div className="flex h-[150px] flex-col gap-2 p-6">
-                    <h3 className="text-xl leading-7 font-medium text-black dark:text-white">
+                    <h3 className="text-xl font-medium leading-7 text-black dark:text-white">
                       Get structured documentation
                     </h3>
                     <p className="text-sm leading-5 text-zinc-500">Receive well-organized specs ready to share</p>

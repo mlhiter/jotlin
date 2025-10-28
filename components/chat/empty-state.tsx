@@ -36,13 +36,14 @@ export function EmptyState({ onSendMessage }: EmptyStateProps) {
     <div className="px-4 py-20 text-center">
       <Avatar className="mx-auto mb-4 h-12 w-12">
         <AvatarFallback className="bg-muted">
-          <Brain className="h-6 w-6 text-muted-foreground" />
+          <Brain className="text-muted-foreground h-6 w-6" />
         </AvatarFallback>
       </Avatar>
 
-      <h2 className="mb-2 text-xl font-semibold break-words">Let&apos;s Define Your Product Requirements</h2>
-      <p className="mx-auto mb-8 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        I&apos;m your AI requirements analyst. I&apos;ll help you clarify your goals, identify target users, and define core features through structured conversations.
+      <h2 className="mb-2 break-words text-xl font-semibold">Let&apos;s Define Your Product Requirements</h2>
+      <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-sm leading-relaxed">
+        I&apos;m your AI requirements analyst. I&apos;ll help you clarify your goals, identify target users, and define
+        core features through structured conversations.
       </p>
 
       <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 px-4 md:grid-cols-2">
@@ -52,13 +53,13 @@ export function EmptyState({ onSendMessage }: EmptyStateProps) {
             <Button
               key={index}
               variant="outline"
-              className="h-auto w-full justify-start p-4 text-left hover:bg-muted/50"
+              className="hover:bg-muted/50 h-auto w-full justify-start p-4 text-left"
               onClick={() => onSendMessage({ text: prompt.text })}>
               <div className="flex w-full items-start gap-3">
-                <Icon className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                <Icon className="text-muted-foreground mt-1 h-5 w-5 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm leading-relaxed font-medium break-words whitespace-normal">{prompt.text}</div>
-                  <div className="mt-1 text-xs leading-relaxed break-words whitespace-normal text-muted-foreground">
+                  <div className="whitespace-normal break-words text-sm font-medium leading-relaxed">{prompt.text}</div>
+                  <div className="text-muted-foreground mt-1 whitespace-normal break-words text-xs leading-relaxed">
                     {prompt.description}
                   </div>
                 </div>

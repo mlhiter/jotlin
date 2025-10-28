@@ -358,7 +358,6 @@ Common transitions:
 
    ```tsx
    import Image from 'next/image'
-
    ;<Image src="/path/to/image.png" alt="Descriptive text" width={300} height={200} priority={isAboveFold} />
    ```
 

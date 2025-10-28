@@ -18,7 +18,7 @@ import apiClient from '@/libs/utils/axios'
 const PreviewLoader = () => {
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="text-sm text-muted-foreground">Loading preview...</div>
+      <div className="text-muted-foreground text-sm">Loading preview...</div>
     </div>
   )
 }
@@ -31,7 +31,7 @@ const Preview = dynamic(() => import('@/components/mvp/preview').then((mod) => (
 const CodeViewerLoader = () => {
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="text-sm text-muted-foreground">Loading code viewer...</div>
+      <div className="text-muted-foreground text-sm">Loading code viewer...</div>
     </div>
   )
 }
@@ -85,12 +85,7 @@ export function DraftPanel({
   const liveContent = liveFinal || liveDraft
 
   // Compute effective active tab - include live content in the check
-  const hasAnyDocument = !!(
-    documents.requirement ||
-    documents.architecture ||
-    documents.development ||
-    liveContent
-  )
+  const hasAnyDocument = !!(documents.requirement || documents.architecture || documents.development || liveContent)
   const effectiveActiveTab =
     externalActiveTab ?? internalActiveTab ?? (hasAnyDocument ? 'documents' : mvpData ? 'preview' : 'documents')
 
@@ -240,9 +235,9 @@ export function DraftPanel({
 
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="bg-background fixed inset-0 z-50 flex flex-col">
         <Tabs value={effectiveActiveTab} onValueChange={setActiveTab} className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
+          <div className="border-border bg-card flex items-center justify-between border-b px-4 py-2">
             <TabsList>
               {availableTabs.map((tab) => (
                 <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
@@ -257,7 +252,7 @@ export function DraftPanel({
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button size="icon" variant="ghost" className="h-8 w-8" title="Copy document">
-                      <Copy className="h-4 w-4 text-muted-foreground" />
+                      <Copy className="text-muted-foreground h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-56 p-2" align="end">
@@ -289,7 +284,7 @@ export function DraftPanel({
                   onClick={() => setIsFullscreen(false)}
                   className="h-8 w-8"
                   title="Exit fullscreen">
-                  <Minimize2 className="h-4 w-4 text-muted-foreground" />
+                  <Minimize2 className="text-muted-foreground h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -298,7 +293,7 @@ export function DraftPanel({
           <TabsContent value="documents" className="mt-0 flex h-full flex-col overflow-hidden">
             {/* Nested document tabs */}
             {availableDocumentTabs.length > 1 && (
-              <div className="flex items-center gap-1 border-b border-border px-4">
+              <div className="border-border flex items-center gap-1 border-b px-4">
                 {availableDocumentTabs.map((tab) => (
                   <button
                     key={tab.value}
@@ -310,7 +305,7 @@ export function DraftPanel({
                     }`}>
                     {tab.label}
                     {activeDocumentTab === tab.value && (
-                      <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-primary" />
+                      <div className="bg-primary absolute bottom-0 left-0 right-0 h-0.5" />
                     )}
                   </button>
                 ))}
@@ -320,11 +315,7 @@ export function DraftPanel({
             <div className="relative flex-1 overflow-hidden">
               <ScrollArea className="h-full">
                 <div className="relative p-4" data-selection-container>
-                  <Markdown
-                    content={
-                      documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''
-                    }
-                  />
+                  <Markdown content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''} />
                   <TextSelectionMenu onQuote={onQuote} />
                 </div>
               </ScrollArea>
@@ -336,7 +327,7 @@ export function DraftPanel({
               <Preview files={mvpData.files} />
             ) : (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-muted-foreground">No preview available</p>
+                <p className="text-muted-foreground text-sm">No preview available</p>
               </div>
             )}
           </TabsContent>
@@ -346,7 +337,7 @@ export function DraftPanel({
               <CodeViewer files={mvpData.files} />
             ) : (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-muted-foreground">No code available</p>
+                <p className="text-muted-foreground text-sm">No code available</p>
               </div>
             )}
           </TabsContent>
@@ -366,23 +357,23 @@ export function DraftPanel({
             size="icon"
             variant="ghost"
             onClick={onToggle}
-            className={`absolute top-4.5 z-20 h-8 w-8 transition-all duration-500 ease-in-out ${
+            className={`top-4.5 absolute z-20 h-8 w-8 transition-all duration-500 ease-in-out ${
               isVisible ? 'right-4' : 'left-2'
             }`}>
             {isVisible ? (
-              <ChevronsRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronsRight className="text-muted-foreground h-4 w-4" />
             ) : (
-              <ChevronsLeft className="h-4 w-4 text-muted-foreground" />
+              <ChevronsLeft className="text-muted-foreground h-4 w-4" />
             )}
           </Button>
         )}
 
         <div
-          className={`m-2 flex h-[calc(100%-1rem)] w-full transform flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-700 ease-in-out ${
+          className={`border-border bg-card m-2 flex h-[calc(100%-1rem)] w-full transform flex-col overflow-hidden rounded-lg border transition-all duration-700 ease-in-out ${
             isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
           }`}>
           <Tabs value={effectiveActiveTab} onValueChange={setActiveTab} className="flex h-full flex-col">
-            <div className="flex items-center justify-between border-b border-border px-4 py-2">
+            <div className="border-border flex items-center justify-between border-b px-4 py-2">
               <TabsList>
                 {availableTabs.map((tab) => (
                   <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
@@ -397,7 +388,7 @@ export function DraftPanel({
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button size="icon" variant="ghost" className="h-8 w-8" title="Copy document">
-                        <Copy className="h-4 w-4 text-muted-foreground" />
+                        <Copy className="text-muted-foreground h-4 w-4" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-56 p-2" align="end">
@@ -429,7 +420,7 @@ export function DraftPanel({
                     onClick={() => setIsFullscreen(true)}
                     className="h-8 w-8"
                     title="Fullscreen">
-                    <Maximize2 className="h-4 w-4 text-muted-foreground" />
+                    <Maximize2 className="text-muted-foreground h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -438,7 +429,7 @@ export function DraftPanel({
             <TabsContent value="documents" className="mt-0 flex h-full flex-col overflow-hidden">
               {/* Nested document tabs */}
               {availableDocumentTabs.length > 1 && (
-                <div className="flex items-center gap-1 border-b border-border px-4">
+                <div className="border-border flex items-center gap-1 border-b px-4">
                   {availableDocumentTabs.map((tab) => (
                     <button
                       key={tab.value}
@@ -450,7 +441,7 @@ export function DraftPanel({
                       }`}>
                       {tab.label}
                       {activeDocumentTab === tab.value && (
-                        <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-primary" />
+                        <div className="bg-primary absolute bottom-0 left-0 right-0 h-0.5" />
                       )}
                     </button>
                   ))}
@@ -460,11 +451,7 @@ export function DraftPanel({
               <div className="relative flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
                   <div className="relative p-4" data-selection-container>
-                    <Markdown
-                      content={
-                        documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''
-                      }
-                    />
+                    <Markdown content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''} />
                     <TextSelectionMenu onQuote={onQuote} />
                   </div>
                 </ScrollArea>
@@ -480,7 +467,7 @@ export function DraftPanel({
                 <Preview files={mvpData.files} />
               ) : (
                 <div className="flex h-full items-center justify-center">
-                  <p className="text-sm text-muted-foreground">No preview available</p>
+                  <p className="text-muted-foreground text-sm">No preview available</p>
                 </div>
               )}
             </TabsContent>
@@ -494,7 +481,7 @@ export function DraftPanel({
                 <CodeViewer files={mvpData.files} />
               ) : (
                 <div className="flex h-full items-center justify-center">
-                  <p className="text-sm text-muted-foreground">No code available</p>
+                  <p className="text-muted-foreground text-sm">No code available</p>
                 </div>
               )}
             </TabsContent>

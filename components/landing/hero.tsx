@@ -139,7 +139,7 @@ export function HeroSection() {
   }
 
   return (
-    <section className="pt-16 pb-24">
+    <section className="pb-24 pt-16">
       <div className="container mx-auto max-w-7xl px-6">
         <div className="flex flex-col items-center gap-8 text-center">
           {/* Badge */}
@@ -150,7 +150,7 @@ export function HeroSection() {
           </div>
 
           {/* Main Title */}
-          <h1 className="max-w-4xl text-5xl leading-tight font-bold tracking-tight text-gray-900 md:text-6xl lg:text-7xl">
+          <h1 className="max-w-4xl text-5xl font-bold leading-tight tracking-tight text-gray-900 md:text-6xl lg:text-7xl">
             Turn Messy Ideas into{' '}
             <span className="bg-gradient-to-r from-cyan-400 to-cyan-600 bg-clip-text text-transparent">
               Stuctured Specs
@@ -158,7 +158,10 @@ export function HeroSection() {
           </h1>
 
           {/* Description */}
-          <p className="max-w-2xl text-base text-gray-700 md:text-lg">Jotlin asks clarifying questions to flesh out your idea and generates professional specs as you chat —— so you can get back to the fun part: coding.</p>
+          <p className="max-w-2xl text-base text-gray-700 md:text-lg">
+            Jotlin asks clarifying questions to flesh out your idea and generates professional specs as you chat —— so
+            you can get back to the fun part: coding.
+          </p>
 
           {/* Input Box */}
           <div className="w-full max-w-3xl">
@@ -171,12 +174,12 @@ export function HeroSection() {
                   onCompositionStart={handleCompositionStart}
                   onCompositionEnd={handleCompositionEnd}
                   placeholder={placeholder}
-                  className="h-full w-full resize-none border-none bg-transparent px-5 pt-4 pb-14 text-base placeholder-zinc-500 shadow-none focus-visible:border-none focus-visible:ring-0"
+                  className="h-full w-full resize-none border-none bg-transparent px-5 pb-14 pt-4 text-base placeholder-zinc-500 shadow-none focus-visible:border-none focus-visible:ring-0"
                 />
                 <Button
                   size="icon"
                   onClick={handleSubmit}
-                  className="absolute right-3 bottom-2.5 size-9 rounded-[10px] bg-zinc-800 p-2 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.16),0px_4px_6px_-2px_rgba(0,0,0,0.05)] hover:bg-zinc-800 disabled:opacity-40"
+                  className="absolute bottom-2.5 right-3 size-9 rounded-[10px] bg-zinc-800 p-2 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.16),0px_4px_6px_-2px_rgba(0,0,0,0.05)] hover:bg-zinc-800 disabled:opacity-40"
                   disabled={!input.trim() || isCreatingChat}>
                   <Image
                     src="/landing/icon-arrow-up.svg"
@@ -188,7 +191,9 @@ export function HeroSection() {
                 </Button>
               </div>
             </div>
-            <p className="mt-2.5 text-left text-sm leading-5 text-zinc-500">Press Enter to send, Shift+Enter for new line</p>
+            <p className="mt-2.5 text-left text-sm leading-5 text-zinc-500">
+              Press Enter to send, Shift+Enter for new line
+            </p>
           </div>
 
           {/* Example Cards */}
@@ -214,7 +219,9 @@ export function HeroSection() {
               <div className="flex items-center gap-2">
                 <Users className="size-5 shrink-0 text-zinc-400" strokeWidth={1.5} />
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-sm leading-5 text-zinc-900">I need to create a SaaS platform for team collaboration</p>
+                  <p className="text-sm leading-5 text-zinc-900">
+                    I need to create a SaaS platform for team collaboration
+                  </p>
                   <p className="text-xs leading-4 text-zinc-500">Guide me through requirement gathering process</p>
                 </div>
               </div>

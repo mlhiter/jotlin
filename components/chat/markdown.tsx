@@ -27,7 +27,7 @@ export function Markdown({ content, className, inline = false }: MarkdownProps) 
   }
 
   return (
-    <div className={cn(inline ? '' : 'prose prose-sm max-w-none prose-neutral dark:prose-invert', className)}>
+    <div className={cn(inline ? '' : 'prose prose-sm prose-neutral dark:prose-invert max-w-none', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -40,18 +40,18 @@ export function Markdown({ content, className, inline = false }: MarkdownProps) 
 
             if (isInlineCode || inline) {
               return (
-                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm" {...props}>
+                <code className="bg-muted rounded px-1.5 py-0.5 font-mono text-sm" {...props}>
                   {codeContent}
                 </code>
               )
             }
             return (
               <div className="group relative">
-                <div className="flex items-center justify-between rounded-t-lg border bg-muted px-4 py-2">
-                  <span className="text-xs font-medium text-muted-foreground">{language}</span>
+                <div className="bg-muted flex items-center justify-between rounded-t-lg border px-4 py-2">
+                  <span className="text-muted-foreground text-xs font-medium">{language}</span>
                   <button
                     onClick={() => copyToClipboard(codeContent)}
-                    className="rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-background"
+                    className="hover:bg-background rounded p-1 opacity-0 transition-opacity group-hover:opacity-100"
                     type="button">
                     {copiedCode === codeContent ? (
                       <Check className="h-3 w-3 text-green-500" />
@@ -74,20 +74,20 @@ export function Markdown({ content, className, inline = false }: MarkdownProps) 
             return <>{children}</>
           },
           blockquote({ children }) {
-            return <blockquote className="border-l-4 border-primary pl-4 italic">{children}</blockquote>
+            return <blockquote className="border-primary border-l-4 pl-4 italic">{children}</blockquote>
           },
           table({ children }) {
             return (
               <div className="overflow-x-auto">
-                <table className="min-w-full border-collapse border border-border">{children}</table>
+                <table className="border-border min-w-full border-collapse border">{children}</table>
               </div>
             )
           },
           th({ children }) {
-            return <th className="border border-border bg-muted px-4 py-2 text-left font-semibold">{children}</th>
+            return <th className="border-border bg-muted border px-4 py-2 text-left font-semibold">{children}</th>
           },
           td({ children }) {
-            return <td className="border border-border px-4 py-2">{children}</td>
+            return <td className="border-border border px-4 py-2">{children}</td>
           },
         }}>
         {content}

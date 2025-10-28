@@ -9,10 +9,10 @@ interface LoadingProps {
 
 export const Loading = ({ className }: LoadingProps) => {
   return (
-    <div className={cn('fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm', className)}>
+    <div className={cn('bg-background/80 fixed inset-0 flex items-center justify-center backdrop-blur-sm', className)}>
       <div className="flex flex-col items-center space-y-2">
-        <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <Loader className="text-muted-foreground h-8 w-8 animate-spin" />
+        <p className="text-muted-foreground text-sm">Loading...</p>
       </div>
     </div>
   )

@@ -15,9 +15,12 @@ import { NextPhaseButton } from '@/components/project/next-phase-button'
 import { PhaseProgress } from '@/components/project/phase-progress'
 import { useSidebar } from '@/components/ui/sidebar'
 
-const DraftPanel = dynamicImport(() => import('@/components/chat/draft-panel').then((mod) => ({ default: mod.DraftPanel })), {
-  ssr: false,
-})
+const DraftPanel = dynamicImport(
+  () => import('@/components/chat/draft-panel').then((mod) => ({ default: mod.DraftPanel })),
+  {
+    ssr: false,
+  }
+)
 
 export const dynamic = 'force-dynamic'
 
@@ -161,7 +164,11 @@ export default function ChatIdPage() {
           const documentsData = documentsRes.data
 
           // Try to restore the last viewed phase from localStorage
-          const savedPhase = localStorage.getItem(`lastPhase_${chatId}`) as 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+          const savedPhase = localStorage.getItem(`lastPhase_${chatId}`) as
+            | 'REQUIREMENT'
+            | 'ARCHITECTURE'
+            | 'DEVELOPMENT'
+            | null
 
           // Find the active chat: either saved phase or the last one
           let activeChat = phaseChats[phaseChats.length - 1]
@@ -372,7 +379,13 @@ export default function ChatIdPage() {
     }
 
     saveDocument()
-  }, [requirementContent.final, projectData?.currentPhase, projectData?.rootChatId, projectData?.phaseChats, messages.length])
+  }, [
+    requirementContent.final,
+    projectData?.currentPhase,
+    projectData?.rootChatId,
+    projectData?.phaseChats,
+    messages.length,
+  ])
 
   // Auto show draft panel when there's content
   useEffect(() => {
@@ -606,9 +619,7 @@ export default function ChatIdPage() {
 
         // Create updated phaseChats with current messages saved
         const updatedPhaseChats = prev.phaseChats.map((pc) =>
-          pc.phase === prev.currentPhase
-            ? { ...pc, messages: messages as any[] }
-            : pc
+          pc.phase === prev.currentPhase ? { ...pc, messages: messages as any[] } : pc
         )
 
         // Find target phase chat from updated array
@@ -756,7 +767,12 @@ export default function ChatIdPage() {
             setPendingMessage(
               `Based on the requirement document below, please help me design the technical architecture:\n\n${documents.requirement.content}`
             )
-          } else if (activeChat && activeChat.phase === 'DEVELOPMENT' && documents.requirement && documents.architecture) {
+          } else if (
+            activeChat &&
+            activeChat.phase === 'DEVELOPMENT' &&
+            documents.requirement &&
+            documents.architecture
+          ) {
             setPendingMessage(
               `Based on the following documents, please generate a development plan:\n\n【Requirements Analysis Document】\n${documents.requirement.content}\n\n【Technical Architecture Document】\n${documents.architecture.content}`
             )

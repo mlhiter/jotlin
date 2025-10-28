@@ -48,9 +48,7 @@ export function NextPhaseButton({ rootChatId, currentPhase, finalDocument, onSuc
       <div className="flex items-center justify-between gap-6">
         <div className="flex-1">
           <p className="text-sm font-medium text-green-900 dark:text-green-100">✓ Document completed</p>
-          <p className="text-xs text-green-700 dark:text-green-300">
-            Ready to start {nextPhaseName} phase
-          </p>
+          <p className="text-xs text-green-700 dark:text-green-300">Ready to start {nextPhaseName} phase</p>
         </div>
         <Button onClick={handleStartNextPhase} disabled={isLoading} size="sm" className="shrink-0 gap-2">
           {isLoading ? (

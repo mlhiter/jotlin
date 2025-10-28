@@ -63,12 +63,12 @@ export function CodeViewer({ files }: CodeViewerProps) {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-background">
+    <div className="bg-background flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
+      <div className="border-border bg-card flex items-center justify-between border-b px-4 py-2">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium text-foreground">Code View</h3>
-          <span className="text-xs text-muted-foreground">
+          <h3 className="text-foreground text-sm font-medium">Code View</h3>
+          <span className="text-muted-foreground text-xs">
             {fileNames.length} {fileNames.length === 1 ? 'file' : 'files'}
           </span>
         </div>
@@ -86,7 +86,7 @@ export function CodeViewer({ files }: CodeViewerProps) {
 
       <div className="flex flex-1 overflow-hidden">
         {/* File List */}
-        <div className="w-1/4 max-w-72 min-w-48 overflow-y-auto border-r border-border bg-card">
+        <div className="border-border bg-card w-1/4 min-w-48 max-w-72 overflow-y-auto border-r">
           <div className="space-y-1 p-2">
             {fileNames.map((fileName) => (
               <button
@@ -105,11 +105,11 @@ export function CodeViewer({ files }: CodeViewerProps) {
         </div>
 
         {/* Code Content */}
-        <div className="flex-1 overflow-auto bg-background p-4">
-          <div className="mb-2 border-b border-border pb-2">
-            <span className="font-mono text-xs text-muted-foreground">{selectedFile}</span>
+        <div className="bg-background flex-1 overflow-auto p-4">
+          <div className="border-border mb-2 border-b pb-2">
+            <span className="text-muted-foreground font-mono text-xs">{selectedFile}</span>
           </div>
-          <pre className="text-sm text-foreground">
+          <pre className="text-foreground text-sm">
             <code>{files[selectedFile]}</code>
           </pre>
         </div>

@@ -195,7 +195,6 @@ animate-out fade-out
 
 ```tsx
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-
 ;<Card>
   <CardHeader>
     <CardTitle>Title</CardTitle>
@@ -208,7 +207,6 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 ```tsx
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-
 ;<Dialog open={isOpen} onOpenChange={setIsOpen}>
   <DialogContent>
     <DialogHeader>

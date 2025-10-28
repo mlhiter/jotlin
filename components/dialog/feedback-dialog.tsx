@@ -87,7 +87,9 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>We Value Your Feedback</DialogTitle>
-          <DialogDescription>Help us improve by sharing your thoughts, reporting bugs, or suggesting new features.</DialogDescription>
+          <DialogDescription>
+            Help us improve by sharing your thoughts, reporting bugs, or suggesting new features.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">

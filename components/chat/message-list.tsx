@@ -70,10 +70,10 @@ export function MessageList({
   return (
     <div className="relative flex-1 overflow-hidden">
       {/* Top blur gradient */}
-      <div className="pointer-events-none absolute left-0 right-3 top-0 z-10 h-8 bg-gradient-to-b from-background to-transparent" />
+      <div className="from-background pointer-events-none absolute left-0 right-3 top-0 z-10 h-8 bg-gradient-to-b to-transparent" />
 
       {/* Bottom blur gradient */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-3 z-10 h-8 bg-gradient-to-t from-background to-transparent" />
+      <div className="from-background pointer-events-none absolute bottom-0 left-0 right-3 z-10 h-8 bg-gradient-to-t to-transparent" />
 
       <ScrollArea ref={scrollAreaRef} className="h-full px-4">
         <div className="mx-auto max-w-3xl space-y-6 py-6">
@@ -115,8 +115,8 @@ export function MessageList({
           {(status === 'submitted' || status === 'streaming') && (
             <div className="flex justify-start gap-4">
               <div className="flex animate-pulse items-center gap-2">
-                <Brain className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">{'Thinking...'}</span>
+                <Brain className="text-muted-foreground h-4 w-4" />
+                <span className="text-muted-foreground text-xs">{'Thinking...'}</span>
               </div>
             </div>
           )}
@@ -152,7 +152,7 @@ export function MessageList({
             onClick={scrollToBottom}
             size="sm"
             variant="secondary"
-            className="h-8 w-8 rounded-full border bg-background p-0 shadow-lg hover:bg-muted">
+            className="bg-background hover:bg-muted h-8 w-8 rounded-full border p-0 shadow-lg">
             <ChevronDown className="h-4 w-4" />
           </Button>
         </div>

@@ -45,7 +45,7 @@ export function ChatList() {
     return (
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-10 animate-pulse rounded-md bg-muted/50" />
+          <div key={i} className="bg-muted/50 h-10 animate-pulse rounded-md" />
         ))}
       </div>
     )
@@ -54,9 +54,9 @@ export function ChatList() {
   if (chats.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
-        <MessageSquare className="mb-2 h-8 w-8 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">No chats yet</p>
-        <p className="mt-1 text-xs text-muted-foreground">Start a conversation to see your chat history</p>
+        <MessageSquare className="text-muted-foreground mb-2 h-8 w-8" />
+        <p className="text-muted-foreground text-sm">No chats yet</p>
+        <p className="text-muted-foreground mt-1 text-xs">Start a conversation to see your chat history</p>
       </div>
     )
   }

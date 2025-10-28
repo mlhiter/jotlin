@@ -702,7 +702,6 @@ export function MyDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
 
 ```tsx
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-
 ;<DropdownMenu>
   <DropdownMenuTrigger asChild>
     <Button variant="ghost">Open</Button>

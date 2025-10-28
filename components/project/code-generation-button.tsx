@@ -144,14 +144,14 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
 
   if (isGenerating || logs.length > 0) {
     return (
-      <div className="h-96 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="animate-in fade-in slide-in-from-top-4 h-96 duration-500">
         <GenerationLog logs={logs} isGenerating={isGenerating} currentStep={currentStep} />
       </div>
     )
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-top-2 duration-300 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/20">
+    <div className="animate-in fade-in slide-in-from-top-2 rounded-lg border border-green-200 bg-green-50 p-4 duration-300 dark:border-green-900/50 dark:bg-green-950/20">
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1">
           <p className="text-sm font-medium text-green-900 dark:text-green-100">✓ Development plan completed</p>

@@ -15,7 +15,7 @@ export default function Home() {
   return (
     <LandingWrapper>
       <div className="relative flex min-h-screen flex-col">
-        <div className="pointer-events-none absolute top-0 right-0 left-0 -z-10 h-96 overflow-hidden bg-gradient-to-b from-cyan-50/50 to-transparent">
+        <div className="pointer-events-none absolute left-0 right-0 top-0 -z-10 h-96 overflow-hidden bg-gradient-to-b from-cyan-50/50 to-transparent">
           <Image src="/landing/header-decoration.svg" alt="" fill className="object-cover object-top opacity-40" />
         </div>
         <LandingHeader />

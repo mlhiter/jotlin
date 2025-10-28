@@ -102,10 +102,10 @@ export function AssistantMessage({
 
   return (
     <div className="flex max-w-[85%] flex-col items-end">
-      <div className="space-y-4 rounded-xl border-none bg-background p-2.5 shadow-none">
+      <div className="bg-background space-y-4 rounded-xl border-none p-2.5 shadow-none">
         {/* Prose */}
         {parsed.prose && parsed.prose.length > 0 && (
-          <div className="space-y-2 text-sm text-muted-foreground">
+          <div className="text-muted-foreground space-y-2 text-sm">
             {parsed.prose.map((prose, index) => (
               <Markdown key={index} content={prose} />
             ))}
@@ -123,7 +123,7 @@ export function AssistantMessage({
         {parsed.options.length > 0 && (
           <div className="space-y-2">
             {parsed.optionType === 'multiple' && (
-              <div className="mb-2 text-xs text-muted-foreground">
+              <div className="text-muted-foreground mb-2 text-xs">
                 💡 Select options and they will appear in the input field below.
               </div>
             )}
@@ -135,14 +135,14 @@ export function AssistantMessage({
                   <Button
                     key={`${option.value}-${index}`}
                     variant="outline"
-                    className={`h-auto justify-start px-4 py-3 text-left whitespace-pre-wrap ${
+                    className={`h-auto justify-start whitespace-pre-wrap px-4 py-3 text-left ${
                       isSelected && 'bg-accent'
                     }`}
                     disabled={answered}
                     onClick={() => {
                       handleOptionClick(option.value, option.text)
                     }}>
-                    <span className="mr-2 text-xs font-medium text-muted-foreground">{option.value}.</span>
+                    <span className="text-muted-foreground mr-2 text-xs font-medium">{option.value}.</span>
                     <Markdown content={option.text} inline />
                     <div className="flex h-4 w-4 items-center justify-center">
                       {isSelected && <Check className="h-4 w-4" />}
@@ -188,7 +188,7 @@ export function AssistantMessage({
       </div>
       <div className="mt-1 flex w-full items-center justify-between gap-1 px-2.5">
         {answered && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-1 text-xs">
             <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
             Answered
           </div>
@@ -197,7 +197,7 @@ export function AssistantMessage({
           variant="ghost"
           size="sm"
           onClick={() => onRollback()}
-          className="h-6 px-2 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs opacity-0 transition-opacity group-hover:opacity-100"
           title="Rollback to this message">
           <RotateCcw className="mr-1 h-4 w-4" />
           Rollback

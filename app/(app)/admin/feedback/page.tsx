@@ -117,7 +117,7 @@ function FeedbackAdminPageContent() {
         return (
           <div className="max-w-md">
             <div
-              className={`text-sm leading-relaxed break-words whitespace-pre-wrap ${
+              className={`whitespace-pre-wrap break-words text-sm leading-relaxed ${
                 isExpanded ? 'max-h-96 overflow-y-auto' : ''
               }`}>
               {shouldTruncate && !isExpanded ? content.substring(0, maxLength) + '...' : content}
@@ -125,7 +125,7 @@ function FeedbackAdminPageContent() {
             {shouldTruncate && (
               <button
                 onClick={() => toggleExpanded?.(rowId)}
-                className="mt-1 text-xs text-primary underline hover:text-primary/80 focus:outline-none">
+                className="text-primary hover:text-primary/80 mt-1 text-xs underline focus:outline-none">
                 {isExpanded ? 'Show less' : 'Show more'}
               </button>
             )}
@@ -238,7 +238,7 @@ function FeedbackAdminPageContent() {
       <div className="p-6 text-center">
         <h1 className="mb-4 text-2xl font-bold">Access Denied</h1>
         <p>You don&apos;t have permission to access this page.</p>
-        <p className="mt-2 text-sm text-muted-foreground">Required role: ADMIN or SUPER_ADMIN</p>
+        <p className="text-muted-foreground mt-2 text-sm">Required role: ADMIN or SUPER_ADMIN</p>
       </div>
     )
   }
@@ -261,119 +261,120 @@ function FeedbackAdminPageContent() {
           </div>
           <div className="rounded-md border">
             <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                    ))}
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      )
+                    })}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={getColumns().length} className="h-24 text-center">
-                    No feedback submitted yet.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-between py-4">
-          <div className="text-sm text-muted-foreground">
-            Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}{' '}
-            to{' '}
-            {Math.min(
-              (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-              table.getFilteredRowModel().rows.length
-            )}{' '}
-            of {table.getFilteredRowModel().rows.length} feedback(s)
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={getColumns().length} className="h-24 text-center">
+                      No feedback submitted yet.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
-
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="hidden h-8 w-8 lg:flex"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}>
-              <span className="sr-only">Go to first page</span>
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}>
-              <span className="sr-only">Go to previous page</span>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-
-            {/* Page numbers */}
-            <div className="hidden items-center space-x-1 md:flex">
-              {Array.from({ length: Math.min(5, table.getPageCount()) }, (_, i) => {
-                const currentPage = table.getState().pagination.pageIndex
-                const totalPages = table.getPageCount()
-                let pageNumber: number
-
-                if (totalPages <= 5) {
-                  pageNumber = i
-                } else if (currentPage < 3) {
-                  pageNumber = i
-                } else if (currentPage > totalPages - 4) {
-                  pageNumber = totalPages - 5 + i
-                } else {
-                  pageNumber = currentPage - 2 + i
-                }
-
-                return (
-                  <Button
-                    key={pageNumber}
-                    variant={currentPage === pageNumber ? 'default' : 'outline'}
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => table.setPageIndex(pageNumber)}>
-                    {pageNumber + 1}
-                  </Button>
-                )
-              })}
+          <div className="flex items-center justify-between py-4">
+            <div className="text-muted-foreground text-sm">
+              Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
+              {Math.min(
+                (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+                table.getFilteredRowModel().rows.length
+              )}{' '}
+              of {table.getFilteredRowModel().rows.length} feedback(s)
             </div>
 
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}>
-              <span className="sr-only">Go to next page</span>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="hidden h-8 w-8 lg:flex"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}>
-              <span className="sr-only">Go to last page</span>
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="hidden h-8 w-8 lg:flex"
+                onClick={() => table.setPageIndex(0)}
+                disabled={!table.getCanPreviousPage()}>
+                <span className="sr-only">Go to first page</span>
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}>
+                <span className="sr-only">Go to previous page</span>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {/* Page numbers */}
+              <div className="hidden items-center space-x-1 md:flex">
+                {Array.from({ length: Math.min(5, table.getPageCount()) }, (_, i) => {
+                  const currentPage = table.getState().pagination.pageIndex
+                  const totalPages = table.getPageCount()
+                  let pageNumber: number
+
+                  if (totalPages <= 5) {
+                    pageNumber = i
+                  } else if (currentPage < 3) {
+                    pageNumber = i
+                  } else if (currentPage > totalPages - 4) {
+                    pageNumber = totalPages - 5 + i
+                  } else {
+                    pageNumber = currentPage - 2 + i
+                  }
+
+                  return (
+                    <Button
+                      key={pageNumber}
+                      variant={currentPage === pageNumber ? 'default' : 'outline'}
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => table.setPageIndex(pageNumber)}>
+                      {pageNumber + 1}
+                    </Button>
+                  )
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}>
+                <span className="sr-only">Go to next page</span>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="hidden h-8 w-8 lg:flex"
+                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                disabled={!table.getCanNextPage()}>
+                <span className="sr-only">Go to last page</span>
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>

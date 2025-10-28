@@ -69,7 +69,9 @@ export function TryButton() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Start Your Project</DialogTitle>
-            <DialogDescription>Describe what you want to build, and AI will help you bring it to life</DialogDescription>
+            <DialogDescription>
+              Describe what you want to build, and AI will help you bring it to life
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <Textarea

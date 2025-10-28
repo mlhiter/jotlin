@@ -118,8 +118,8 @@ export function TextSelectionMenu({ onQuote }: TextSelectionMenuProps) {
     <div
       ref={menuRef}
       className={cn(
-        'absolute z-50 flex items-center gap-1 rounded-md border border-border bg-popover p-1 shadow-lg',
-        'animate-in duration-200 fade-in-0 zoom-in-95',
+        'border-border bg-popover absolute z-50 flex items-center gap-1 rounded-md border p-1 shadow-lg',
+        'animate-in fade-in-0 zoom-in-95 duration-200',
         'backdrop-blur-sm'
       )}
       style={{
@@ -131,9 +131,9 @@ export function TextSelectionMenu({ onQuote }: TextSelectionMenuProps) {
         size="sm"
         variant="ghost"
         onClick={handleQuote}
-        className="flex h-7 items-center gap-1 px-2 text-sm text-muted-foreground hover:bg-accent">
+        className="text-muted-foreground hover:bg-accent flex h-7 items-center gap-1 px-2 text-sm">
         Quote
-        <kbd className="ml-1 h-4 w-4 rounded border border-border bg-muted font-mono text-xs">Q</kbd>
+        <kbd className="border-border bg-muted ml-1 h-4 w-4 rounded border font-mono text-xs">Q</kbd>
       </Button>
     </div>
   )
