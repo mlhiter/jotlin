@@ -2,7 +2,10 @@
 
 import JSZip from 'jszip'
 import { Download } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { useState } from 'react'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -11,7 +14,42 @@ interface CodeViewerProps {
   files: Record<string, string>
 }
 
+const detectLanguage = (filename: string): string => {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  const langMap: Record<string, string> = {
+    ts: 'typescript',
+    tsx: 'tsx',
+    js: 'javascript',
+    jsx: 'jsx',
+    json: 'json',
+    css: 'css',
+    scss: 'scss',
+    sass: 'sass',
+    less: 'less',
+    html: 'html',
+    xml: 'xml',
+    md: 'markdown',
+    yml: 'yaml',
+    yaml: 'yaml',
+    py: 'python',
+    rb: 'ruby',
+    go: 'go',
+    java: 'java',
+    c: 'c',
+    cpp: 'cpp',
+    cs: 'csharp',
+    php: 'php',
+    sh: 'bash',
+    bash: 'bash',
+    sql: 'sql',
+    graphql: 'graphql',
+    prisma: 'prisma',
+  }
+  return langMap[ext || ''] || 'plaintext'
+}
+
 export function CodeViewer({ files }: CodeViewerProps) {
+  const { theme } = useTheme()
   const [selectedFile, setSelectedFile] = useState(Object.keys(files)[0])
   const [isDownloading, setIsDownloading] = useState(false)
   const fileNames = Object.keys(files).sort()
@@ -105,13 +143,27 @@ export function CodeViewer({ files }: CodeViewerProps) {
         </div>
 
         {/* Code Content */}
-        <div className="bg-background flex-1 overflow-auto p-4">
-          <div className="border-border mb-2 border-b pb-2">
+        <div className="bg-background flex-1 overflow-auto">
+          <div className="border-border bg-card sticky top-0 z-10 border-b px-4 py-2">
             <span className="text-muted-foreground font-mono text-xs">{selectedFile}</span>
           </div>
-          <pre className="text-foreground text-sm">
-            <code>{files[selectedFile]}</code>
-          </pre>
+          <SyntaxHighlighter
+            language={detectLanguage(selectedFile)}
+            style={theme === 'dark' ? oneDark : oneLight}
+            showLineNumbers
+            customStyle={{
+              margin: 0,
+              fontSize: '13px',
+              borderRadius: 0,
+              background: 'transparent',
+            }}
+            codeTagProps={{
+              style: {
+                fontFamily: 'var(--font-geist-mono), ui-monospace, monospace',
+              },
+            }}>
+            {files[selectedFile] || ''}
+          </SyntaxHighlighter>
         </div>
       </div>
     </div>
