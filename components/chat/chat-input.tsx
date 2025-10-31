@@ -173,7 +173,7 @@ export function ChatInput({
               onKeyDown={handleKeyDown}
               placeholder="Message Jotlin Agent..."
               disabled={status === 'submitted' || status === 'streaming' || disabled}
-              className="max-h-[200px] resize-none py-3 pr-12"
+              className="max-h-[200px] !min-h-20 resize-none py-3 pr-12"
               rows={1}
             />
             <Button
