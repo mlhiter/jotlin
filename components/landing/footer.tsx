@@ -30,7 +30,7 @@ export function LandingFooter() {
         <Image src="/landing/footer-bg.svg" alt="" fill className="object-cover" />
       </div>
 
-      <div className="container relative mx-auto max-w-full px-12 py-10">
+      <div className="container relative mx-auto mt-20 max-w-full px-12 py-10">
         <div className="mb-20 text-center">
           <h2 className="mb-6 text-4xl font-medium text-white">Your Next Great Idea is One Conversation Away.</h2>
           <p className="mb-10 text-xl text-zinc-500">Try it instantly. No account or credit card required.</p>

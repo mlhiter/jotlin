@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowRight, Globe, Smartphone, Users } from 'lucide-react'
+import { ArrowRight, ArrowUp, Globe, Smartphone, Users } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -141,32 +141,53 @@ export function HeroSection() {
   return (
     <section className="pb-24 pt-16">
       <div className="container mx-auto max-w-7xl px-6">
-        <div className="flex flex-col items-center gap-8 text-center">
-          {/* Badge */}
-          <div className="relative inline-flex items-center gap-1.5 rounded-full border-2 border-gray-900 bg-white px-5 py-2.5 text-sm shadow-sm">
-            <span className="text-gray-700">Jotlin is an</span>
-            <span className="font-semibold text-cyan-500">AI agent</span>
-            <span className="text-gray-700">that interviews you.</span>
+        <div className="flex flex-col items-center gap-10 text-center">
+          <div className="flex flex-col items-center gap-7">
+            {/* Badge */}
+            <div className="border-1 relative inline-flex items-center gap-1.5 rounded-full border-zinc-900 bg-white px-5 py-2.5 text-sm font-medium text-zinc-900 shadow-sm">
+              Jotlin is an
+              <span className="relative mr-2 inline-block bg-[linear-gradient(90deg,#00C6B1_0%,#00AA9B_100%)] bg-clip-text font-semibold text-transparent">
+                AI agent
+                <Image
+                  src="/landing/agent-start.svg"
+                  alt=""
+                  width={7}
+                  height={7}
+                  className="absolute -right-2 top-0.5"
+                />
+              </span>
+              that interviews you.
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              {/* Main Title */}
+              <h1 className="h-15 text-[40px] font-medium text-zinc-900">
+                Turn Messy Ideas into{' '}
+                <span className="bg-[linear-gradient(90deg,#00C6B1_0%,#00AA9B_100%)] bg-clip-text text-transparent">
+                  Structured Specs
+                </span>
+              </h1>
+
+              {/* Description */}
+              <p className="max-w-2xl leading-6 text-zinc-500">
+                Jotlin asks clarifying questions to flesh out your idea and generates professional specs as you chat ——
+                so you can get back to the fun part: coding.
+              </p>
+            </div>
           </div>
-
-          {/* Main Title */}
-          <h1 className="max-w-4xl text-5xl font-bold leading-tight tracking-tight text-gray-900 md:text-6xl lg:text-7xl">
-            Turn Messy Ideas into{' '}
-            <span className="bg-gradient-to-r from-cyan-400 to-cyan-600 bg-clip-text text-transparent">
-              Stuctured Specs
-            </span>
-          </h1>
-
-          {/* Description */}
-          <p className="max-w-2xl text-base text-gray-700 md:text-lg">
-            Jotlin asks clarifying questions to flesh out your idea and generates professional specs as you chat —— so
-            you can get back to the fun part: coding.
-          </p>
 
           {/* Input Box */}
           <div className="w-full max-w-3xl">
-            <div className="rounded-[20px] border border-cyan-300 bg-white">
-              <div className="relative h-[150px] overflow-hidden rounded-[inherit]">
+            <div
+              className="relative rounded-[20px] p-[1px] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05),0_4px_6px_-2px_rgba(0,0,0,0.02)]"
+              style={{
+                background: `
+                  linear-gradient(to right, #5EEAD4 0%, rgba(94, 234, 212, 0) 25%) left top / 100% 1px no-repeat,
+                  linear-gradient(to bottom, #5EEAD4 0%, rgba(94, 234, 212, 0) 50%) left top / 1px 100% no-repeat,
+                  radial-gradient(circle at top left, #5EEAD4 0%, #5EEAD4 50%, rgba(94, 234, 212, 0) 70%) 0 0 / 20px 20px no-repeat,
+                  #E4E4E7
+                `,
+              }}>
+              <div className="relative h-[150px] overflow-hidden rounded-[19px] bg-white">
                 <Textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -179,15 +200,9 @@ export function HeroSection() {
                 <Button
                   size="icon"
                   onClick={handleSubmit}
-                  className="absolute bottom-2.5 right-3 size-9 rounded-[10px] bg-zinc-800 p-2 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.16),0px_4px_6px_-2px_rgba(0,0,0,0.05)] hover:bg-zinc-800 disabled:opacity-40"
+                  className="absolute bottom-2.5 right-3 rounded-[10px] bg-zinc-800 p-2 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.16),0px_4px_6px_-2px_rgba(0,0,0,0.05)] hover:bg-zinc-800 disabled:opacity-40"
                   disabled={!input.trim() || isCreatingChat}>
-                  <Image
-                    src="/landing/icon-arrow-up.svg"
-                    alt=""
-                    width={20}
-                    height={20}
-                    className="brightness-0 invert"
-                  />
+                  <ArrowUp className="size-5 text-white" />
                 </Button>
               </div>
             </div>

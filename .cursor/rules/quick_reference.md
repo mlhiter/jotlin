@@ -111,7 +111,7 @@ className="
 ```tsx
 // Always include dark mode variants
 <div className="bg-white dark:bg-black" />
-<div className="text-gray-900 dark:text-gray-100" />
+<div className="text-zinc-900 dark:text-gray-100" />
 
 // Or use semantic tokens (preferred)
 <div className="bg-background text-foreground" />

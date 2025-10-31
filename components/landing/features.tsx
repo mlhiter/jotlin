@@ -38,13 +38,13 @@ export function FeaturesSection() {
 
   return (
     <section id="features" className="relative overflow-hidden py-24">
-      <div className="absolute inset-0 -z-10 opacity-20">
+      <div className="absolute inset-0 -left-80 top-5 -z-10">
         <Image src="/landing/features-bg.svg" alt="" fill className="object-cover" />
       </div>
 
       <div className="container mx-auto max-w-7xl px-6">
-        <div className="mb-10 flex flex-col gap-10">
-          <div className="relative inline-flex flex-col items-start self-center">
+        <div className="mb-10 flex w-full flex-col gap-10">
+          <div className="relative inline-flex w-full flex-col items-start self-center">
             <div className="flex items-center gap-11">
               <h2 className="w-[338px] text-4xl font-medium leading-[1.5] text-black dark:text-white">
                 It&apos;s a Conversation, Not a Command.
@@ -55,11 +55,11 @@ export function FeaturesSection() {
               </p>
             </div>
             <Image
-              src="/landing/title-decoration-icon.svg"
+              src="/landing/conversation.svg"
               alt=""
               width={47}
               height={37}
-              className="absolute left-[41%] top-0"
+              className="absolute -top-[20px] left-[26%]"
             />
           </div>
 
@@ -82,7 +82,7 @@ export function FeaturesSection() {
           </div>
         </div>
 
-        <div className="relative mb-12 h-[480px] overflow-hidden" onWheel={handleWheel}>
+        <div className="relative mb-12 h-[510px] overflow-hidden" onWheel={handleWheel}>
           <div
             className="flex gap-8 transition-transform duration-700 ease-out"
             style={{
@@ -90,48 +90,24 @@ export function FeaturesSection() {
                 activeStep === 0
                   ? 'translateX(0)'
                   : activeStep === 1
-                    ? 'translateX(calc(-80% - 32px + 10%))'
-                    : 'translateX(calc(-160% - 64px + 20%))',
+                    ? 'translateX(calc(-40%))'
+                    : 'translateX(calc(-85.5%))',
             }}>
             {/* Card 1 */}
-            <div className="w-[80%] shrink-0">
+            <div className="w-[60%] shrink-0">
               <div
-                className={`relative h-full overflow-hidden rounded-2xl border bg-white transition-colors duration-500 dark:bg-zinc-900 ${
+                className={`relative h-full overflow-hidden rounded-2xl border bg-white shadow-lg transition-colors duration-500 dark:bg-zinc-900 ${
                   activeStep === 0 ? 'border-black dark:border-white' : 'border-zinc-200 dark:border-zinc-700'
                 }`}>
                 <div className="flex h-full flex-col">
-                  <div className="relative h-[310px] overflow-hidden bg-zinc-50 px-[52px] pt-[38px] dark:bg-zinc-800">
-                    <div className="mb-4 rounded-2xl bg-[#ececed] px-5 py-5 dark:bg-zinc-700">
-                      <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">
-                        I want to create a tool to search for my favorite articles.
-                      </p>
-                    </div>
-                    <div className="rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-                      <div className="h-[81px] px-5 pt-4">
-                        <p className="text-lg leading-7 text-zinc-500">Message Jotlin Agent..</p>
-                      </div>
-                      <div className="flex justify-end px-3 pb-2.5">
-                        <div className="flex items-center justify-center rounded-[10px] bg-zinc-800 p-2 opacity-40">
-                          <Image
-                            src="/landing/icon-arrow-up.svg"
-                            alt=""
-                            width={20}
-                            height={20}
-                            className="brightness-0 invert"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-10">
-                      <Image src="/landing/carousel-gradient-1.png" alt="" fill className="object-cover" />
-                    </div>
-                  </div>
+                  <Image src="/landing/card-1.svg" alt="" width={788} height={310} />
                   <div className="flex h-[150px] flex-col gap-2 p-6">
                     <h3 className="text-xl font-medium leading-7 text-black dark:text-white">
                       Describe your idea in plain English
                     </h3>
-                    <p className="text-base leading-6 text-zinc-500">
-                      No need for technical jargon or formal templates
+                    <p className="w-[55%] text-base leading-6 text-zinc-500">
+                      Drop a sentence or two. No prompts required. Jotlin infers intent and starts asking smart
+                      questions.
                     </p>
                   </div>
                 </div>
@@ -139,132 +115,34 @@ export function FeaturesSection() {
             </div>
 
             {/* Card 2 */}
-            <div className="w-[80%] shrink-0">
+            <div className="w-[60%] shrink-0">
               <div
-                className={`relative h-full overflow-hidden rounded-2xl border bg-white transition-colors duration-500 dark:bg-zinc-900 ${
+                className={`relative h-full overflow-hidden rounded-2xl border bg-white shadow-lg transition-colors duration-500 dark:bg-zinc-900 ${
                   activeStep === 1 ? 'border-black dark:border-white' : 'border-zinc-200 dark:border-zinc-700'
                 }`}>
                 <div className="flex h-full flex-col">
-                  <div className="relative h-[310px] overflow-hidden bg-zinc-50 px-8 pt-11 dark:bg-zinc-800">
-                    <div className="mb-4 flex items-start gap-4">
-                      <div className="flex size-14 items-center justify-center overflow-hidden rounded-[11px] border-[0.6px] border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-                        <Image src="/landing/avatar-icon.svg" alt="" width={24} height={24} />
-                      </div>
-                      <p className="flex-1 pt-4 text-lg leading-7 text-zinc-900 dark:text-zinc-100">
-                        Let&apos;s start with the project&apos;s core objectives.
-                      </p>
-                    </div>
-                    <div className="ml-[72px] space-y-3">
-                      <div className="relative rounded-xl border-[0.5px] border-zinc-200 bg-white px-5 py-5 dark:border-zinc-700 dark:bg-zinc-900">
-                        <p className="text-lg leading-7 text-zinc-500">A.</p>
-                        <Image
-                          src="/landing/icon-check.svg"
-                          alt=""
-                          width={20}
-                          height={20}
-                          className="absolute right-5 top-6"
-                        />
-                        <div className="mt-1 space-y-2">
-                          <div className="h-2 w-[340px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                          <div className="h-2 w-[157px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                        </div>
-                      </div>
-                      <div className="rounded-xl border-[0.5px] border-zinc-200 bg-white px-5 py-5 dark:border-zinc-700 dark:bg-zinc-900">
-                        <p className="text-lg leading-7 text-zinc-500">B.</p>
-                        <div className="mt-1 space-y-2">
-                          <div className="h-2 w-[340px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                          <div className="h-2 w-[157px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-zinc-200 bg-white px-5 py-5 dark:border-zinc-700 dark:bg-zinc-900">
-                        <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">C.</p>
-                      </div>
-                    </div>
-                    <div className="absolute right-[33px] top-[64px]">
-                      <div className="flex items-center gap-2 rounded-full border-[0.5px] border-zinc-200 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900">
-                        <Image src="/landing/icon-book.svg" alt="" width={20} height={20} />
-                        <span className="text-base text-zinc-900 dark:text-zinc-100">User Story</span>
-                      </div>
-                    </div>
-                    <div className="absolute left-[33px] top-[160px]">
-                      <div className="flex items-center gap-2 rounded-full border-[0.5px] border-zinc-200 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900">
-                        <Image src="/landing/icon-image.svg" alt="" width={20} height={20} />
-                        <span className="text-base text-zinc-900 dark:text-zinc-100">User scenarios</span>
-                      </div>
-                    </div>
-                    <div className="absolute bottom-[50px] right-[33px]">
-                      <div className="flex items-center gap-2 rounded-full border-[0.5px] border-zinc-200 bg-white px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900">
-                        <Image src="/landing/icon-brackets.svg" alt="" width={20} height={20} />
-                        <span className="text-base text-zinc-900 dark:text-zinc-100">Edge cases</span>
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-10">
-                      <Image src="/landing/carousel-gradient-1.png" alt="" fill className="object-cover" />
-                    </div>
-                  </div>
+                  <Image src="/landing/card-2.svg" alt="" width={788} height={310} />
                   <div className="flex h-[150px] flex-col gap-2 p-6">
                     <h3 className="text-xl font-medium leading-7 text-black dark:text-white">
                       Answer clarifying questions
                     </h3>
-                    <p className="text-base leading-6 text-zinc-500">Jotlin helps you think through edge cases</p>
+                    <p className="w-[55%] text-base leading-6 text-zinc-500">
+                      Through a short, natural conversation, Jotlin uncovers user stories, edge cases, and constraints
+                      you might miss.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Card 3 */}
-            <div className="w-[80%] shrink-0">
+            <div className="w-[60%] shrink-0">
               <div
-                className={`relative h-full overflow-hidden rounded-2xl border bg-white transition-colors duration-500 dark:bg-zinc-900 ${
+                className={`relative h-full overflow-hidden rounded-2xl border bg-white shadow-lg transition-colors duration-500 dark:bg-zinc-900 ${
                   activeStep === 2 ? 'border-black dark:border-white' : 'border-zinc-200 dark:border-zinc-700'
                 }`}>
                 <div className="flex h-full flex-col">
-                  <div className="relative h-[310px] overflow-hidden bg-zinc-50 px-[52px] pt-[38px] dark:bg-zinc-800">
-                    <div className="relative h-[220px]">
-                      <div
-                        className="absolute left-0 top-[158px] w-full origin-top-left rounded-xl border-[0.5px] border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900"
-                        style={{ transform: 'rotate(14.564deg) skewX(-0.531deg)' }}>
-                        <div className="flex items-center gap-2">
-                          <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">Draft</p>
-                          <span className="rounded-full border-[0.5px] border-zinc-200 bg-zinc-50 px-1.5 py-0 text-sm leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800">
-                            v1.0.0
-                          </span>
-                        </div>
-                        <div className="mt-6 space-y-2">
-                          <div className="h-2 w-[340px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                          <div className="h-2 w-[157px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                        </div>
-                      </div>
-                      <div
-                        className="absolute left-[99px] top-[94px] w-full origin-top-left rounded-xl border-[0.5px] border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900"
-                        style={{ transform: 'rotate(14.564deg) skewX(-0.531deg)' }}>
-                        <div className="flex items-center gap-2">
-                          <p className="text-lg leading-7 text-zinc-900 dark:text-zinc-100">Draft</p>
-                          <span className="rounded-full border-[0.5px] border-zinc-200 bg-zinc-50 px-1.5 py-0 text-sm leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800">
-                            v1.0.1
-                          </span>
-                        </div>
-                        <div className="mt-6 space-y-2">
-                          <div className="h-2 w-[340px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                          <div className="h-2 w-[157px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                        </div>
-                      </div>
-                      <div
-                        className="absolute left-[225px] top-[36px] z-10 w-full origin-top-left rounded-xl border-2 border-teal-400 bg-white p-5 dark:bg-zinc-900"
-                        style={{ transform: 'rotate(14.564deg) skewX(-0.531deg)' }}>
-                        <p className="text-lg font-bold leading-7 text-zinc-900 dark:text-zinc-100">Final</p>
-                        <div className="mt-6 space-y-3">
-                          <div className="h-2 w-[556px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                          <div className="h-2 w-[489px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                          <div className="h-2 w-[437px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                          <div className="h-2 w-[335px] max-w-full rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-10">
-                      <Image src="/landing/carousel-gradient-2.png" alt="" fill className="object-cover" />
-                    </div>
-                  </div>
+                  <Image src="/landing/card-3.svg" alt="" width={788} height={310} />
                   <div className="flex h-[150px] flex-col gap-2 p-6">
                     <h3 className="text-xl font-medium leading-7 text-black dark:text-white">
                       Get structured documentation

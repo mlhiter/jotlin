@@ -2,6 +2,7 @@
 
 import { BookOpen, Bot, MessageSquare, PieChart, Send, Settings2, SquareTerminal, Shield } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { ComponentProps, useState } from 'react'
 
 import { FeedbackDialog } from '@/components/dialog/feedback-dialog'
@@ -139,7 +140,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <Link href="/">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Image src="/logo-white.svg" alt="Jotlin Agent" width={16} height={16} />
                 </div>
@@ -147,7 +148,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                   <span className="truncate font-medium">Jotlin Agent</span>
                   <span className="truncate text-xs">Chat Assistant</span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
