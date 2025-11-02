@@ -4,7 +4,7 @@ export function Showcase() {
   return (
     <section className="w-full py-20">
       <div className="container mx-auto px-4">
-        <div className="flex items-end gap-7">
+        <div className="flex items-end justify-center gap-7">
           {/* Left Column */}
           <div className="flex flex-col gap-8">
             {/* Title */}
