@@ -139,12 +139,12 @@ export function HeroSection() {
   }
 
   return (
-    <section className="pb-24 pt-16">
-      <div className="container mx-auto max-w-7xl px-6">
-        <div className="flex flex-col items-center gap-10 text-center">
-          <div className="flex flex-col items-center gap-7">
+    <section className="pb-12 pt-8 md:pb-24 md:pt-16">
+      <div className="container mx-auto max-w-7xl px-4 md:px-6">
+        <div className="flex flex-col items-center gap-6 text-center md:gap-10">
+          <div className="flex flex-col items-center gap-5 md:gap-7">
             {/* Badge */}
-            <div className="border-1 relative inline-flex items-center gap-1.5 rounded-full border-zinc-900 bg-white px-5 py-2.5 text-sm font-medium text-zinc-900 shadow-sm">
+            <div className="border-1 relative inline-flex items-center gap-1.5 rounded-full border-zinc-900 bg-white px-4 py-2 text-xs font-medium text-zinc-900 shadow-sm md:px-5 md:py-2.5 md:text-sm">
               Jotlin is an
               <span className="relative mr-2 inline-block bg-[linear-gradient(90deg,#00C6B1_0%,#00AA9B_100%)] bg-clip-text font-semibold text-transparent">
                 AI agent
@@ -160,7 +160,7 @@ export function HeroSection() {
             </div>
             <div className="flex flex-col items-center gap-2">
               {/* Main Title */}
-              <h1 className="h-15 text-[40px] font-medium text-zinc-900">
+              <h1 className="h-15 px-4 text-[28px] font-medium leading-tight text-zinc-900 md:px-0 md:text-[40px] md:leading-normal">
                 Turn Messy Ideas into{' '}
                 <span className="bg-[linear-gradient(90deg,#00C6B1_0%,#00AA9B_100%)] bg-clip-text text-transparent">
                   Structured Specs
@@ -168,7 +168,7 @@ export function HeroSection() {
               </h1>
 
               {/* Description */}
-              <p className="max-w-2xl leading-6 text-zinc-500">
+              <p className="max-w-2xl px-4 text-sm leading-6 text-zinc-500 md:px-0 md:text-base">
                 Jotlin asks clarifying questions to flesh out your idea and generates professional specs as you chat ——
                 so you can get back to the fun part: coding.
               </p>
@@ -176,9 +176,9 @@ export function HeroSection() {
           </div>
 
           {/* Input Box */}
-          <div className="w-full max-w-3xl">
+          <div className="w-full max-w-3xl px-4 md:px-0">
             <div
-              className="relative rounded-[20px] p-[1px] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05),0_4px_6px_-2px_rgba(0,0,0,0.02)]"
+              className="relative rounded-[16px] p-[1px] shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05),0_4px_6px_-2px_rgba(0,0,0,0.02)] md:rounded-[20px]"
               style={{
                 background: `
                   linear-gradient(to right, #5EEAD4 0%, rgba(94, 234, 212, 0) 25%) left top / 100% 1px no-repeat,
@@ -187,7 +187,7 @@ export function HeroSection() {
                   #E4E4E7
                 `,
               }}>
-              <div className="relative h-[150px] overflow-hidden rounded-[19px] bg-white">
+              <div className="relative h-[120px] overflow-hidden rounded-[15px] bg-white md:h-[150px] md:rounded-[19px]">
                 <Textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -195,66 +195,74 @@ export function HeroSection() {
                   onCompositionStart={handleCompositionStart}
                   onCompositionEnd={handleCompositionEnd}
                   placeholder={placeholder}
-                  className="h-full w-full resize-none border-none bg-transparent px-5 pb-14 pt-4 text-base placeholder-zinc-500 shadow-none focus-visible:border-none focus-visible:ring-0"
+                  className="h-full w-full resize-none border-none bg-transparent px-4 pb-12 pt-3 text-sm placeholder-zinc-500 shadow-none focus-visible:border-none focus-visible:ring-0 md:px-5 md:pb-14 md:pt-4 md:text-base"
                 />
                 <Button
                   size="icon"
                   onClick={handleSubmit}
-                  className="absolute bottom-2.5 right-3 rounded-[10px] bg-zinc-800 p-2 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.16),0px_4px_6px_-2px_rgba(0,0,0,0.05)] hover:bg-zinc-800 disabled:opacity-40"
+                  className="absolute bottom-2 right-2 rounded-[10px] bg-zinc-800 p-2 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.16),0px_4px_6px_-2px_rgba(0,0,0,0.05)] hover:bg-zinc-800 disabled:opacity-40 md:bottom-2.5 md:right-3"
                   disabled={!input.trim() || isCreatingChat}>
-                  <ArrowUp className="size-5 text-white" />
+                  <ArrowUp className="size-4 text-white md:size-5" />
                 </Button>
               </div>
             </div>
-            <p className="mt-2.5 text-left text-sm leading-5 text-zinc-500">
+            <p className="mt-2 text-left text-xs leading-5 text-zinc-500 md:mt-2.5 md:text-sm">
               Press Enter to send, Shift+Enter for new line
             </p>
           </div>
 
           {/* Example Cards */}
-          <div className="flex w-full gap-3">
+          <div className="flex w-full flex-col gap-3 px-4 md:flex-row md:px-0">
             <button
               onClick={() => handleExampleClick('I want to build a mobile app for fitness tracking')}
               disabled={isCreatingChat}
-              className="flex items-center gap-3 rounded-full border-[0.5px] border-zinc-200 bg-zinc-50 px-5 py-4 text-left transition-all hover:border-zinc-300 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50">
+              className="flex items-center gap-2 rounded-2xl border-[0.5px] border-zinc-200 bg-zinc-50 px-4 py-3 text-left transition-all hover:border-zinc-300 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 md:gap-3 md:rounded-full md:px-5 md:py-4">
               <div className="flex items-center gap-2">
-                <Smartphone className="size-5 shrink-0 text-zinc-400" strokeWidth={1.5} />
+                <Smartphone className="size-4 shrink-0 text-zinc-400 md:size-5" strokeWidth={1.5} />
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-sm leading-5 text-zinc-900">I want to build a mobile app for fitness tracking</p>
-                  <p className="text-xs leading-4 text-zinc-500">Help me define the core features and user scenarios</p>
+                  <p className="text-xs leading-5 text-zinc-900 md:text-sm">
+                    I want to build a mobile app for fitness tracking
+                  </p>
+                  <p className="text-[10px] leading-4 text-zinc-500 md:text-xs">
+                    Help me define the core features and user scenarios
+                  </p>
                 </div>
               </div>
-              <ArrowRight className="size-3.5 shrink-0 text-zinc-400" strokeWidth={1.5} />
+              <ArrowRight className="size-3 shrink-0 text-zinc-400 md:size-3.5" strokeWidth={1.5} />
             </button>
 
             <button
               onClick={() => handleExampleClick('I need to create a SaaS platform for team collaboration')}
               disabled={isCreatingChat}
-              className="flex items-center gap-3 rounded-full border-[0.5px] border-zinc-200 bg-zinc-50 px-5 py-4 text-left transition-all hover:border-zinc-300 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50">
+              className="flex items-center gap-2 rounded-2xl border-[0.5px] border-zinc-200 bg-zinc-50 px-4 py-3 text-left transition-all hover:border-zinc-300 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 md:gap-3 md:rounded-full md:px-5 md:py-4">
               <div className="flex items-center gap-2">
-                <Users className="size-5 shrink-0 text-zinc-400" strokeWidth={1.5} />
+                <Users className="size-4 shrink-0 text-zinc-400 md:size-5" strokeWidth={1.5} />
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-sm leading-5 text-zinc-900">
+                  <p className="text-xs leading-5 text-zinc-900 md:text-sm">
                     I need to create a SaaS platform for team collaboration
                   </p>
-                  <p className="text-xs leading-4 text-zinc-500">Guide me through requirement gathering process</p>
+                  <p className="text-[10px] leading-4 text-zinc-500 md:text-xs">
+                    Guide me through requirement gathering process
+                  </p>
                 </div>
               </div>
-              <ArrowRight className="size-3.5 shrink-0 text-zinc-400" strokeWidth={1.5} />
+              <ArrowRight className="size-3 shrink-0 text-zinc-400 md:size-3.5" strokeWidth={1.5} />
             </button>
 
             <button
               onClick={() => handleExampleClick('I have an idea for an e-commerce website')}
               disabled={isCreatingChat}
-              className="flex items-center gap-3 rounded-full border-[0.5px] border-zinc-200 bg-zinc-50 px-5 py-4 text-left transition-all hover:border-zinc-300 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50">
+              className="flex items-center gap-2 rounded-2xl border-[0.5px] border-zinc-200 bg-zinc-50 px-4 py-3 text-left transition-all hover:border-zinc-300 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 md:gap-3 md:rounded-full md:px-5 md:py-4">
               <div className="flex items-center gap-2">
-                <Globe className="size-5 shrink-0 text-zinc-400" strokeWidth={1.5} />
+                <Globe className="size-4 shrink-0 text-zinc-400 md:size-5" strokeWidth={1.5} />
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-sm leading-5 text-zinc-900">I have an idea for an e-commerce website</p>
-                  <p className="text-xs leading-4 text-zinc-500">Let&apos;s start with user stories and key features</p>
+                  <p className="text-xs leading-5 text-zinc-900 md:text-sm">I have an idea for an e-commerce website</p>
+                  <p className="text-[10px] leading-4 text-zinc-500 md:text-xs">
+                    Let&apos;s start with user stories and key features
+                  </p>
                 </div>
               </div>
-              <ArrowRight className="size-3.5 shrink-0 text-zinc-400" strokeWidth={1.5} />
+              <ArrowRight className="size-3 shrink-0 text-zinc-400 md:size-3.5" strokeWidth={1.5} />
             </button>
           </div>
         </div>

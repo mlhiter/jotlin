@@ -39,20 +39,30 @@ export function FAQSection() {
   ]
 
   return (
-    <section id="faq" className="py-24">
-      <div className="container relative mx-auto grid max-w-7xl grid-cols-1 gap-[30px] px-6 lg:grid-cols-[592px_610px]">
-        <div className="relative pt-[44px]">
-          <h2 className="text-[36px] font-medium leading-[1.5] text-black">Frequently Asked Questions</h2>
-          <Image src="/landing/faq.svg" alt="" width={75} height={62} className="absolute right-[50px] top-0" />
+    <section id="faq" className="py-12 md:py-24">
+      <div className="container relative mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 md:gap-[30px] md:px-6 lg:grid-cols-[592px_610px]">
+        <div className="relative pt-8 md:pt-[44px]">
+          <h2 className="pr-20 text-[28px] font-medium leading-[1.4] text-black md:pr-0 md:text-[36px] md:leading-[1.5]">
+            Frequently Asked Questions
+          </h2>
+          <Image
+            src="/landing/faq.svg"
+            alt=""
+            width={60}
+            height={50}
+            className="absolute right-[100px] top-[10px] md:right-[50px] md:h-[62px] md:w-[75px]"
+          />
         </div>
 
         <Accordion type="single" collapsible className="w-full">
           {faqs.map((faq, index) => (
             <AccordionItem key={index} value={`item-${index}`} className="border-b border-dashed border-black">
-              <AccordionTrigger className="py-8 text-left text-[18px] font-normal leading-[28px] text-black hover:no-underline [&[data-state=open]>svg]:rotate-180">
+              <AccordionTrigger className="py-5 text-left text-[16px] font-normal leading-[26px] text-black hover:no-underline md:py-8 md:text-[18px] md:leading-[28px] [&[data-state=open]>svg]:rotate-180">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="pb-8 text-[14px] leading-none text-[#52525b]">{faq.answer}</AccordionContent>
+              <AccordionContent className="pb-5 text-[13px] leading-[1.5] text-[#52525b] md:pb-8 md:text-[14px]">
+                {faq.answer}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
