@@ -2,8 +2,8 @@ import Image from 'next/image'
 
 export function Showcase() {
   return (
-    <section className="w-full py-20">
-      <div className="container mx-auto px-4">
+    <section>
+      <div className="container mx-auto max-w-7xl px-6">
         <div className="flex items-end justify-center gap-7">
           {/* Left Column */}
           <div className="flex flex-col gap-8">
@@ -18,7 +18,7 @@ export function Showcase() {
             </div>
 
             {/* Large Card */}
-            <div className="h-[524px] w-[740px] overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+            <div className="h-[524px] w-[700px] overflow-hidden rounded-2xl border border-zinc-200 bg-white">
               <div className="flex h-full flex-col">
                 {/* Card Image Area */}
                 <Image src="/landing/showcase-1.svg" alt="" width={740} height={363} />
@@ -48,7 +48,7 @@ export function Showcase() {
           {/* Right Column */}
           <div className="flex flex-col gap-6">
             {/* Card 2 - Align Team */}
-            <div className="h-[331px] w-[544px] overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+            <div className="h-[331px] w-[500px] overflow-hidden rounded-2xl border border-zinc-200 bg-white">
               <div className="flex h-full flex-col">
                 <Image src="/landing/showcase-2.svg" alt="" width={544} height={171} />
 
@@ -77,7 +77,7 @@ export function Showcase() {
             </div>
 
             {/* Card 3 - Reclaim Time */}
-            <div className="h-[324px] w-[544px] overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+            <div className="h-[324px] w-[500px] overflow-hidden rounded-2xl border border-zinc-200 bg-white">
               <div className="flex h-full flex-col">
                 <Image src="/landing/showcase-3.svg" alt="" width={544} height={163} />
 

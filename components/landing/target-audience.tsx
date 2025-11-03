@@ -40,7 +40,7 @@ export function TargetAudienceSection() {
 
   return (
     <section className="flex w-full justify-center py-12 md:py-24">
-      <div className="w-full max-w-[1310px] px-4 md:px-6">
+      <div className="container mx-auto max-w-7xl px-6">
         <div className="relative overflow-visible rounded-t-[32px] border border-zinc-950 bg-zinc-950 shadow-lg">
           <div className="relative z-10 min-h-[400px] px-4 pb-0 pt-12 md:px-8 md:pt-[92px] lg:px-[57px]">
             <h2 className="text-2xl font-medium leading-none text-white md:text-4xl">Jotlin is for you if…</h2>

@@ -40,7 +40,7 @@ export function FAQSection() {
 
   return (
     <section id="faq" className="py-24">
-      <div className="relative mx-auto grid max-w-[1308px] grid-cols-1 gap-[50px] px-4 lg:grid-cols-[592px_666px]">
+      <div className="container relative mx-auto grid max-w-7xl grid-cols-1 gap-[30px] px-6 lg:grid-cols-[592px_610px]">
         <div className="relative pt-[44px]">
           <h2 className="text-[36px] font-medium leading-[1.5] text-black">Frequently Asked Questions</h2>
           <Image src="/landing/faq.svg" alt="" width={75} height={62} className="absolute right-[50px] top-0" />
