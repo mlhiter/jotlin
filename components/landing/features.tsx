@@ -58,7 +58,7 @@ export function FeaturesSection() {
         <div className="mb-8 flex w-full flex-col gap-6 md:mb-10 md:gap-10">
           <div className="relative inline-flex w-full flex-col items-start self-center">
             <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-11">
-              <h2 className="w-full text-2xl font-medium leading-[1.4] text-black md:w-[338px] md:text-4xl md:leading-[1.5] dark:text-white">
+              <h2 className="w-[70%] text-2xl font-medium leading-[1.4] text-black md:w-[338px] md:text-4xl md:leading-[1.5] dark:text-white">
                 It&apos;s a Conversation, Not a Command.
               </h2>
               <p className="w-full text-sm leading-6 text-zinc-500 md:w-[412px] md:text-base">

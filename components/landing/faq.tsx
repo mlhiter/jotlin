@@ -50,7 +50,7 @@ export function FAQSection() {
             alt=""
             width={60}
             height={50}
-            className="absolute right-[100px] top-[10px] md:right-[50px] md:h-[62px] md:w-[75px]"
+            className="absolute right-[20px] top-[30px] md:right-[50px] md:h-[62px] md:w-[75px]"
           />
         </div>
 
