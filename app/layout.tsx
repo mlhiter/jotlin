@@ -53,11 +53,20 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://jotlin.ai',
     siteName: 'Jotlin',
+    images: [
+      {
+        url: 'https://jotlin.ai/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Jotlin - AI Requirements Analysis Tool',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Jotlin - AI Requirements Analysis Tool',
     description: 'Transform messy ideas into structured PRD, user stories, and tech specs with AI',
+    images: ['https://jotlin.ai/og-image.png'],
   },
 }
 
