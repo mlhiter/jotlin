@@ -3,6 +3,7 @@
 import * as AvatarPrimitive from '@radix-ui/react-avatar'
 import * as React from 'react'
 
+import { imageLoader } from '@/libs/utils/image-loader'
 import { cn } from '@/libs/utils/utils'
 
 function Avatar({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Root>) {
@@ -15,9 +16,45 @@ function Avatar({ className, ...props }: React.ComponentProps<typeof AvatarPrimi
   )
 }
 
-function AvatarImage({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+function AvatarImage({ className, src, ...props }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+  const [imageSrc, setImageSrc] = React.useState<string | undefined>(() => {
+    if (!src) return undefined
+    const status = imageLoader.getStatus(src)
+    return status === 'loaded' ? src : undefined
+  })
+
+  React.useEffect(() => {
+    if (!src) return
+
+    const status = imageLoader.getStatus(src)
+
+    // Already loaded
+    if (status === 'loaded') {
+      setImageSrc(src)
+      return
+    }
+
+    // Previously failed
+    if (status === 'failed') {
+      return
+    }
+
+    // Load (or wait for existing load)
+    imageLoader
+      .load(src)
+      .then((loadedSrc) => setImageSrc(loadedSrc))
+      .catch(() => {
+        // Fail silently, fallback will show
+      })
+  }, [src])
+
   return (
-    <AvatarPrimitive.Image data-slot="avatar-image" className={cn('aspect-square size-full', className)} {...props} />
+    <AvatarPrimitive.Image
+      data-slot="avatar-image"
+      src={imageSrc}
+      className={cn('aspect-square size-full', className)}
+      {...props}
+    />
   )
 }
 

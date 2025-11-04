@@ -74,19 +74,19 @@ model Chat {
   id        String     @id @default(cuid())
   title     String?
   userId    String
-  parentId  String?
-  phase     ChatPhase?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   deletedAt DateTime?
   isDeleted Boolean    @default(false)
   isPublic  Boolean    @default(false)
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
-  mvp       Mvp?
+  parentId  String?
+  phase     ChatPhase?
   parent    Chat?      @relation("ProjectPhases", fields: [parentId], references: [id], onDelete: Cascade)
   children  Chat[]     @relation("ProjectPhases")
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   documents Document[]
+  messages  Message[]
+  mvp       Mvp?
 
   @@map("chat")
 }
@@ -142,7 +142,7 @@ model Document {
   id           String         @id @default(cuid())
   chatId       String
   phase        ChatPhase
-  content      String         @db.Text
+  content      String
   status       DocumentStatus @default(DRAFT)
   sourceChatId String
   createdAt    DateTime       @default(now())

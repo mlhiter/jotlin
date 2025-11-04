@@ -166,7 +166,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
             user={{
               name: user?.name || '',
               email: user?.email || '',
-              avatar: user?.image || '/avatars/default.jpg',
+              avatar: user?.image || '/avatars/default.svg',
             }}
           />
         </div>

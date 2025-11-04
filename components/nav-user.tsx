@@ -2,6 +2,7 @@
 
 import { ChevronsUpDown, LogOut, Sun, Moon } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import * as React from 'react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -40,6 +41,9 @@ export function NavUser({
 
   const initials = getInitials(user.name)
 
+  // Memoize avatar to prevent re-renders from triggering image reloads
+  const avatarSrc = React.useMemo(() => user.avatar, [user.avatar])
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -49,7 +53,7 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={avatarSrc} alt={user.name} />
                 <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -66,7 +70,7 @@ export function NavUser({
             sideOffset={4}>
             <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={avatarSrc} alt={user.name} />
                 <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">

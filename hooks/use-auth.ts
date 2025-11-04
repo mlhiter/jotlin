@@ -34,10 +34,13 @@ export const useAuth = () => {
     }
   }, [])
 
-  const signIn = (provider: 'github', redirect?: string) => {
+  const signIn = (provider: 'github' | 'google', redirect?: string) => {
+    const redirectParam = redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''
+
     if (provider === 'github') {
-      const redirectParam = redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''
       window.location.href = `/api/auth/github${redirectParam}`
+    } else if (provider === 'google') {
+      window.location.href = `/api/auth/google${redirectParam}`
     }
   }
 
