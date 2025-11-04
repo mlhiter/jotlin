@@ -18,19 +18,19 @@ function Avatar({ className, ...props }: React.ComponentProps<typeof AvatarPrimi
 
 function AvatarImage({ className, src, ...props }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
   const [imageSrc, setImageSrc] = React.useState<string | undefined>(() => {
-    if (!src) return undefined
-    const status = imageLoader.getStatus(src)
+    if (!src || typeof src !== 'string') return undefined
+    const status = imageLoader.getStatus(src as string)
     return status === 'loaded' ? src : undefined
   })
 
   React.useEffect(() => {
     if (!src) return
 
-    const status = imageLoader.getStatus(src)
+    const status = imageLoader.getStatus(src as string)
 
     // Already loaded
     if (status === 'loaded') {
-      setImageSrc(src)
+      setImageSrc(src as string)
       return
     }
 
@@ -41,7 +41,7 @@ function AvatarImage({ className, src, ...props }: React.ComponentProps<typeof A
 
     // Load (or wait for existing load)
     imageLoader
-      .load(src)
+      .load(src as string)
       .then((loadedSrc) => setImageSrc(loadedSrc))
       .catch(() => {
         // Fail silently, fallback will show

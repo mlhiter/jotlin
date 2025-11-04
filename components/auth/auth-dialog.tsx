@@ -1,10 +1,8 @@
 'use client'
 
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { Github } from 'lucide-react'
 import Image from 'next/image'
 
-import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
 import { useAuth } from '@/hooks/use-auth'

@@ -6,27 +6,6 @@ import { prisma } from '../utils/prisma'
 
 import { signJWT, verifyJWT } from './jwt'
 
-// Server-side functions
-export async function createUser(userData: Omit<User, 'role' | 'messageLimit'>): Promise<User> {
-  return await prisma.user.upsert({
-    where: { email: userData.email },
-    update: {
-      name: userData.name,
-      image: userData.image,
-      updatedAt: new Date(),
-    },
-    create: {
-      id: userData.id || crypto.randomUUID(),
-      name: userData.name,
-      email: userData.email,
-      image: userData.image,
-      emailVerified: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  })
-}
-
 export async function getUserById(id: string): Promise<User | null> {
   return await prisma.user.findUnique({
     where: { id },

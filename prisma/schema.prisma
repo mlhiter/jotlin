@@ -9,10 +9,10 @@ datasource db {
 }
 
 model User {
-  id            String     @id
+  id            String     @id @default(uuid())
   name          String
   email         String     @unique
-  emailVerified Boolean    @default(false)
+  emailVerified Boolean    @default(true)
   image         String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @default(now()) @updatedAt
@@ -21,53 +21,22 @@ model User {
   accounts      Account[]
   chats         Chat[]
   feedbacks     Feedback[]
-  sessions      Session[]
 
   @@map("user")
 }
 
-model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("session")
-}
-
 model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String   @id @default(uuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, provider])
+  @@index([userId])
   @@map("account")
-}
-
-model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
-
-  @@map("verification")
 }
 
 model Chat {

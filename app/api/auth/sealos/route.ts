@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { createUser, createAuthSession } from '@/libs/auth/auth'
+import { findOrCreateUser, linkAccount } from '@/libs/auth/account'
+import { createAuthSession } from '@/libs/auth/auth'
 import { sealosAuth } from '@/libs/auth/sealos-auth'
 
 export async function POST(request: NextRequest) {
@@ -15,8 +16,14 @@ export async function POST(request: NextRequest) {
     // Authenticate with Sealos
     const userData = await sealosAuth.authenticateUser(sealosSession)
 
-    // Create or update user
-    const user = await createUser(userData)
+    // Find or create user (based on email)
+    const user = await findOrCreateUser(userData.email, {
+      name: userData.name,
+      image: userData.image || undefined,
+    })
+
+    // Link Sealos account
+    await linkAccount(user.id, 'sealos', userData.id)
 
     // Create auth session (JWT token)
     const token = await createAuthSession(user)

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { createUser, createAuthSession } from '@/libs/auth/auth'
+import { findOrCreateUser, linkAccount } from '@/libs/auth/account'
+import { createAuthSession } from '@/libs/auth/auth'
 import { googleOAuth } from '@/libs/auth/google-oauth'
 
 const redirectBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
@@ -44,15 +45,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${redirectBaseUrl}/?error=no_email`)
     }
 
-    const user = await createUser({
-      id: googleUser.id,
-      emailVerified: googleUser.verified_email,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    // Find or create user (based on email)
+    const user = await findOrCreateUser(googleUser.email, {
       name: googleUser.name,
-      email: googleUser.email,
       image: googleUser.picture,
     })
+
+    // Link Google account
+    await linkAccount(user.id, 'google', googleUser.id)
 
     const token = await createAuthSession(user)
 

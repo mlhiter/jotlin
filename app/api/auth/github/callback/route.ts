@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { createUser, createAuthSession } from '@/libs/auth/auth'
+import { findOrCreateUser, linkAccount } from '@/libs/auth/account'
+import { createAuthSession } from '@/libs/auth/auth'
 import { githubOAuth } from '@/libs/auth/github-oauth'
 
 const redirectBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
@@ -48,16 +49,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${redirectBaseUrl}/?error=no_email`)
     }
 
-    // Create or update user
-    const user = await createUser({
-      id: githubUser.id.toString(),
-      emailVerified: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    // Find or create user (based on email)
+    const user = await findOrCreateUser(githubUser.email, {
       name: githubUser.name || githubUser.login,
-      email: githubUser.email,
       image: githubUser.avatar_url,
     })
+
+    // Link GitHub account
+    await linkAccount(user.id, 'github', githubUser.id.toString())
 
     // Create auth session
     const token = await createAuthSession(user)
