@@ -51,9 +51,9 @@ export function LandingFooter() {
               variant="outline"
               className="h-11 w-full rounded-xl border-white/20 bg-transparent text-white hover:border-white/30 hover:bg-white/10 hover:text-white md:w-auto"
               asChild>
-              <a href="https://discord.gg/44NTBsAYx9" target="_blank" rel="noopener noreferrer">
-                <Image src="/landing/discord-icon.svg" alt="" width={16} height={16} className="invert" />
-                Join our Discord
+              <a href="https://x.com/mlhiter" target="_blank" rel="noopener noreferrer">
+                <Image src="/landing/x-icon.svg" alt="" width={16} height={16} className="invert" />
+                Follow on X
               </a>
             </Button>
           </div>

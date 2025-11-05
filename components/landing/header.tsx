@@ -104,12 +104,12 @@ export function LandingHeader() {
                   </button>
                   <div className="my-4 border-t border-zinc-200" />
                   <a
-                    href="https://discord.gg/44NTBsAYx9"
+                    href="https://x.com/mlhiter"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 rounded-lg px-4 py-3 text-base text-zinc-900 transition-colors hover:bg-zinc-100">
-                    <Image src="/landing/discord-icon.svg" alt="" width={16} height={16} />
-                    Join our Discord
+                    <Image src="/landing/x-icon.svg" alt="" width={16} height={16} />
+                    Follow on X
                   </a>
                 </nav>
               </div>
@@ -117,12 +117,12 @@ export function LandingHeader() {
           </Sheet>
 
           <a
-            href="https://discord.gg/44NTBsAYx9"
+            href="https://x.com/mlhiter"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden h-10 items-center justify-center gap-2 rounded-xl border border-white bg-gradient-to-b from-[#fcfcfc] to-[#fafafa] px-4 py-2 text-sm font-medium leading-5 text-zinc-900 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05),0_4px_6px_-2px_rgba(0,0,0,0.02)] transition-colors hover:from-[#f9f9f9] hover:to-[#f5f5f5] md:flex">
-            <Image src="/landing/discord-icon.svg" alt="" width={16} height={16} />
-            <span className="hidden lg:inline">Join our Discord</span>
+            <Image src="/landing/x-icon.svg" alt="" width={16} height={16} />
+            <span className="hidden lg:inline">Follow on X</span>
           </a>
           <button
             onClick={handleStartClick}
