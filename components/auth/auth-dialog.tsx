@@ -2,6 +2,7 @@
 
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import Image from 'next/image'
+import Link from 'next/link'
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
@@ -94,7 +95,23 @@ export function AuthDialog({ open, onOpenChange, redirectTo = '/' }: AuthDialogP
           </div>
 
           <p className="text-center text-xs leading-relaxed text-zinc-400">
-            By continuing, you agree to our Terms of Service and acknowledge our Privacy Policy.
+            By continuing, you agree to our{' '}
+            <Link
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-500 underline underline-offset-2 transition-colors hover:text-zinc-600">
+              Terms of Service
+            </Link>
+            {' '}and acknowledge our{' '}
+            <Link
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-500 underline underline-offset-2 transition-colors hover:text-zinc-600">
+              Privacy Policy
+            </Link>
+            .
           </p>
         </div>
       </DialogContent>

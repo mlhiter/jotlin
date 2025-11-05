@@ -94,7 +94,18 @@ export function LandingFooter() {
               </Link>
             </nav>
 
-            <p className="text-sm text-zinc-500 md:text-base">© {new Date().getFullYear()} Jotlin. All rights reserved.</p>
+            <div className="flex flex-col items-center gap-2 md:items-end">
+              <p className="text-sm text-zinc-500 md:text-base">© {new Date().getFullYear()} Jotlin. All rights reserved.</p>
+              <div className="flex gap-4 text-xs text-zinc-500">
+                <Link href="/privacy" className="transition-colors hover:text-zinc-400">
+                  Privacy Policy
+                </Link>
+                <span>·</span>
+                <Link href="/terms" className="transition-colors hover:text-zinc-400">
+                  Terms of Service
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
