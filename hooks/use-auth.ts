@@ -1,12 +1,10 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 
 import { useAuthStore } from '@/store/auth-store'
 
 export const useAuth = () => {
-  const searchParams = useSearchParams()
   const hasInitialized = useRef(false)
 
   const store = useAuthStore()
@@ -14,20 +12,24 @@ export const useAuth = () => {
   // Initialize on mount
   useEffect(() => {
     if (!hasInitialized.current) {
-      // Handle OAuth callback token
-      const tokenFromUrl = searchParams.get('token')
-      if (tokenFromUrl) {
-        // Set loading state immediately to prevent AuthGuard from redirecting
-        useAuthStore.setState({ token: tokenFromUrl, isLoading: true, isInitialized: false })
-        store.fetchSession()
+      // Handle OAuth callback token from URL
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search)
+        const tokenFromUrl = params.get('token')
 
-        // Clean URL
-        const url = new URL(window.location.href)
-        url.searchParams.delete('token')
-        window.history.replaceState({}, '', url.toString())
-      } else {
-        // Only initialize if no token from URL (initialization will be handled by onRehydrateStorage)
-        store.initialize()
+        if (tokenFromUrl) {
+          // Set loading state immediately to prevent AuthGuard from redirecting
+          useAuthStore.setState({ token: tokenFromUrl, isLoading: true, isInitialized: false })
+          store.fetchSession()
+
+          // Clean URL
+          const url = new URL(window.location.href)
+          url.searchParams.delete('token')
+          window.history.replaceState({}, '', url.toString())
+        } else {
+          // Only initialize if no token from URL (initialization will be handled by onRehydrateStorage)
+          store.initialize()
+        }
       }
 
       hasInitialized.current = true
