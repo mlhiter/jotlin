@@ -12,6 +12,40 @@ export interface ParsedResponse {
 }
 export type OptionType = 'single' | 'multiple'
 
+/**
+ * Remove common leading indentation from all lines while preserving relative indentation.
+ * This is specifically for markdown content where we need to preserve list indentation.
+ */
+function preserveMarkdownIndent(text: string): string {
+  const lines = text.split('\n')
+
+  // Find minimum indentation (excluding empty lines)
+  let minIndent = Infinity
+  for (const line of lines) {
+    if (line.trim().length === 0) continue
+    const indent = line.match(/^(\s*)/)?.[1].length || 0
+    if (indent < minIndent) {
+      minIndent = indent
+    }
+  }
+
+  // If no non-empty lines or no common indent, just trim
+  if (minIndent === Infinity || minIndent === 0) {
+    return text.trim()
+  }
+
+  // Remove common indentation from all lines
+  const dedented = lines
+    .map(line => {
+      if (line.trim().length === 0) return ''
+      return line.slice(minIndent)
+    })
+    .join('\n')
+    .trim()
+
+  return dedented
+}
+
 export const parseAIResponse = (text: string): ParsedResponse => {
   const result: ParsedResponse = {
     options: [],
@@ -48,12 +82,14 @@ export const parseAIResponse = (text: string): ParsedResponse => {
 
   const draftMatch = text.match(/<draft>([\s\S]*?)<\/draft>/)
   if (draftMatch) {
-    result.draft = dedent(draftMatch[1])
+    // Use custom function to preserve markdown list indentation
+    result.draft = preserveMarkdownIndent(draftMatch[1])
   }
 
   const finalMatch = text.match(/<final>([\s\S]*?)<\/final>/)
   if (finalMatch) {
-    result.final = dedent(finalMatch[1])
+    // Use custom function to preserve markdown list indentation
+    result.final = preserveMarkdownIndent(finalMatch[1])
   }
 
   const inputMatch = text.match(/<input\s+type="([^"]*)"(?:\s+placeholder="([^"]*)")?\s*\/>/)
