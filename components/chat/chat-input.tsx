@@ -56,7 +56,6 @@ export function ChatInput({
     const selectedFiles = e.target.files
     if (!selectedFiles || selectedFiles.length === 0) return
 
-    console.info('File select - selected files:', selectedFiles.length)
     const maxFiles = 3
 
     const currentFileCount = files?.length || 0
@@ -87,7 +86,6 @@ export function ChatInput({
       return
     }
 
-    console.info('File select - all files valid:', selectedFiles.length)
     setFiles(selectedFiles)
   }
 
@@ -100,7 +98,6 @@ export function ChatInput({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.info('ChatInput handleSubmit - files count:', files?.length || 0)
     if (
       (!input.trim() && selectedOptions.length === 0 && !files) ||
       status === 'submitted' ||
@@ -158,7 +155,6 @@ export function ChatInput({
       }
     }
 
-    console.info('ChatInput calling onSendMessage with text length:', messageText.length)
     onSendMessage({
       text: messageText || 'Hello',
     })

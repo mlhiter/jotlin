@@ -545,7 +545,6 @@ export default function ChatIdPage() {
       console.warn('Chat not ready, message queued')
       return
     }
-    console.info('handleSendMessage called with text length:', message.text.length)
     setQuotes([])
     sendMessage(message)
   }

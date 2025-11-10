@@ -41,7 +41,6 @@ export default function ChatPage() {
 
   const handleSendMessage = async (message: { text: string }) => {
     try {
-      console.info('Creating chat with message:', message)
       const chat = await createChat(message.text.slice(0, 50))
       router.push(`/chat/${chat.id}?message=${encodeURIComponent(message.text)}`)
     } catch (error) {
