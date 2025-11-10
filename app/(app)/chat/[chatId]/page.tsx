@@ -245,6 +245,7 @@ export default function ChatIdPage() {
   }, [initialMessage, hasAutoSent, isLoading, status, chatReady, sendMessage])
 
   // Auto-inject requirement document for architecture phase if no messages
+  // Note: This only handles initial page load. Phase transitions are handled in handleNextPhaseSuccess
   useEffect(() => {
     if (
       !hasAutoSent &&
@@ -253,7 +254,8 @@ export default function ChatIdPage() {
       chatReady &&
       projectData?.currentPhase === 'ARCHITECTURE' &&
       projectData?.documents?.requirement &&
-      messages.length === 0
+      messages.length === 0 &&
+      !pendingMessage // Don't send if there's already a pending message
     ) {
       setHasAutoSent(true)
       setTimeout(() => {
@@ -262,7 +264,7 @@ export default function ChatIdPage() {
         })
       }, 500)
     }
-  }, [hasAutoSent, isLoading, status, chatReady, projectData, messages.length, sendMessage])
+  }, [hasAutoSent, isLoading, status, chatReady, projectData, messages.length, sendMessage, pendingMessage])
 
   // Filter empty assistant messages
   const filteredMessages = messages.filter((message) => {
@@ -726,6 +728,7 @@ export default function ChatIdPage() {
     // Reload data instead of full page reload
     try {
       setChatReady(false)
+      setHasAutoSent(true) // Mark as sent to prevent duplicate auto-send from useEffect
 
       const [phaseChatsRes, documentsRes] = await Promise.all([
         apiClient.get(`/api/projects/${chatId}/chats`),
