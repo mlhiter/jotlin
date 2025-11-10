@@ -832,7 +832,7 @@ export default function ChatIdPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[calc(100vh-3rem)] flex-col overflow-hidden">
+      <div className="flex h-[calc(100vh-1.5rem)] flex-col overflow-hidden">
         <PageHeader title="Chat" />
         <div className="flex flex-1 items-center justify-center">
           <div className="text-muted-foreground">Loading chat...</div>
@@ -842,7 +842,7 @@ export default function ChatIdPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-3rem)] flex-col overflow-hidden">
+    <div className="flex h-[calc(100vh-1.5rem)] flex-col overflow-hidden">
       <PageHeader
         title="Chat"
         actions={
