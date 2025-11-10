@@ -6,7 +6,7 @@ import { useRef, useEffect, useState } from 'react'
 
 import { AssistantMessage } from '@/components/chat/assistant-message'
 import { EmptyState } from '@/components/chat/empty-state'
-import { UserMessage } from '@/components/chat/user-message'
+import { UserMessage, MessagePart } from '@/components/chat/user-message'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -86,16 +86,16 @@ export function MessageList({
                 <div
                   key={message.id}
                   className={cn('group flex gap-4', message.role === 'user' ? 'justify-end' : 'justify-start')}>
-                  {message.parts.map((part, i) => {
-                    switch (part.type) {
-                      case 'text':
-                        return message.role === 'user' ? (
-                          <UserMessage
-                            key={`${message.id}-${i}`}
-                            content={part.text}
-                            onRollback={() => onRollback(message.id)}
-                          />
-                        ) : (
+                  {message.role === 'user' ? (
+                    <UserMessage
+                      key={message.id}
+                      parts={message.parts as MessagePart[]}
+                      onRollback={() => onRollback(message.id)}
+                    />
+                  ) : (
+                    message.parts.map((part, i) => {
+                      if (part.type === 'text') {
+                        return (
                           <AssistantMessage
                             key={`${message.id}-${i}`}
                             content={part.text}
@@ -106,8 +106,10 @@ export function MessageList({
                             onRollback={() => onRollback(message.id)}
                           />
                         )
-                    }
-                  })}
+                      }
+                      return null
+                    })
+                  )}
                 </div>
               ))
           )}

@@ -1,13 +1,16 @@
 'use client'
 
 import { ChatStatus } from 'ai'
-import { ArrowUp, Square, X, TextAlignStart } from 'lucide-react'
+import { ArrowUp, Square, X, TextAlignStart, Image as ImageIcon } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
+import TextareaAutosize from 'react-textarea-autosize'
+import { toast } from 'sonner'
 
+import { FilePreview } from '@/components/chat/file-preview'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 
 import { SelectedOption, useSelectedOptions } from '@/hooks/use-selected-options'
+import { validateFile, extractFileContent, isImageFile } from '@/libs/utils/file-utils'
 
 interface Quote {
   id: string
@@ -37,7 +40,9 @@ export function ChatInput({
   autoFocus = false,
 }: ChatInputProps) {
   const [input, setInput] = useState('')
+  const [files, setFiles] = useState<FileList | undefined>(undefined)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { selectedOptions, clearOptions, removeOption, currentAssistantMessageId } = useSelectedOptions()
 
@@ -47,9 +52,61 @@ export function ChatInput({
     }
   }, [autoFocus])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files
+    if (!selectedFiles || selectedFiles.length === 0) return
+
+    console.info('File select - selected files:', selectedFiles.length)
+    const maxFiles = 3
+
+    const currentFileCount = files?.length || 0
+    if (currentFileCount + selectedFiles.length > maxFiles) {
+      toast.error(`You can only upload up to ${maxFiles} files at once`)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      return
+    }
+
+    // Validate all files
+    let allValid = true
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i]
+      const validation = validateFile(file)
+      if (!validation.valid) {
+        toast.error(`${file.name}: ${validation.error}`)
+        allValid = false
+        break
+      }
+    }
+
+    if (!allValid) {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      return
+    }
+
+    console.info('File select - all files valid:', selectedFiles.length)
+    setFiles(selectedFiles)
+  }
+
+  const handleRemoveFile = () => {
+    setFiles(undefined)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if ((!input.trim() && selectedOptions.length === 0) || status === 'submitted' || status === 'streaming' || disabled)
+    console.info('ChatInput handleSubmit - files count:', files?.length || 0)
+    if (
+      (!input.trim() && selectedOptions.length === 0 && !files) ||
+      status === 'submitted' ||
+      status === 'streaming' ||
+      disabled
+    )
       return
 
     let messageText = ''
@@ -70,11 +127,46 @@ export function ChatInput({
       messageText = messageText ? messageText + '\n\n' + input : input
     }
 
-    onSendMessage({ text: messageText })
+    // Extract file contents (images only)
+    if (files && files.length > 0) {
+      try {
+        const fileContents: string[] = []
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          try {
+            const { content } = await extractFileContent(file)
+
+            if (isImageFile(file)) {
+              // For images, add a user-friendly marker (the model will see the base64)
+              fileContents.push(`[Image: ${file.name}]\n${content}`)
+            }
+          } catch (error) {
+            console.error(`Failed to extract content from ${file.name}:`, error)
+            toast.error(`Failed to read ${file.name}`)
+          }
+        }
+
+        if (fileContents.length > 0) {
+          const filesText = fileContents.join('\n\n---\n\n')
+          messageText = messageText ? `${filesText}\n\n${messageText}` : filesText
+        }
+      } catch (error) {
+        console.error('Failed to process files:', error)
+        toast.error('Failed to process files')
+        return
+      }
+    }
+
+    console.info('ChatInput calling onSendMessage with text length:', messageText.length)
+    onSendMessage({
+      text: messageText || 'Hello',
+    })
+
     setInput('')
+    setFiles(undefined)
     clearOptions()
 
-    // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
     }
@@ -91,23 +183,17 @@ export function ChatInput({
     }
   }
 
-  const adjustTextareaHeight = () => {
-    const textarea = textareaRef.current
-    if (textarea) {
-      textarea.style.height = 'auto'
-      const scrollHeight = textarea.scrollHeight
-      const maxHeight = 200
-      textarea.style.height = `${Math.min(scrollHeight, maxHeight)}px`
-    }
-  }
-
-  useEffect(() => {
-    adjustTextareaHeight()
-  }, [input])
-
   return (
     <div className="mb-2 mt-1 px-4">
       <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
+        {files && files.length > 0 && (
+          <div className="mb-2 flex flex-col gap-2">
+            {Array.from(files).map((file, index) => (
+              <FilePreview key={`${file.name}-${index}`} file={file} preview="" onRemove={handleRemoveFile} />
+            ))}
+          </div>
+        )}
+
         {quotes.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
             {quotes.map((quote) => (
@@ -164,24 +250,56 @@ export function ChatInput({
           </div>
         )}
 
-        <div className="relative flex items-end gap-3">
-          <div className="relative flex-1">
-            <Textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Message Jotlin Agent..."
-              disabled={status === 'submitted' || status === 'streaming' || disabled}
-              className="max-h-[200px] !min-h-20 resize-none py-3 pr-12"
-              rows={1}
-            />
+        <div
+          className="border-input focus-within:ring-ring/50 focus-within:border-ring flex flex-col overflow-hidden rounded-lg border bg-transparent shadow-sm transition-all focus-within:ring-[3px]"
+          onClick={() => textareaRef.current?.focus()}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+            multiple
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+
+          <TextareaAutosize
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Message Jotlin Agent..."
+            disabled={status === 'submitted' || status === 'streaming' || disabled}
+            minRows={2}
+            maxRows={8}
+            className="custom-scrollbar placeholder:text-muted-foreground outline-none! w-full resize-none border-0 bg-transparent px-3 pt-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          />
+
+          <div className="flex items-center justify-between px-2 py-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation()
+                fileInputRef.current?.click()
+              }}
+              disabled={status === 'submitted' || status === 'streaming' || disabled || (files && files.length >= 3)}
+              className="h-8 w-8 p-0"
+              aria-label="Upload image">
+              <ImageIcon className="h-4 w-4" />
+            </Button>
+
             <Button
               type={status === 'streaming' ? 'button' : 'submit'}
-              onClick={status === 'streaming' ? handleStop : undefined}
-              disabled={status !== 'streaming' && !input.trim() && selectedOptions.length === 0}
+              onClick={(e) => {
+                e.stopPropagation()
+                if (status === 'streaming') {
+                  handleStop()
+                }
+              }}
+              disabled={status !== 'streaming' && !input.trim() && selectedOptions.length === 0 && !files}
               size="sm"
-              className="absolute bottom-2 right-2 h-8 w-8 p-0">
+              className="h-8 w-8 p-0">
               {status === 'streaming' ? <Square className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
             </Button>
           </div>

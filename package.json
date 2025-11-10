@@ -45,6 +45,7 @@
     "react-dom": "19.1.0",
     "react-markdown": "^10.1.0",
     "react-syntax-highlighter": "^15.6.6",
+    "react-textarea-autosize": "^8.5.9",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
     "sealos-desktop-sdk": "^0.1.14",

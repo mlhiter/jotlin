@@ -48,6 +48,26 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { messages }: { messages: MyUIMessage[] } = await req.json()
     const { id: chatId } = await params
 
+    // Log to check if files are received
+    console.info('API received messages:', messages.length)
+    messages.forEach((msg, idx) => {
+      console.info(
+        `Message ${idx} parts:`,
+        msg.parts.map((p) => p.type)
+      )
+      const fileParts = msg.parts.filter((p) => p.type === 'file')
+      if (fileParts.length > 0) {
+        console.info(
+          `Message ${idx} has ${fileParts.length} file parts:`,
+          fileParts.map((p) => ({
+            type: p.type,
+            mediaType: p.mediaType,
+            hasUrl: !!p.url,
+          }))
+        )
+      }
+    })
+
     const chat = await prisma.chat.findFirst({
       where: {
         id: chatId,
@@ -128,10 +148,30 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       // dataSchemas, // if using custom data parts
       // tools, // if using tools
     })
+
+    console.info('Validated messages:', validatedMessages.length)
+    validatedMessages.forEach((msg, idx) => {
+      console.info(
+        `Validated message ${idx} parts:`,
+        msg.parts.map((p) => p.type)
+      )
+    })
+
+    const modelMessages = convertToModelMessages(validatedMessages)
+    console.info('Model messages:', modelMessages.length)
+    modelMessages.forEach((msg, idx) => {
+      console.info(`Model message ${idx}:`, {
+        role: msg.role,
+        contentType: typeof msg.content,
+        contentIsArray: Array.isArray(msg.content),
+        contentLength: Array.isArray(msg.content) ? msg.content.length : 1,
+      })
+    })
+
     const result = streamText({
       model: openai.chat(modelName),
       system: systemPrompt,
-      messages: convertToModelMessages(validatedMessages),
+      messages: modelMessages,
     })
 
     return result.toUIMessageStreamResponse({
