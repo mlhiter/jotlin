@@ -53,15 +53,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     // 2. Create next phase chat
-    let nextPhase: 'ARCHITECTURE' | 'DEVELOPMENT'
+    let nextPhase: 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | 'RECOMMENDATION'
     let nextTitle: string
 
-    if (currentPhase === 'REQUIREMENT') {
-      nextPhase = 'ARCHITECTURE'
-      nextTitle = `${rootChat.title || 'Project'} - Architecture`
-    } else if (currentPhase === 'ARCHITECTURE') {
-      nextPhase = 'DEVELOPMENT'
-      nextTitle = `${rootChat.title || 'Project'} - Development`
+    if (currentPhase === 'DISCOVERY') {
+      nextPhase = 'FEATURE_BENCHMARK'
+      nextTitle = `${rootChat.title || 'Project'} - Feature Benchmark`
+    } else if (currentPhase === 'FEATURE_BENCHMARK') {
+      nextPhase = 'MARKET_POSITIONING'
+      nextTitle = `${rootChat.title || 'Project'} - Market Positioning`
+    } else if (currentPhase === 'MARKET_POSITIONING') {
+      nextPhase = 'RECOMMENDATION'
+      nextTitle = `${rootChat.title || 'Project'} - Recommendations`
     } else {
       return NextResponse.json({ error: 'Invalid phase transition' }, { status: 400 })
     }

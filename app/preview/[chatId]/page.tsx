@@ -37,7 +37,7 @@ interface PublicChat {
   phaseChats?: Array<{
     id: string
     title: string | null
-    phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+    phase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | null
     createdAt: string
     messages: MyUIMessage[]
   }> | null
@@ -59,11 +59,11 @@ export default function ChatPreviewPage() {
   const [phaseChats, setPhaseChats] = useState<Array<{
     id: string
     title: string | null
-    phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+    phase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | null
     createdAt: string
     messages: MyUIMessage[]
   }> | null>(null)
-  const [currentPhase, setCurrentPhase] = useState<'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null>(null)
+  const [currentPhase, setCurrentPhase] = useState<'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | null>(null)
   const [displayMessages, setDisplayMessages] = useState<MyUIMessage[]>([])
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function ChatPreviewPage() {
     }
   }, [chatId])
 
-  const handlePhaseSwitch = (phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT') => {
+  const handlePhaseSwitch = (phase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING') => {
     if (!phaseChats) return
 
     const targetPhaseChat = phaseChats.find((pc) => pc.phase === phase)
@@ -173,31 +173,31 @@ export default function ChatPreviewPage() {
   const phaseProgress = phaseChats
     ? [
         {
-          phase: 'REQUIREMENT' as const,
+          phase: 'DISCOVERY' as const,
           status: documents.requirement
             ? ('completed' as const)
-            : phaseChats.some((pc) => pc.phase === 'REQUIREMENT')
-              ? currentPhase === 'REQUIREMENT'
+            : phaseChats.some((pc) => pc.phase === 'DISCOVERY')
+              ? currentPhase === 'DISCOVERY'
                 ? ('in-progress' as const)
                 : ('completed' as const)
               : ('pending' as const),
         },
         {
-          phase: 'ARCHITECTURE' as const,
+          phase: 'FEATURE_BENCHMARK' as const,
           status: documents.architecture
             ? ('completed' as const)
-            : phaseChats.some((pc) => pc.phase === 'ARCHITECTURE')
-              ? currentPhase === 'ARCHITECTURE'
+            : phaseChats.some((pc) => pc.phase === 'FEATURE_BENCHMARK')
+              ? currentPhase === 'FEATURE_BENCHMARK'
                 ? ('in-progress' as const)
                 : ('completed' as const)
               : ('pending' as const),
         },
         {
-          phase: 'DEVELOPMENT' as const,
+          phase: 'MARKET_POSITIONING' as const,
           status: documents.development
             ? ('completed' as const)
-            : phaseChats.some((pc) => pc.phase === 'DEVELOPMENT')
-              ? currentPhase === 'DEVELOPMENT'
+            : phaseChats.some((pc) => pc.phase === 'MARKET_POSITIONING')
+              ? currentPhase === 'MARKET_POSITIONING'
                 ? ('in-progress' as const)
                 : ('completed' as const)
               : ('pending' as const),

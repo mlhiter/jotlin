@@ -90,9 +90,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Organize by phase
     const result = {
-      requirement: documents.find((d) => d.phase === 'REQUIREMENT') || null,
-      architecture: documents.find((d) => d.phase === 'ARCHITECTURE') || null,
-      development: documents.find((d) => d.phase === 'DEVELOPMENT') || null,
+      requirement: documents.find((d) => d.phase === 'DISCOVERY') || null,
+      architecture: documents.find((d) => d.phase === 'FEATURE_BENCHMARK') || null,
+      development: documents.find((d) => d.phase === 'MARKET_POSITIONING') || null,
     }
 
     return NextResponse.json(result)

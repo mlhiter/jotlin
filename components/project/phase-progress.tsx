@@ -4,19 +4,20 @@ import { CheckCircle2, Circle, CircleDot } from 'lucide-react'
 
 interface PhaseProgressProps {
   phases: Array<{
-    phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT'
+    phase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | 'RECOMMENDATION'
     status: 'completed' | 'in-progress' | 'pending'
   }>
-  currentPhase?: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
-  onPhaseClick?: (phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT') => void
+  currentPhase?: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | 'RECOMMENDATION' | null
+  onPhaseClick?: (phase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | 'RECOMMENDATION') => void
   clickable?: boolean
 }
 
 export function PhaseProgress({ phases, currentPhase, onPhaseClick, clickable = false }: PhaseProgressProps) {
   const getPhaseLabel = (phase: string) => {
-    if (phase === 'REQUIREMENT') return 'Requirements'
-    if (phase === 'ARCHITECTURE') return 'Architecture'
-    if (phase === 'DEVELOPMENT') return 'Development'
+    if (phase === 'DISCOVERY') return 'Discovery'
+    if (phase === 'FEATURE_BENCHMARK') return 'Features'
+    if (phase === 'MARKET_POSITIONING') return 'Positioning'
+    if (phase === 'RECOMMENDATION') return 'Recommendations'
     return phase
   }
 
@@ -27,7 +28,7 @@ export function PhaseProgress({ phases, currentPhase, onPhaseClick, clickable = 
     return status
   }
 
-  const handlePhaseClick = (phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT', status: string) => {
+  const handlePhaseClick = (phase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | 'RECOMMENDATION', status: string) => {
     if (clickable && onPhaseClick && status !== 'pending') {
       onPhaseClick(phase)
     }

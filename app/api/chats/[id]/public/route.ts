@@ -72,25 +72,25 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       })
 
       documents = {
-        requirement: docs.find((d) => d.phase === 'REQUIREMENT')
+        requirement: docs.find((d) => d.phase === 'DISCOVERY')
           ? {
-              id: docs.find((d) => d.phase === 'REQUIREMENT')!.id,
-              content: docs.find((d) => d.phase === 'REQUIREMENT')!.content,
-              status: docs.find((d) => d.phase === 'REQUIREMENT')!.status,
+              id: docs.find((d) => d.phase === 'DISCOVERY')!.id,
+              content: docs.find((d) => d.phase === 'DISCOVERY')!.content,
+              status: docs.find((d) => d.phase === 'DISCOVERY')!.status,
             }
           : null,
-        architecture: docs.find((d) => d.phase === 'ARCHITECTURE')
+        architecture: docs.find((d) => d.phase === 'FEATURE_BENCHMARK')
           ? {
-              id: docs.find((d) => d.phase === 'ARCHITECTURE')!.id,
-              content: docs.find((d) => d.phase === 'ARCHITECTURE')!.content,
-              status: docs.find((d) => d.phase === 'ARCHITECTURE')!.status,
+              id: docs.find((d) => d.phase === 'FEATURE_BENCHMARK')!.id,
+              content: docs.find((d) => d.phase === 'FEATURE_BENCHMARK')!.content,
+              status: docs.find((d) => d.phase === 'FEATURE_BENCHMARK')!.status,
             }
           : null,
-        development: docs.find((d) => d.phase === 'DEVELOPMENT')
+        development: docs.find((d) => d.phase === 'MARKET_POSITIONING')
           ? {
-              id: docs.find((d) => d.phase === 'DEVELOPMENT')!.id,
-              content: docs.find((d) => d.phase === 'DEVELOPMENT')!.content,
-              status: docs.find((d) => d.phase === 'DEVELOPMENT')!.status,
+              id: docs.find((d) => d.phase === 'MARKET_POSITIONING')!.id,
+              content: docs.find((d) => d.phase === 'MARKET_POSITIONING')!.content,
+              status: docs.find((d) => d.phase === 'MARKET_POSITIONING')!.status,
             }
           : null,
       }

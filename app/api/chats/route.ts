@@ -56,13 +56,13 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // 2. Create requirement phase chat
+    // 2. Create discovery phase chat
     await prisma.chat.create({
       data: {
-        title: `${title || 'New Project'} - Requirements`,
+        title: `${title || 'New Project'} - Discovery`,
         userId: session.user.id,
         parentId: rootChat.id,
-        phase: 'REQUIREMENT',
+        phase: 'DISCOVERY',
       },
     })
 

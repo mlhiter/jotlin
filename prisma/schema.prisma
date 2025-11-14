@@ -40,22 +40,24 @@ model Account {
 }
 
 model Chat {
-  id        String     @id @default(cuid())
-  title     String?
-  userId    String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  deletedAt DateTime?
-  isDeleted Boolean    @default(false)
-  isPublic  Boolean    @default(false)
-  parentId  String?
-  phase     ChatPhase?
-  parent    Chat?      @relation("ProjectPhases", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Chat[]     @relation("ProjectPhases")
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  documents Document[]
-  messages  Message[]
-  mvp       Mvp?
+  id          String                @id @default(cuid())
+  title       String?
+  userId      String
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  deletedAt   DateTime?
+  isDeleted   Boolean               @default(false)
+  isPublic    Boolean               @default(false)
+  parentId    String?
+  phase       ChatPhase?
+  productIdea String?
+  parent      Chat?                 @relation("ProjectPhases", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Chat[]                @relation("ProjectPhases")
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents   Document[]
+  messages    Message[]
+  mvp         Mvp?
+  analyses    CompetitorAnalysis[]
 
   @@map("chat")
 }
@@ -136,13 +138,69 @@ enum FeedbackType {
 }
 
 enum ChatPhase {
-  REQUIREMENT
-  ARCHITECTURE
-  DEVELOPMENT
+  DISCOVERY
+  FEATURE_BENCHMARK
+  MARKET_POSITIONING
+  RECOMMENDATION
 }
 
 enum DocumentStatus {
   DRAFT
   COMPLETED
   ARCHIVED
+}
+
+model Competitor {
+  id          String              @id @default(cuid())
+  name        String
+  website     String?
+  description String?
+  logo        String?
+  foundedYear Int?
+  funding     String?
+  teamSize    String?
+  pricing     Json?
+  source      String?
+  features    CompetitorFeature[]
+  analyses    CompetitorAnalysis[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@map("competitor")
+}
+
+model CompetitorFeature {
+  id               String     @id @default(cuid())
+  competitorId     String
+  competitor       Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  name             String
+  category         String
+  quality          String?
+  description      String?
+  isCore           Boolean    @default(false)
+  isDifferentiator Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@map("competitor_feature")
+}
+
+model CompetitorAnalysis {
+  id              String     @id @default(cuid())
+  chatId          String
+  chat            Chat       @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  competitorId    String
+  competitor      Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  type            String
+  confidence      Float
+  reasoning       String?
+  marketInsights  Json?
+  swotAnalysis    Json?
+  positioningMap  Json?
+  recommendations Json?
+  status          String     @default("IN_PROGRESS")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("competitor_analysis")
 }

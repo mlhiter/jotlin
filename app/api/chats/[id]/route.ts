@@ -110,11 +110,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // Select system prompt based on chat phase
     let systemPrompt = requirementAnalysisPrompt
 
-    if (targetChat.phase === 'ARCHITECTURE') {
+    if (targetChat.phase === 'FEATURE_BENCHMARK') {
       systemPrompt = technicalArchitectureAnalysisPrompt
-    } else if (targetChat.phase === 'DEVELOPMENT') {
+    } else if (targetChat.phase === 'MARKET_POSITIONING') {
       systemPrompt = developmentPlanAnalysisPrompt
-    } else if (targetChat.phase === 'REQUIREMENT') {
+    } else if (targetChat.phase === 'DISCOVERY') {
       systemPrompt = requirementAnalysisPrompt
     }
 

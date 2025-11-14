@@ -53,7 +53,7 @@ interface DraftPanelProps {
   chatId?: string
   activeTab?: string
   onActiveTabChange?: (tab: string) => void
-  currentPhase?: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+  currentPhase?: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | null
   liveDraft?: string
   liveFinal?: string
   readOnly?: boolean
@@ -97,9 +97,9 @@ export function DraftPanel({
     savedContent?: string
   ): string | undefined => {
     const phaseMap = {
-      requirement: 'REQUIREMENT',
-      architecture: 'ARCHITECTURE',
-      development: 'DEVELOPMENT',
+      requirement: 'DISCOVERY',
+      architecture: 'FEATURE_BENCHMARK',
+      development: 'MARKET_POSITIONING',
     }
 
     // Priority 1: Saved final document (most reliable)
@@ -126,21 +126,21 @@ export function DraftPanel({
       value: 'requirement',
       label: 'Requirements',
       content: getDocumentContent('requirement', documents.requirement?.content),
-      available: !!(documents.requirement || (currentPhase === 'REQUIREMENT' && liveContent)),
+      available: !!(documents.requirement || (currentPhase === 'DISCOVERY' && liveContent)),
       icon: FileText,
     },
     {
       value: 'architecture',
       label: 'Architecture',
       content: getDocumentContent('architecture', documents.architecture?.content),
-      available: !!(documents.architecture || (currentPhase === 'ARCHITECTURE' && liveContent)),
+      available: !!(documents.architecture || (currentPhase === 'FEATURE_BENCHMARK' && liveContent)),
       icon: FileText,
     },
     {
       value: 'development',
       label: 'Development',
       content: getDocumentContent('development', documents.development?.content),
-      available: !!(documents.development || (currentPhase === 'DEVELOPMENT' && liveContent)),
+      available: !!(documents.development || (currentPhase === 'MARKET_POSITIONING' && liveContent)),
       icon: FileText,
     },
   ]
@@ -158,9 +158,9 @@ export function DraftPanel({
   // Compute effective document sub-tab
   const effectiveDocumentTab = (() => {
     // Priority 1: Current phase with content (saved or live)
-    if (currentPhase === 'DEVELOPMENT' && (documents.development || liveContent)) return 'development'
-    if (currentPhase === 'ARCHITECTURE' && (documents.architecture || liveContent)) return 'architecture'
-    if (currentPhase === 'REQUIREMENT' && (documents.requirement || liveContent)) return 'requirement'
+    if (currentPhase === 'MARKET_POSITIONING' && (documents.development || liveContent)) return 'development'
+    if (currentPhase === 'FEATURE_BENCHMARK' && (documents.architecture || liveContent)) return 'architecture'
+    if (currentPhase === 'DISCOVERY' && (documents.requirement || liveContent)) return 'requirement'
     // Priority 2: Any saved documents (reverse order to show latest)
     if (documents.development) return 'development'
     if (documents.architecture) return 'architecture'

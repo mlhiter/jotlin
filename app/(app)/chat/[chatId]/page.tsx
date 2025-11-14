@@ -120,7 +120,7 @@ export default function ChatIdPage() {
     phaseChats: Array<{
       id: string
       title: string | null
-      phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+      phase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | null
       createdAt: string
       messages: MyUIMessage[]
     }>
@@ -129,7 +129,7 @@ export default function ChatIdPage() {
       architecture?: { id: string; content: string; status: string }
       development?: { id: string; content: string; status: string }
     }
-    currentPhase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+    currentPhase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | null
   } | null>(null)
 
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar()
@@ -158,7 +158,7 @@ export default function ChatIdPage() {
           const phaseChats: Array<{
             id: string
             title: string | null
-            phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+            phase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING' | null
             createdAt: string
             messages: MyUIMessage[]
           }> = phaseChatsRes.data
@@ -166,9 +166,9 @@ export default function ChatIdPage() {
 
           // Try to restore the last viewed phase from localStorage
           const savedPhase = localStorage.getItem(`lastPhase_${chatId}`) as
-            | 'REQUIREMENT'
-            | 'ARCHITECTURE'
-            | 'DEVELOPMENT'
+            | 'DISCOVERY'
+            | 'FEATURE_BENCHMARK'
+            | 'MARKET_POSITIONING'
             | null
 
           // Find the active chat: either saved phase or the last one
@@ -252,7 +252,7 @@ export default function ChatIdPage() {
       !isLoading &&
       status === 'ready' &&
       chatReady &&
-      projectData?.currentPhase === 'ARCHITECTURE' &&
+      projectData?.currentPhase === 'FEATURE_BENCHMARK' &&
       projectData?.documents?.requirement &&
       messages.length === 0 &&
       !pendingMessage // Don't send if there's already a pending message
@@ -581,7 +581,7 @@ export default function ChatIdPage() {
     setChatData((prev) => (prev ? { ...prev, isPublic } : null))
   }
 
-  const handlePhaseSwitch = async (phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT') => {
+  const handlePhaseSwitch = async (phase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING') => {
     if (!projectData) return
 
     // Prevent duplicate switching
@@ -665,7 +665,7 @@ export default function ChatIdPage() {
   }
 
   // Calculate phase status based on documents and messages
-  const getPhaseStatus = (phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT') => {
+  const getPhaseStatus = (phase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING') => {
     if (!projectData) return 'pending' as const
 
     const phaseKey = phase.toLowerCase() as 'requirement' | 'architecture' | 'development'
@@ -694,16 +694,16 @@ export default function ChatIdPage() {
   const phaseProgress = projectData
     ? [
         {
-          phase: 'REQUIREMENT' as const,
-          status: getPhaseStatus('REQUIREMENT'),
+          phase: 'DISCOVERY' as const,
+          status: getPhaseStatus('DISCOVERY'),
         },
         {
-          phase: 'ARCHITECTURE' as const,
-          status: getPhaseStatus('ARCHITECTURE'),
+          phase: 'FEATURE_BENCHMARK' as const,
+          status: getPhaseStatus('FEATURE_BENCHMARK'),
         },
         {
-          phase: 'DEVELOPMENT' as const,
-          status: getPhaseStatus('DEVELOPMENT'),
+          phase: 'MARKET_POSITIONING' as const,
+          status: getPhaseStatus('MARKET_POSITIONING'),
         },
       ]
     : []
@@ -712,13 +712,13 @@ export default function ChatIdPage() {
   const showNextPhaseButton =
     projectData &&
     requirementContent.final &&
-    ((projectData.currentPhase === 'REQUIREMENT' && !projectData.documents.architecture) ||
-      (projectData.currentPhase === 'ARCHITECTURE' && !projectData.documents.development))
+    ((projectData.currentPhase === 'DISCOVERY' && !projectData.documents.architecture) ||
+      (projectData.currentPhase === 'FEATURE_BENCHMARK' && !projectData.documents.development))
 
   // Check if should show "Generate Code" button
   const showCodeGenerationButton =
     projectData &&
-    projectData.currentPhase === 'DEVELOPMENT' &&
+    projectData.currentPhase === 'MARKET_POSITIONING' &&
     projectData.documents.requirement &&
     projectData.documents.architecture &&
     projectData.documents.development
@@ -767,13 +767,13 @@ export default function ChatIdPage() {
 
         // Queue auto-send message only if there are no existing messages
         if (!hasExistingMessages) {
-          if (activeChat && activeChat.phase === 'ARCHITECTURE' && documents.requirement) {
+          if (activeChat && activeChat.phase === 'FEATURE_BENCHMARK' && documents.requirement) {
             setPendingMessage(
               `Based on the requirement document below, please help me design the technical architecture:\n\n${documents.requirement.content}`
             )
           } else if (
             activeChat &&
-            activeChat.phase === 'DEVELOPMENT' &&
+            activeChat.phase === 'MARKET_POSITIONING' &&
             documents.requirement &&
             documents.architecture
           ) {
@@ -877,7 +877,7 @@ export default function ChatIdPage() {
             />
 
             {/* Next Phase Button */}
-            {showNextPhaseButton && projectData!.currentPhase !== 'DEVELOPMENT' && (
+            {showNextPhaseButton && projectData!.currentPhase !== 'MARKET_POSITIONING' && (
               <div className="mx-auto max-w-3xl px-4 pb-4">
                 <NextPhaseButton
                   rootChatId={projectData!.rootChatId}
