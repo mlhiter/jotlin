@@ -10,6 +10,8 @@ import remarkGfm from 'remark-gfm'
 
 import { cn } from '@/libs/utils/utils'
 
+import { Button } from '../ui/button'
+
 interface MarkdownProps {
   content: string
   className?: string
@@ -34,9 +36,9 @@ export function Markdown({ content, className, inline = false }: MarkdownProps) 
           code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '')
             const language = match ? match[1] : ''
-            const codeContent = String(children).replace(/\n$/, '')
+            const codeContent = String(children)
 
-            const isInlineCode = !className || (!match && !codeContent.includes('\n'))
+            const isInlineCode = !codeContent.includes('\n')
 
             if (isInlineCode || inline) {
               return (
@@ -47,24 +49,26 @@ export function Markdown({ content, className, inline = false }: MarkdownProps) 
             }
             return (
               <div className="group relative">
-                <div className="bg-muted flex items-center justify-between rounded-t-lg border px-4 py-2">
+                <div className="bg-muted flex items-center justify-between rounded-t-lg px-2 py-1">
                   <span className="text-muted-foreground text-xs font-medium">{language}</span>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => copyToClipboard(codeContent)}
-                    className="hover:bg-background rounded p-1 opacity-0 transition-opacity group-hover:opacity-100"
-                    type="button">
+                    className="h-8 w-8 hover:bg-neutral-300"
+                    title="Copy code">
                     {copiedCode === codeContent ? (
-                      <Check className="h-3 w-3 text-green-500" />
+                      <Check className="text-muted-foreground h-2 w-2" />
                     ) : (
-                      <Copy className="h-3 w-3" />
+                      <Copy className="text-muted-foreground h-2 w-2" />
                     )}
-                  </button>
+                  </Button>
                 </div>
                 <SyntaxHighlighter
                   style={theme === 'dark' ? oneDark : oneLight}
                   language={language}
                   PreTag="div"
-                  className="!mt-0 !rounded-t-none">
+                  className="!mt-0 !rounded-b-lg !rounded-t-none border border-neutral-200">
                   {codeContent}
                 </SyntaxHighlighter>
               </div>
