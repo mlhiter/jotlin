@@ -1,11 +1,12 @@
 'use client'
 
-import { Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { AlertTriangle, Sparkles } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 
+import apiClient from '@/libs/utils/axios'
 import { useAuthStore } from '@/store/auth-store'
 
 import { GenerationLog, LogEntry } from '../mvp/generation-log'
@@ -24,10 +25,31 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
   const [isGenerating, setIsGenerating] = useState(false)
   const [currentStep, setCurrentStep] = useState('')
   const [logs, setLogs] = useState<LogEntry[]>([])
+  const [hasExistingCode, setHasExistingCode] = useState(false)
+  const [isCheckingCode, setIsCheckingCode] = useState(true)
 
   const addLog = (type: LogEntry['type'], message: string, fileName?: string) => {
     setLogs((prev) => [...prev, { type, message, timestamp: Date.now(), fileName }])
   }
+
+  // Check if code already exists
+  useEffect(() => {
+    const checkExistingCode = async () => {
+      try {
+        const res = await apiClient.get(`/api/mvp/${rootChatId}`)
+        if (res.data && res.data.files && Object.keys(res.data.files).length > 0) {
+          setHasExistingCode(true)
+        }
+      } catch {
+        // No existing code or error
+        setHasExistingCode(false)
+      } finally {
+        setIsCheckingCode(false)
+      }
+    }
+
+    checkExistingCode()
+  }, [rootChatId])
 
   const handleGenerate = async () => {
     setIsGenerating(true)
@@ -80,10 +102,11 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
       reader = response.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
+      let shouldStop = false
 
       while (true) {
         const { done, value } = await reader.read()
-        if (done) break
+        if (done || shouldStop) break
 
         buffer += decoder.decode(value, { stream: true })
         const lines = buffer.split('\n')
@@ -109,14 +132,23 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
               if (data.type === 'completed') {
                 toast.success('Code generated successfully!')
                 setIsGenerating(false)
-                onSuccess()
+                setHasExistingCode(true)
+                shouldStop = true
+                // Call onSuccess and clear logs after a short delay
+                setTimeout(() => {
+                  onSuccess()
+                  setLogs([])
+                  setCurrentStep('')
+                }, 1000)
                 break
               }
 
               if (data.type === 'error') {
-                addLog('error', data.error || data.message || 'Generation failed')
-                toast.error(data.error || 'Generation failed')
+                const errorMsg = data.error || data.message || 'Generation failed'
+                addLog('error', errorMsg)
+                toast.error(errorMsg)
                 setIsGenerating(false)
+                shouldStop = true
                 break
               }
             } catch (parseError) {
@@ -132,11 +164,13 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
       toast.error(msg)
       setIsGenerating(false)
     } finally {
+      // Don't cancel the reader here - let it finish naturally
+      // Calling reader.cancel() causes the backend to throw "terminated" error
       if (reader) {
         try {
-          await reader.cancel()
-        } catch (err) {
-          console.error('[Reader Cleanup Error]', err)
+          reader.releaseLock()
+        } catch {
+          // Ignore lock release errors
         }
       }
     }
@@ -146,6 +180,39 @@ export function CodeGenerationButton({ documents, rootChatId, onSuccess }: CodeG
     return (
       <div className="animate-in fade-in slide-in-from-top-4 h-96 duration-500">
         <GenerationLog logs={logs} isGenerating={isGenerating} currentStep={currentStep} />
+      </div>
+    )
+  }
+
+  if (isCheckingCode) {
+    return (
+      <div className="animate-in fade-in slide-in-from-top-2 bg-muted/50 rounded-lg border p-4 duration-300">
+        <div className="text-muted-foreground flex items-center justify-center gap-2 text-sm">
+          <Sparkles className="h-4 w-4 animate-pulse" />
+          <span>Checking existing code...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (hasExistingCode) {
+    return (
+      <div className="animate-in fade-in slide-in-from-top-2 rounded-lg border border-amber-200 bg-amber-50 p-4 duration-300 dark:border-amber-900/50 dark:bg-amber-950/20">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+              <p className="text-sm font-medium text-amber-900 dark:text-amber-100">Code already exists</p>
+            </div>
+            <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+              Regenerating will overwrite existing code. Check the Preview/Code tabs first.
+            </p>
+          </div>
+          <Button onClick={handleGenerate} disabled={isGenerating} size="sm" className="gap-2" variant="outline">
+            <Sparkles className="h-4 w-4" />
+            Regenerate
+          </Button>
+        </div>
       </div>
     )
   }

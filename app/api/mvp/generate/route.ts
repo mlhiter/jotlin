@@ -108,15 +108,17 @@ export async function POST(req: NextRequest) {
         })
 
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
-        sendEvent({
+        const completedEvent = {
           type: 'completed',
           message: `Completed! Total time: ${elapsed}s`,
           progress: 100,
           status: 'completed',
-          files,
           cost: `$${cost.toFixed(4)}`,
-        })
+        }
+        sendEvent(completedEvent)
 
+        // Wait a bit to ensure the event is sent before closing
+        await new Promise((resolve) => setTimeout(resolve, 100))
         controller.close()
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to generate MVP'

@@ -59,6 +59,7 @@ export function Preview({ files }: PreviewProps) {
 
     let cleanup = false
     let devProcess: WebContainerProcess | null = null
+    let serverTimeout: NodeJS.Timeout | null = null
 
     async function start() {
       try {
@@ -83,6 +84,30 @@ export function Preview({ files }: PreviewProps) {
         log('✓ WebContainer ready')
 
         log('Mounting file system...')
+
+        // Log file structure for debugging
+        const fileList = Object.keys(files)
+        log(`Files to mount (${fileList.length}):`)
+        fileList.forEach(f => log(`  - ${f}`))
+
+        // Check for essential files
+        if (!files['package.json']) {
+          log('⚠️ Warning: package.json is missing!')
+        } else {
+          try {
+            const pkg = JSON.parse(files['package.json'])
+            const depCount = Object.keys(pkg.dependencies || {}).length
+            const devDepCount = Object.keys(pkg.devDependencies || {}).length
+            log(`package.json: ${depCount} dependencies, ${devDepCount} devDependencies`)
+
+            if (!pkg.scripts?.dev) {
+              log('⚠️ Warning: dev script is missing in package.json!')
+            }
+          } catch {
+            log('⚠️ Warning: package.json is not valid JSON!')
+          }
+        }
+
         const tree: FileSystemTree = {}
         Object.entries(files).forEach(([path, content]) => {
           const parts = path.split('/')
@@ -114,12 +139,23 @@ export function Preview({ files }: PreviewProps) {
         log('Installing dependencies...')
         const inst = await wc.spawn('npm', ['install'])
 
+        let installOutput = ''
+        let errorOutput = ''
+
         inst.output.pipeTo(
           new WritableStream({
             write(data) {
               if (!cleanup) {
+                installOutput += data
                 const sanitized = data.replace(/https?:\/\/[^\s]+/g, '[URL]')
                 log(sanitized)
+
+                // Capture potential error indicators
+                if (data.toLowerCase().includes('error') ||
+                    data.toLowerCase().includes('failed') ||
+                    data.toLowerCase().includes('warn')) {
+                  errorOutput += data + '\n'
+                }
               }
             },
           })
@@ -127,7 +163,27 @@ export function Preview({ files }: PreviewProps) {
 
         const code = await inst.exit
         if (cleanup) return
-        if (code !== 0) throw new Error('npm install failed')
+
+        if (code !== 0) {
+          log('✗ npm install failed with detailed error output:')
+          log('─'.repeat(50))
+
+          // Log the most relevant error information
+          if (errorOutput) {
+            log('Error/Warning messages:')
+            log(errorOutput)
+          }
+
+          // Log last 20 lines of output for context
+          const outputLines = installOutput.split('\n').filter(line => line.trim())
+          const lastLines = outputLines.slice(-20).join('\n')
+          log('Last 20 lines of output:')
+          log(lastLines)
+          log('─'.repeat(50))
+
+          throw new Error(`npm install failed with exit code ${code}. Check logs above for details.`)
+        }
+
         log('✓ Dependencies installed')
 
         log('Starting dev server...')
@@ -135,12 +191,21 @@ export function Preview({ files }: PreviewProps) {
         setCurrentProcess(devProcess)
 
         let serverReady = false
+        let devServerOutput = ''
+
         devProcess.output.pipeTo(
           new WritableStream({
             write(data) {
               if (!cleanup) {
+                devServerOutput += data
                 const sanitized = data.replace(/https?:\/\/[^\s]+/g, '[URL]')
                 log(sanitized)
+
+                // Check for dev server errors
+                if (data.toLowerCase().includes('error') && !serverReady) {
+                  log('⚠️ Dev server encountered an error')
+                }
+
                 if (
                   !serverReady &&
                   serverUrl &&
@@ -160,6 +225,16 @@ export function Preview({ files }: PreviewProps) {
             },
           })
         )
+
+        // Add timeout detection for dev server startup
+        serverTimeout = setTimeout(() => {
+          if (!serverReady && !cleanup) {
+            log('⚠️ Dev server did not start within 30 seconds')
+            log('Last dev server output:')
+            const outputLines = devServerOutput.split('\n').filter(line => line.trim())
+            log(outputLines.slice(-10).join('\n'))
+          }
+        }, 30000)
       } catch (e) {
         if (!cleanup) {
           const msg = e instanceof Error ? e.message : 'Startup failed'
@@ -175,6 +250,9 @@ export function Preview({ files }: PreviewProps) {
     return () => {
       cleanup = true
       initRef.current = false
+      if (serverTimeout) {
+        clearTimeout(serverTimeout)
+      }
       if (devProcess) {
         log('Cleaning up: killing dev server process...')
         killCurrentProcess().catch(() => {})

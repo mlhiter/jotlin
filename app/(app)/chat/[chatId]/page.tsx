@@ -825,6 +825,11 @@ export default function ChatIdPage() {
           documents,
         }
       })
+
+      // Auto switch to Preview tab after successful generation
+      setDraftActiveTab('preview')
+      // Ensure the sidebar is open
+      setShowRequirementSidebar(true)
     } catch (error) {
       console.error('Failed to reload project data:', error)
     }

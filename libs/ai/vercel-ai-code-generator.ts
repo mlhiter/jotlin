@@ -191,7 +191,7 @@ CRITICAL IMPLEMENTATION RULES:
 - Prioritize features based on the Development Plan's task priorities
 
 IMPORTANT GUIDELINES:
-- Use Next.js 14.2.16, React 18.3.1, TypeScript 5, Tailwind CSS 3.4.1
+- Use Next.js 14.2.16, React 18.3.1, TypeScript 5.6.3, Tailwind CSS 3.4.1
 - Use Next.js App Router (app directory structure)
 - Keep ALL code minimal and simple
 - For Tailwind CSS 3, use standard @tailwind directives in globals.css
@@ -199,6 +199,16 @@ IMPORTANT GUIDELINES:
 - CRITICAL: The dev script MUST be "next dev --port 3000" (explicit port for WebContainer)
 - Keep dependencies minimal - only include what's absolutely necessary
 - Use .js extension for config files (next.config.js, tailwind.config.js) for better compatibility
+
+CRITICAL DEPENDENCY VERSION RULES:
+- typescript: MUST use "5.6.3" (NOT 5.0.0, 5.0.x, or 5.x - these don't exist!)
+- @types/react: "18.3.12"
+- @types/node: "22.10.5"
+- next: "14.2.16"
+- react: "18.3.1"
+- react-dom: "18.3.1"
+- tailwindcss: "3.4.1"
+- Always use EXACT versions (no ^ or ~) for better WebContainer compatibility
 
 TOOLS AVAILABLE:
 - write_file: Create a new file with content
