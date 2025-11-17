@@ -40,12 +40,32 @@ export default function ChatIdPage() {
 
   const [initialMessages, setInitialMessages] = useState<MyUIMessage[]>([])
   const [chatReady, setChatReady] = useState(false)
+  const [projectData, setProjectData] = useState<{
+    rootChatId: string
+    phaseChats: Array<{
+      id: string
+      title: string | null
+      phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+      createdAt: string
+      messages: MyUIMessage[]
+    }>
+    currentPhase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+  } | null>(null)
+
+  // Calculate the actual chat ID to use for API calls
+  const actualChatId = useMemo(() => {
+    if (!projectData) return chatId
+
+    // Find the current phase chat
+    const currentPhaseChat = projectData.phaseChats.find((pc) => pc.phase === projectData.currentPhase)
+    return currentPhaseChat?.id || chatId
+  }, [projectData, chatId])
 
   const { messages, sendMessage, status, stop, setMessages } = useChat<MyUIMessage>({
     id: chatId,
     messages: initialMessages,
     transport: new DefaultChatTransport({
-      api: `/api/chats/${chatId}`,
+      api: `/api/chats/${actualChatId}`,
       headers: () => ({
         Authorization: `Bearer ${useAuthStore.getState().token}`,
       }),
@@ -115,22 +135,6 @@ export default function ChatIdPage() {
   const autoCollapsedRef = useRef(false)
   const userManuallyOpenedRef = useRef(false)
   const isSwitchingRef = useRef(false)
-  const [projectData, setProjectData] = useState<{
-    rootChatId: string
-    phaseChats: Array<{
-      id: string
-      title: string | null
-      phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
-      createdAt: string
-      messages: MyUIMessage[]
-    }>
-    documents: {
-      requirement?: { id: string; content: string; status: string }
-      architecture?: { id: string; content: string; status: string }
-      development?: { id: string; content: string; status: string }
-    }
-    currentPhase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
-  } | null>(null)
 
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar()
 
@@ -150,10 +154,7 @@ export default function ChatIdPage() {
         // Check if this is a root chat (project container)
         if (chatData.parentId === null && chatData.phase === null) {
           // This is a project root, load project data
-          const [phaseChatsRes, documentsRes] = await Promise.all([
-            apiClient.get(`/api/projects/${chatId}/chats`),
-            apiClient.get(`/api/projects/${chatId}/documents`),
-          ])
+          const phaseChatsRes = await apiClient.get(`/api/projects/${chatId}/chats`)
 
           const phaseChats: Array<{
             id: string
@@ -162,7 +163,6 @@ export default function ChatIdPage() {
             createdAt: string
             messages: MyUIMessage[]
           }> = phaseChatsRes.data
-          const documentsData = documentsRes.data
 
           // Try to restore the last viewed phase from localStorage
           const savedPhase = localStorage.getItem(`lastPhase_${chatId}`) as
@@ -180,17 +180,9 @@ export default function ChatIdPage() {
             }
           }
 
-          // Transform documents: convert null to undefined
-          const documents = {
-            ...(documentsData.requirement && { requirement: documentsData.requirement }),
-            ...(documentsData.architecture && { architecture: documentsData.architecture }),
-            ...(documentsData.development && { development: documentsData.development }),
-          }
-
           setProjectData({
             rootChatId: chatId,
             phaseChats,
-            documents,
             currentPhase: activeChat?.phase || null,
           })
 
@@ -244,28 +236,6 @@ export default function ChatIdPage() {
     }
   }, [initialMessage, hasAutoSent, isLoading, status, chatReady, sendMessage])
 
-  // Auto-inject requirement document for architecture phase if no messages
-  // Note: This only handles initial page load. Phase transitions are handled in handleNextPhaseSuccess
-  useEffect(() => {
-    if (
-      !hasAutoSent &&
-      !isLoading &&
-      status === 'ready' &&
-      chatReady &&
-      projectData?.currentPhase === 'ARCHITECTURE' &&
-      projectData?.documents?.requirement &&
-      messages.length === 0 &&
-      !pendingMessage // Don't send if there's already a pending message
-    ) {
-      setHasAutoSent(true)
-      setTimeout(() => {
-        sendMessage({
-          text: `Based on the requirement document below, please help me design the technical architecture:\n\n${projectData.documents.requirement!.content}`,
-        })
-      }, 500)
-    }
-  }, [hasAutoSent, isLoading, status, chatReady, projectData, messages.length, sendMessage, pendingMessage])
-
   // Filter empty assistant messages
   const filteredMessages = messages.filter((message) => {
     if (message.role === 'assistant') {
@@ -275,19 +245,17 @@ export default function ChatIdPage() {
     return true
   })
 
-  // Check if any message has draft or final content
-  const requirementContent = useMemo(() => {
-    return filteredMessages.reduce(
+  // Extract draft/final content from messages
+  const extractContent = (msgs: MyUIMessage[]) => {
+    return msgs.reduce(
       (acc, message) => {
         if (message.role === 'assistant') {
           message.parts.forEach((part) => {
             if (part.type === 'text') {
               const parsed = parseAIResponse(part.text)
-              // If we find a final tag, update final (preserve it across messages)
               if (parsed.final) {
                 acc.final = parsed.final
               }
-              // Draft always uses the latest one (can be overwritten)
               if (parsed.draft) {
                 acc.draft = parsed.draft
               }
@@ -298,111 +266,85 @@ export default function ChatIdPage() {
       },
       { draft: undefined as string | undefined, final: undefined as string | undefined }
     )
-  }, [filteredMessages])
+  }
 
-  // Auto-save document when final content is detected
-  useEffect(() => {
-    const cleanDocumentContent = (content: string): string => {
-      // Remove any XML tags that might have leaked through
-      let cleaned = content
-        .replace(/<\/?response>/gi, '')
-        .replace(/<\/?prose>/gi, '')
-        .replace(/<\/?question>/gi, '')
-        .replace(/<\/?options[^>]*>/gi, '')
-        .replace(/<\/?option[^>]*>/gi, '')
-        .replace(/<\/?draft>/gi, '')
-        .replace(/<\/?final>/gi, '')
-        .replace(/<\/?input[^>]*>/gi, '')
-        .trim()
-
-      // Find the first Markdown heading (# ) and start from there
-      // This removes any explanatory text before the actual document
-      const headingMatch = cleaned.match(/^([\s\S]*?)(#\s+.+)$/m)
-      if (headingMatch && headingMatch[1].trim().length > 0) {
-        cleaned = headingMatch[2]
-      }
-
-      return cleaned.trim()
-    }
-
-    const saveDocument = async () => {
-      if (!requirementContent.final || !projectData?.currentPhase || !projectData?.rootChatId) {
-        return
-      }
-
-      // IMPORTANT: Verify that the messages we're processing actually belong to the current phase
-      const currentPhaseChat = projectData.phaseChats.find((pc) => pc.phase === projectData.currentPhase)
-      if (!currentPhaseChat) {
-        console.warn('Current phase chat not found, skipping auto-save')
-        return
-      }
-
-      // Additional check: Only save if current messages have more than 2 messages (user + assistant)
-      // This prevents saving during state transitions
-      if (messages.length < 2) {
-        return
-      }
-
-      // Check if the first message in current messages matches the pattern for this phase
-      // to ensure we're not saving content from wrong phase
-      const firstUserMessage = messages.find((m) => m.role === 'user')
-      if (!firstUserMessage) {
-        return
-      }
-
-      // Clean the content before saving
-      const cleanedContent = cleanDocumentContent(requirementContent.final)
-
-      // Additional validation: Document should have meaningful content (more than 100 chars)
-      if (cleanedContent.length < 100) {
-        console.warn('Document content too short, skipping auto-save')
-        return
-      }
-
-      // Check if this document is already saved
-      const phaseKey = projectData.currentPhase.toLowerCase() as 'requirement' | 'architecture' | 'development'
-      const existingDoc = projectData.documents[phaseKey]
-      if (existingDoc && existingDoc.content === cleanedContent) {
-        return
-      }
-
-      try {
-        await apiClient.post(`/api/projects/${projectData.rootChatId}/documents`, {
-          phase: projectData.currentPhase,
-          content: cleanedContent,
-          sourceChatId: currentPhaseChat.id,
-        })
-
-        // Reload documents
-        const documentsRes = await apiClient.get(`/api/projects/${projectData.rootChatId}/documents`)
-        setProjectData((prev) => (prev ? { ...prev, documents: documentsRes.data } : null))
-      } catch (error) {
-        console.error('Failed to save document:', error)
+  // Calculate live content for each phase from projectData
+  const phaseLiveContent = useMemo(() => {
+    if (!projectData) {
+      return {
+        requirement: { draft: undefined, final: undefined },
+        architecture: { draft: undefined, final: undefined },
+        development: { draft: undefined, final: undefined },
       }
     }
 
-    saveDocument()
-  }, [
-    requirementContent.final,
-    projectData?.currentPhase,
-    projectData?.rootChatId,
-    projectData?.phaseChats,
-    messages.length,
-  ])
+    const result = {
+      requirement: { draft: undefined as string | undefined, final: undefined as string | undefined },
+      architecture: { draft: undefined as string | undefined, final: undefined as string | undefined },
+      development: { draft: undefined as string | undefined, final: undefined as string | undefined },
+    }
+
+    // Extract content from each phase chat's messages
+    projectData.phaseChats.forEach((phaseChat) => {
+      if (phaseChat.phase === 'REQUIREMENT') {
+        result.requirement = extractContent(phaseChat.messages || [])
+      } else if (phaseChat.phase === 'ARCHITECTURE') {
+        result.architecture = extractContent(phaseChat.messages || [])
+      } else if (phaseChat.phase === 'DEVELOPMENT') {
+        result.development = extractContent(phaseChat.messages || [])
+      }
+    })
+
+    return result
+  }, [projectData])
 
   // Auto show draft panel when there's content
   useEffect(() => {
-    const hasDraftOrFinal = !!(requirementContent.draft || requirementContent.final)
-    const hasSavedDocuments = !!(
-      projectData?.documents?.requirement ||
-      projectData?.documents?.architecture ||
-      projectData?.documents?.development
+    const hasLiveContent = !!(
+      phaseLiveContent.requirement.draft ||
+      phaseLiveContent.requirement.final ||
+      phaseLiveContent.architecture.draft ||
+      phaseLiveContent.architecture.final ||
+      phaseLiveContent.development.draft ||
+      phaseLiveContent.development.final
     )
 
-    if (hasDraftOrFinal || hasSavedDocuments) {
+    if (hasLiveContent) {
       setShowRequirementSidebar(true)
     }
-  }, [requirementContent, projectData?.documents])
+  }, [phaseLiveContent])
+
+  // Auto-inject requirement document for architecture phase if no messages
+  // Note: This only handles initial page load. Phase transitions are handled in handleNextPhaseSuccess
+  useEffect(() => {
+    if (
+      !hasAutoSent &&
+      !isLoading &&
+      status === 'ready' &&
+      chatReady &&
+      projectData?.currentPhase === 'ARCHITECTURE' &&
+      phaseLiveContent.requirement.final &&
+      messages.length === 0 &&
+      !pendingMessage // Don't send if there's already a pending message
+    ) {
+      setHasAutoSent(true)
+      setTimeout(() => {
+        sendMessage({
+          text: `Based on the requirement document below, please help me design the technical architecture:\n\n${phaseLiveContent.requirement.final}`,
+        })
+      }, 500)
+    }
+  }, [
+    hasAutoSent,
+    isLoading,
+    status,
+    chatReady,
+    projectData,
+    phaseLiveContent.requirement.final,
+    messages.length,
+    sendMessage,
+    pendingMessage,
+  ])
 
   // Monitor window width
   useEffect(() => {
@@ -608,14 +550,7 @@ export default function ChatIdPage() {
     setChatReady(false)
 
     try {
-      // Save current phase messages to database before switching
-      const currentPhaseChat = projectData.phaseChats.find((pc) => pc.phase === projectData.currentPhase)
-      if (currentPhaseChat && messages.length > 0) {
-        await apiClient.post(`/api/chats/${currentPhaseChat.id}/messages`, {
-          messages: messages,
-        })
-      }
-
+      // Note: No need to save messages here - they are already saved via onFinish callback
       // Update projectData with current messages saved, then switch
       setProjectData((prev) => {
         if (!prev) return null
@@ -664,14 +599,14 @@ export default function ChatIdPage() {
     }
   }
 
-  // Calculate phase status based on documents and messages
+  // Calculate phase status based on live content and messages
   const getPhaseStatus = (phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT') => {
     if (!projectData) return 'pending' as const
 
     const phaseKey = phase.toLowerCase() as 'requirement' | 'architecture' | 'development'
 
-    // 1. If has saved document → completed
-    if (projectData.documents[phaseKey]) {
+    // 1. If has final content → completed
+    if (phaseLiveContent[phaseKey].final) {
       return 'completed' as const
     }
 
@@ -711,17 +646,20 @@ export default function ChatIdPage() {
   // Check if should show "Start Next Phase" button
   const showNextPhaseButton =
     projectData &&
-    requirementContent.final &&
-    ((projectData.currentPhase === 'REQUIREMENT' && !projectData.documents.architecture) ||
-      (projectData.currentPhase === 'ARCHITECTURE' && !projectData.documents.development))
+    ((projectData.currentPhase === 'REQUIREMENT' &&
+      phaseLiveContent.requirement.final &&
+      !projectData.phaseChats.some((pc) => pc.phase === 'ARCHITECTURE')) ||
+      (projectData.currentPhase === 'ARCHITECTURE' &&
+        phaseLiveContent.architecture.final &&
+        !projectData.phaseChats.some((pc) => pc.phase === 'DEVELOPMENT')))
 
   // Check if should show "Generate Code" button
   const showCodeGenerationButton =
     projectData &&
     projectData.currentPhase === 'DEVELOPMENT' &&
-    projectData.documents.requirement &&
-    projectData.documents.architecture &&
-    projectData.documents.development
+    phaseLiveContent.requirement.final &&
+    phaseLiveContent.architecture.final &&
+    phaseLiveContent.development.final
 
   const handleNextPhaseSuccess = async () => {
     // Reload data instead of full page reload
@@ -729,27 +667,15 @@ export default function ChatIdPage() {
       setChatReady(false)
       setHasAutoSent(true) // Mark as sent to prevent duplicate auto-send from useEffect
 
-      const [phaseChatsRes, documentsRes] = await Promise.all([
-        apiClient.get(`/api/projects/${chatId}/chats`),
-        apiClient.get(`/api/projects/${chatId}/documents`),
-      ])
+      const phaseChatsRes = await apiClient.get(`/api/projects/${chatId}/chats`)
 
       const phaseChats = phaseChatsRes.data
-      const documentsData = documentsRes.data
 
       const activeChat = phaseChats[phaseChats.length - 1]
-
-      // Transform documents: convert null to undefined
-      const documents = {
-        ...(documentsData.requirement && { requirement: documentsData.requirement }),
-        ...(documentsData.architecture && { architecture: documentsData.architecture }),
-        ...(documentsData.development && { development: documentsData.development }),
-      }
 
       setProjectData({
         rootChatId: chatId,
         phaseChats,
-        documents,
         currentPhase: activeChat?.phase || null,
       })
 
@@ -765,28 +691,8 @@ export default function ChatIdPage() {
           setMessages([])
         }
 
-        // Queue auto-send message only if there are no existing messages
-        if (!hasExistingMessages) {
-          if (activeChat && activeChat.phase === 'ARCHITECTURE' && documents.requirement) {
-            setPendingMessage(
-              `Based on the requirement document below, please help me design the technical architecture:\n\n${documents.requirement.content}`
-            )
-          } else if (
-            activeChat &&
-            activeChat.phase === 'DEVELOPMENT' &&
-            documents.requirement &&
-            documents.architecture
-          ) {
-            setPendingMessage(
-              `Based on the following documents, please generate a development plan:\n\n【Requirements Analysis Document】\n${documents.requirement.content}\n\n【Technical Architecture Document】\n${documents.architecture.content}`
-            )
-          }
-        }
-
-        // Auto-open draft panel if there's content
-        if (documents.requirement || documents.architecture) {
-          setShowRequirementSidebar(true)
-        }
+        // Auto-open draft panel - pending message will be handled by useEffect
+        setShowRequirementSidebar(true)
 
         // Wait a bit before marking ready to ensure useChat internal state is updated
         setTimeout(() => {
@@ -887,7 +793,6 @@ export default function ChatIdPage() {
                 <NextPhaseButton
                   rootChatId={projectData!.rootChatId}
                   currentPhase={projectData!.currentPhase!}
-                  finalDocument={requirementContent.final!}
                   onSuccess={handleNextPhaseSuccess}
                 />
               </div>
@@ -898,14 +803,14 @@ export default function ChatIdPage() {
               <div className="mx-auto max-w-3xl px-4 pb-4">
                 <CodeGenerationButton
                   documents={{
-                    ...(projectData!.documents.requirement && {
-                      requirement: { content: projectData!.documents.requirement.content },
+                    ...(phaseLiveContent.requirement.final && {
+                      requirement: { content: phaseLiveContent.requirement.final },
                     }),
-                    ...(projectData!.documents.architecture && {
-                      architecture: { content: projectData!.documents.architecture.content },
+                    ...(phaseLiveContent.architecture.final && {
+                      architecture: { content: phaseLiveContent.architecture.final },
                     }),
-                    ...(projectData!.documents.development && {
-                      development: { content: projectData!.documents.development.content },
+                    ...(phaseLiveContent.development.final && {
+                      development: { content: phaseLiveContent.development.final },
                     }),
                   }}
                   rootChatId={projectData!.rootChatId}
@@ -927,26 +832,6 @@ export default function ChatIdPage() {
 
         {/* Right side: DraftPanel */}
         <DraftPanel
-          documents={{
-            ...(projectData?.documents.requirement && {
-              requirement: {
-                content: projectData.documents.requirement.content,
-                status: projectData.documents.requirement.status,
-              },
-            }),
-            ...(projectData?.documents.architecture && {
-              architecture: {
-                content: projectData.documents.architecture.content,
-                status: projectData.documents.architecture.status,
-              },
-            }),
-            ...(projectData?.documents.development && {
-              development: {
-                content: projectData.documents.development.content,
-                status: projectData.documents.development.status,
-              },
-            }),
-          }}
           isVisible={showRequirementSidebar}
           onToggle={() => setShowRequirementSidebar(!showRequirementSidebar)}
           onQuote={handleQuote}
@@ -954,8 +839,7 @@ export default function ChatIdPage() {
           activeTab={draftActiveTab}
           onActiveTabChange={setDraftActiveTab}
           currentPhase={projectData?.currentPhase}
-          liveDraft={requirementContent.draft}
-          liveFinal={requirementContent.final}
+          liveContent={phaseLiveContent}
         />
       </div>
     </div>

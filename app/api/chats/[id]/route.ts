@@ -153,12 +153,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           // Save all messages to the target chat (phase chat if applicable)
           if (messages.length > 0) {
             await prisma.message.createMany({
-              data: messages.map((msg) => ({
+              data: messages.map((msg, index) => ({
                 id: msg.id,
                 role: msg.role,
                 parts: msg.parts as InputJsonValue,
                 metadata: msg.metadata as InputJsonValue,
                 chatId: targetChatId,
+                order: index,
               })),
             })
           }
@@ -190,7 +191,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       },
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: { order: 'asc' },
         },
       },
     })

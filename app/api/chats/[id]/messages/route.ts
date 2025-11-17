@@ -31,23 +31,27 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
     }
 
-    // Clear existing messages
-    await prisma.message.deleteMany({
-      where: { chatId },
-    })
-
-    // Save new messages
-    if (messages.length > 0) {
-      await prisma.message.createMany({
-        data: messages.map((msg) => ({
-          id: msg.id,
-          role: msg.role,
-          parts: msg.parts as InputJsonValue,
-          metadata: msg.metadata as InputJsonValue,
-          chatId,
-        })),
+    // Use transaction to ensure atomic delete + create
+    await prisma.$transaction(async (tx) => {
+      // Clear existing messages for this chat
+      await tx.message.deleteMany({
+        where: { chatId },
       })
-    }
+
+      // Save new messages
+      if (messages.length > 0) {
+        await tx.message.createMany({
+          data: messages.map((msg, index) => ({
+            id: msg.id,
+            role: msg.role,
+            parts: msg.parts as InputJsonValue,
+            metadata: msg.metadata as InputJsonValue,
+            chatId,
+            order: index,
+          })),
+        })
+      }
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

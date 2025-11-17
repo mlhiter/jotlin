@@ -14,7 +14,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       },
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: { order: 'asc' },
         },
         user: {
           select: {
@@ -41,7 +41,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         },
         include: {
           messages: {
-            orderBy: { createdAt: 'asc' },
+            orderBy: { order: 'asc' },
           },
         },
         orderBy: {
@@ -61,39 +61,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         messages: pc.messages,
       }))
 
-      // Fetch documents for project chat
-      const docs = await prisma.document.findMany({
-        where: {
-          chatId: id,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      })
-
-      documents = {
-        requirement: docs.find((d) => d.phase === 'REQUIREMENT')
-          ? {
-              id: docs.find((d) => d.phase === 'REQUIREMENT')!.id,
-              content: docs.find((d) => d.phase === 'REQUIREMENT')!.content,
-              status: docs.find((d) => d.phase === 'REQUIREMENT')!.status,
-            }
-          : null,
-        architecture: docs.find((d) => d.phase === 'ARCHITECTURE')
-          ? {
-              id: docs.find((d) => d.phase === 'ARCHITECTURE')!.id,
-              content: docs.find((d) => d.phase === 'ARCHITECTURE')!.content,
-              status: docs.find((d) => d.phase === 'ARCHITECTURE')!.status,
-            }
-          : null,
-        development: docs.find((d) => d.phase === 'DEVELOPMENT')
-          ? {
-              id: docs.find((d) => d.phase === 'DEVELOPMENT')!.id,
-              content: docs.find((d) => d.phase === 'DEVELOPMENT')!.content,
-              status: docs.find((d) => d.phase === 'DEVELOPMENT')!.status,
-            }
-          : null,
-      }
+      // Documents are now extracted from messages, not stored separately
+      documents = null
     }
 
     // Remove sensitive user information and only return what's needed for preview

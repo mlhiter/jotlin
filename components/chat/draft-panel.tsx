@@ -42,11 +42,6 @@ const CodeViewer = dynamic(() => import('@/components/mvp/code-viewer').then((mo
 })
 
 interface DraftPanelProps {
-  documents: {
-    requirement?: { content: string; status: string }
-    architecture?: { content: string; status: string }
-    development?: { content: string; status: string }
-  }
   isVisible?: boolean
   onToggle?: () => void
   onQuote?: (selectedText: string) => void
@@ -54,13 +49,15 @@ interface DraftPanelProps {
   activeTab?: string
   onActiveTabChange?: (tab: string) => void
   currentPhase?: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
-  liveDraft?: string
-  liveFinal?: string
+  liveContent?: {
+    requirement?: { draft?: string; final?: string }
+    architecture?: { draft?: string; final?: string }
+    development?: { draft?: string; final?: string }
+  }
   readOnly?: boolean
 }
 
 export function DraftPanel({
-  documents,
   isVisible = true,
   onToggle,
   onQuote,
@@ -68,8 +65,7 @@ export function DraftPanel({
   activeTab: externalActiveTab,
   onActiveTabChange,
   currentPhase,
-  liveDraft,
-  liveFinal,
+  liveContent,
   readOnly = false,
 }: DraftPanelProps) {
   const [mvpData, setMvpData] = useState<{
@@ -81,40 +77,33 @@ export function DraftPanel({
     'requirement'
   )
 
-  // Compute live content: if liveFinal exists, use it; otherwise use liveDraft
-  const liveContent = liveFinal || liveDraft
+  // Check if any live content exists
+  const hasAnyLiveContent = !!(
+    liveContent?.requirement?.draft ||
+    liveContent?.requirement?.final ||
+    liveContent?.architecture?.draft ||
+    liveContent?.architecture?.final ||
+    liveContent?.development?.draft ||
+    liveContent?.development?.final
+  )
 
   // Compute effective active tab - include live content in the check
-  const hasAnyDocument = !!(documents.requirement || documents.architecture || documents.development || liveContent)
+  const hasAnyDocument = hasAnyLiveContent
   const effectiveActiveTab =
     externalActiveTab ?? internalActiveTab ?? (hasAnyDocument ? 'documents' : mvpData ? 'preview' : 'documents')
 
   const setActiveTab = onActiveTabChange ?? setInternalActiveTab
 
-  // Determine which document content to show based on current phase and live content
-  const getDocumentContent = (
-    phase: 'requirement' | 'architecture' | 'development',
-    savedContent?: string
-  ): string | undefined => {
-    const phaseMap = {
-      requirement: 'REQUIREMENT',
-      architecture: 'ARCHITECTURE',
-      development: 'DEVELOPMENT',
+  // Determine which document content to show - directly from live content
+  const getDocumentContent = (phase: 'requirement' | 'architecture' | 'development'): string | undefined => {
+    // Priority 1: Live final content for this phase
+    if (liveContent?.[phase]?.final) {
+      return liveContent[phase].final
     }
 
-    // Priority 1: Saved final document (most reliable)
-    if (savedContent) {
-      return savedContent
-    }
-
-    // Priority 2: Current phase with live final content
-    if (currentPhase === phaseMap[phase] && liveFinal) {
-      return liveFinal
-    }
-
-    // Priority 3: Current phase with live draft (preview only)
-    if (currentPhase === phaseMap[phase] && liveDraft) {
-      return liveDraft
+    // Priority 2: Live draft content for this phase (preview only)
+    if (liveContent?.[phase]?.draft) {
+      return liveContent[phase].draft
     }
 
     return undefined
@@ -125,47 +114,56 @@ export function DraftPanel({
     {
       value: 'requirement',
       label: 'Requirements',
-      content: getDocumentContent('requirement', documents.requirement?.content),
-      available: !!(documents.requirement || (currentPhase === 'REQUIREMENT' && liveContent)),
+      content: getDocumentContent('requirement'),
+      available: !!(liveContent?.requirement?.draft || liveContent?.requirement?.final),
       icon: FileText,
     },
     {
       value: 'architecture',
       label: 'Architecture',
-      content: getDocumentContent('architecture', documents.architecture?.content),
-      available: !!(documents.architecture || (currentPhase === 'ARCHITECTURE' && liveContent)),
+      content: getDocumentContent('architecture'),
+      available: !!(liveContent?.architecture?.draft || liveContent?.architecture?.final),
       icon: FileText,
     },
     {
       value: 'development',
       label: 'Development',
-      content: getDocumentContent('development', documents.development?.content),
-      available: !!(documents.development || (currentPhase === 'DEVELOPMENT' && liveContent)),
+      content: getDocumentContent('development'),
+      available: !!(liveContent?.development?.draft || liveContent?.development?.final),
       icon: FileText,
     },
   ]
 
   // Outer level tabs (with Documents as a single tab)
+  const hasDevelopmentContent = !!(liveContent?.development?.draft || liveContent?.development?.final)
+
   const availableTabs = [
     { value: 'documents', label: 'Documents', available: hasAnyDocument, icon: FileText },
-    { value: 'preview', label: 'Preview', available: !readOnly && !!documents.development, icon: Eye },
-    { value: 'code', label: 'Code', available: !readOnly && !!documents.development, icon: Code },
+    { value: 'preview', label: 'Preview', available: !readOnly && hasDevelopmentContent, icon: Eye },
+    { value: 'code', label: 'Code', available: !readOnly && hasDevelopmentContent, icon: Code },
   ].filter((t) => t.available)
 
   // Inner document tabs (for the nested tabs inside Documents)
   const availableDocumentTabs = documentTabs.filter((t) => t.available)
 
-  // Compute effective document sub-tab
+  // Compute effective document sub-tab based on current phase
   const effectiveDocumentTab = (() => {
-    // Priority 1: Current phase with content (saved or live)
-    if (currentPhase === 'DEVELOPMENT' && (documents.development || liveContent)) return 'development'
-    if (currentPhase === 'ARCHITECTURE' && (documents.architecture || liveContent)) return 'architecture'
-    if (currentPhase === 'REQUIREMENT' && (documents.requirement || liveContent)) return 'requirement'
-    // Priority 2: Any saved documents (reverse order to show latest)
-    if (documents.development) return 'development'
-    if (documents.architecture) return 'architecture'
-    if (documents.requirement) return 'requirement'
-    // Priority 3: Default to requirement (for when only live content exists)
+    // Priority 1: Current phase with content
+    if (currentPhase === 'DEVELOPMENT' && hasDevelopmentContent) return 'development'
+    if (
+      currentPhase === 'ARCHITECTURE' &&
+      (liveContent?.architecture?.draft || liveContent?.architecture?.final)
+    )
+      return 'architecture'
+    if (currentPhase === 'REQUIREMENT' && (liveContent?.requirement?.draft || liveContent?.requirement?.final))
+      return 'requirement'
+
+    // Priority 2: Any available content (reverse order to show latest)
+    if (hasDevelopmentContent) return 'development'
+    if (liveContent?.architecture?.draft || liveContent?.architecture?.final) return 'architecture'
+    if (liveContent?.requirement?.draft || liveContent?.requirement?.final) return 'requirement'
+
+    // Default to requirement
     return 'requirement'
   })()
 
@@ -178,7 +176,7 @@ export function DraftPanel({
 
   // Fetch MVP data only when user switches to preview or code tab
   useEffect(() => {
-    if (chatId && documents.development && (effectiveActiveTab === 'preview' || effectiveActiveTab === 'code')) {
+    if (chatId && hasDevelopmentContent && (effectiveActiveTab === 'preview' || effectiveActiveTab === 'code')) {
       apiClient
         .get(`/api/mvp/${chatId}`)
         .then((res) => {
@@ -190,7 +188,7 @@ export function DraftPanel({
         })
         .catch(() => {})
     }
-  }, [chatId, documents.development, effectiveActiveTab])
+  }, [chatId, hasDevelopmentContent, effectiveActiveTab])
 
   // If no tabs available, don't render
   if (availableTabs.length === 0) {
@@ -207,11 +205,12 @@ export function DraftPanel({
         content = currentDoc?.content || ''
       }
     } else {
-      // Copy all three documents
+      // Copy all three documents from live content
       const allDocs = [
-        documents.requirement && `# Requirements Analysis Document\n\n${documents.requirement.content}`,
-        documents.architecture && `# Technical Architecture Document\n\n${documents.architecture.content}`,
-        documents.development && `# Development Plan Document\n\n${documents.development.content}`,
+        getDocumentContent('requirement') && `# Requirements Analysis Document\n\n${getDocumentContent('requirement')}`,
+        getDocumentContent('architecture') &&
+          `# Technical Architecture Document\n\n${getDocumentContent('architecture')}`,
+        getDocumentContent('development') && `# Development Plan Document\n\n${getDocumentContent('development')}`,
       ]
         .filter(Boolean)
         .join('\n\n---\n\n')

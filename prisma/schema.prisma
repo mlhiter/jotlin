@@ -53,7 +53,6 @@ model Chat {
   parent    Chat?      @relation("ProjectPhases", fields: [parentId], references: [id], onDelete: Cascade)
   children  Chat[]     @relation("ProjectPhases")
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  documents Document[]
   messages  Message[]
   mvp       Mvp?
 
@@ -67,6 +66,7 @@ model Message {
   createdAt DateTime @default(now())
   metadata  Json?
   parts     Json
+  order     Int      @default(0)
   chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@map("message")
@@ -107,20 +107,6 @@ model Feedback {
   @@map("feedback")
 }
 
-model Document {
-  id           String         @id @default(cuid())
-  chatId       String
-  phase        ChatPhase
-  content      String
-  status       DocumentStatus @default(DRAFT)
-  sourceChatId String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  chat         Chat           @relation(fields: [chatId], references: [id], onDelete: Cascade)
-
-  @@map("document")
-}
-
 enum UserRole {
   USER
   ADMIN
@@ -139,10 +125,4 @@ enum ChatPhase {
   REQUIREMENT
   ARCHITECTURE
   DEVELOPMENT
-}
-
-enum DocumentStatus {
-  DRAFT
-  COMPLETED
-  ARCHIVED
 }

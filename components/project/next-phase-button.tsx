@@ -12,11 +12,10 @@ import apiClient from '@/libs/utils/axios'
 interface NextPhaseButtonProps {
   rootChatId: string
   currentPhase: 'REQUIREMENT' | 'ARCHITECTURE'
-  finalDocument: string
   onSuccess: () => void
 }
 
-export function NextPhaseButton({ rootChatId, currentPhase, finalDocument, onSuccess }: NextPhaseButtonProps) {
+export function NextPhaseButton({ rootChatId, currentPhase, onSuccess }: NextPhaseButtonProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -25,7 +24,6 @@ export function NextPhaseButton({ rootChatId, currentPhase, finalDocument, onSuc
     try {
       await apiClient.post(`/api/projects/${rootChatId}/next-phase`, {
         currentPhase,
-        finalDocument,
       })
 
       toast.success('Successfully started next phase')

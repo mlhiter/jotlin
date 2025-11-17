@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       orderBy: { updatedAt: 'desc' },
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: { order: 'asc' },
           take: 1,
         },
         _count: {

@@ -11,7 +11,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const { rootId } = await params
-    const { currentPhase, finalDocument } = await request.json()
+    const { currentPhase } = await request.json()
 
     // Verify root chat exists
     const rootChat = await prisma.chat.findFirst({
@@ -28,31 +28,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Root chat not found' }, { status: 404 })
     }
 
-    // 1. Save current phase document
-    if (finalDocument && currentPhase) {
-      const sourceChat = await prisma.chat.findFirst({
-        where: {
-          parentId: rootId,
-          phase: currentPhase,
-          isDeleted: false,
-        },
-        select: { id: true },
-      })
-
-      if (sourceChat) {
-        await prisma.document.create({
-          data: {
-            chatId: rootId,
-            phase: currentPhase,
-            content: finalDocument,
-            status: 'COMPLETED',
-            sourceChatId: sourceChat.id,
-          },
-        })
-      }
-    }
-
-    // 2. Create next phase chat
+    // Create next phase chat
     let nextPhase: 'ARCHITECTURE' | 'DEVELOPMENT'
     let nextTitle: string
 

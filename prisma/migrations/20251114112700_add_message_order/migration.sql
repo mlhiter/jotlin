@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "message" ADD COLUMN "order" INTEGER NOT NULL DEFAULT 0;

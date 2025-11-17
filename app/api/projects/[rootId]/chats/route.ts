@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       orderBy: { createdAt: 'asc' },
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: { order: 'asc' },
         },
       },
     })

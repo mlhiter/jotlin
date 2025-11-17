@@ -293,12 +293,21 @@ export default function ChatPreviewPage() {
               {/* Right side: DraftPanel */}
               {hasDocument && (
                 <DraftPanel
-                  documents={documents}
                   isVisible={showDraftPanel}
                   onToggle={() => setShowDraftPanel(!showDraftPanel)}
                   chatId={chatId}
-                  liveDraft={liveContent.draft}
-                  liveFinal={liveContent.final}
+                  liveContent={
+                    currentPhase
+                      ? {
+                          requirement:
+                            currentPhase === 'REQUIREMENT' ? liveContent : undefined,
+                          architecture:
+                            currentPhase === 'ARCHITECTURE' ? liveContent : undefined,
+                          development:
+                            currentPhase === 'DEVELOPMENT' ? liveContent : undefined,
+                        }
+                      : undefined
+                  }
                   readOnly={true}
                   currentPhase={currentPhase}
                 />
