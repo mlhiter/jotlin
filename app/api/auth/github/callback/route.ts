@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { findOrCreateUser, linkAccount } from '@/libs/auth/account'
 import { createAuthSession } from '@/libs/auth/auth'
 import { githubOAuth } from '@/libs/auth/github-oauth'
+import { prisma } from '@/libs/utils/prisma'
+import { uploadAvatar } from '@/libs/utils/s3'
 
 const redirectBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
@@ -50,10 +52,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Find or create user (based on email)
-    const user = await findOrCreateUser(githubUser.email, {
+    let user = await findOrCreateUser(githubUser.email, {
       name: githubUser.name || githubUser.login,
       image: githubUser.avatar_url,
     })
+
+    if (user.image && !user.image.includes(process.env.S3_ENDPOINT || '')) {
+      const avatarUrl = await uploadAvatar(user.image)
+      if (avatarUrl) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { image: avatarUrl },
+        })
+      }
+    }
 
     // Link GitHub account
     await linkAccount(user.id, 'github', githubUser.id.toString())

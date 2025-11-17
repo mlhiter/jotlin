@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { findOrCreateUser, linkAccount } from '@/libs/auth/account'
 import { createAuthSession } from '@/libs/auth/auth'
 import { googleOAuth } from '@/libs/auth/google-oauth'
+import { prisma } from '@/libs/utils/prisma'
+import { uploadAvatar } from '@/libs/utils/s3'
 
 const redirectBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
@@ -46,10 +48,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Find or create user (based on email)
-    const user = await findOrCreateUser(googleUser.email, {
+    let user = await findOrCreateUser(googleUser.email, {
       name: googleUser.name,
       image: googleUser.picture,
     })
+
+    if (user.image && !user.image.includes(process.env.S3_ENDPOINT || '')) {
+      const avatarUrl = await uploadAvatar(user.image)
+      if (avatarUrl) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { image: avatarUrl },
+        })
+      }
+    }
 
     // Link Google account
     await linkAccount(user.id, 'google', googleUser.id)
