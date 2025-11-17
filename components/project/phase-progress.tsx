@@ -2,13 +2,16 @@
 
 import { CheckCircle2, Circle, CircleDot } from 'lucide-react'
 
+type Phase = 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT'
+type PhaseStatus = 'completed' | 'in-progress' | 'pending'
+
 interface PhaseProgressProps {
   phases: Array<{
-    phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT'
-    status: 'completed' | 'in-progress' | 'pending'
+    phase: Phase
+    status: PhaseStatus
   }>
-  currentPhase?: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
-  onPhaseClick?: (phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT') => void
+  currentPhase?: Phase | null
+  onPhaseClick?: (phase: Phase) => void
   clickable?: boolean
 }
 
@@ -27,7 +30,7 @@ export function PhaseProgress({ phases, currentPhase, onPhaseClick, clickable = 
     return status
   }
 
-  const handlePhaseClick = (phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT', status: string) => {
+  const handlePhaseClick = (phase: Phase, status: PhaseStatus) => {
     if (clickable && onPhaseClick && status !== 'pending') {
       onPhaseClick(phase)
     }
@@ -46,13 +49,13 @@ export function PhaseProgress({ phases, currentPhase, onPhaseClick, clickable = 
               <button
                 onClick={() => handlePhaseClick(phase.phase, phase.status)}
                 disabled={!isClickable}
-                className={`flex min-w-0 items-center gap-1 md:gap-1.5 lg:gap-2 ${
+                className={`flex min-w-0 items-center gap-1 transition-all md:gap-1.5 lg:gap-2 ${
                   isClickable
-                    ? 'cursor-pointer transition-opacity hover:opacity-80'
+                    ? 'cursor-pointer hover:opacity-80'
                     : phase.status === 'pending'
                       ? 'cursor-not-allowed'
                       : 'cursor-default'
-                } ${isActive ? 'bg-accent/50 rounded-md px-2 py-1' : 'px-2 py-1'}`}>
+                } ${isActive ? 'bg-primary/5 rounded-md px-2 py-1' : 'px-2 py-1'}`}>
                 {phase.status === 'completed' && (
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 md:h-5 md:w-5 dark:text-green-500" />
                 )}
