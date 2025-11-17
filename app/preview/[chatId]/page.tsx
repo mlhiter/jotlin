@@ -299,12 +299,9 @@ export default function ChatPreviewPage() {
                   liveContent={
                     currentPhase
                       ? {
-                          requirement:
-                            currentPhase === 'REQUIREMENT' ? liveContent : undefined,
-                          architecture:
-                            currentPhase === 'ARCHITECTURE' ? liveContent : undefined,
-                          development:
-                            currentPhase === 'DEVELOPMENT' ? liveContent : undefined,
+                          requirement: currentPhase === 'REQUIREMENT' ? liveContent : undefined,
+                          architecture: currentPhase === 'ARCHITECTURE' ? liveContent : undefined,
+                          development: currentPhase === 'DEVELOPMENT' ? liveContent : undefined,
                         }
                       : undefined
                   }

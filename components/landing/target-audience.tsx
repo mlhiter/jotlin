@@ -43,7 +43,9 @@ export function TargetAudienceSection() {
       <div className="container mx-auto max-w-7xl px-4 md:px-6">
         <div className="relative overflow-visible rounded-t-[24px] border border-zinc-950 bg-zinc-950 shadow-lg md:rounded-t-[32px]">
           <div className="relative z-10 min-h-[320px] px-4 pb-0 pt-8 md:min-h-[400px] md:px-8 md:pt-12 lg:px-[57px] lg:pt-[92px]">
-            <h2 className="text-xl font-medium leading-none text-white md:text-2xl lg:text-4xl">Jotlin is for you if…</h2>
+            <h2 className="text-xl font-medium leading-none text-white md:text-2xl lg:text-4xl">
+              Jotlin is for you if…
+            </h2>
             <p className="font-edu mt-3 text-lg font-medium leading-[1.5] text-teal-400 md:ml-8 md:mt-4 md:text-xl lg:ml-12 lg:text-2xl">
               Built for the Builder&apos;s Mindset
             </p>
@@ -77,7 +79,9 @@ export function TargetAudienceSection() {
             <div className="w-full lg:w-auto">
               <h3 className="text-lg font-medium leading-8 text-zinc-900 md:text-xl lg:text-2xl">Ready from day one</h3>
               <div className="mt-1.5 flex items-center gap-2 md:mt-2">
-                <p className="font-edu text-lg font-medium leading-[1.5] text-teal-500 md:text-xl lg:text-2xl">roadmap</p>
+                <p className="font-edu text-lg font-medium leading-[1.5] text-teal-500 md:text-xl lg:text-2xl">
+                  roadmap
+                </p>
                 <Image src="/landing/roadmap-arrow.svg" alt="" width={16} height={20} className="md:h-6 md:w-[18px]" />
               </div>
             </div>

@@ -150,10 +150,7 @@ export function DraftPanel({
   const effectiveDocumentTab = (() => {
     // Priority 1: Current phase with content
     if (currentPhase === 'DEVELOPMENT' && hasDevelopmentContent) return 'development'
-    if (
-      currentPhase === 'ARCHITECTURE' &&
-      (liveContent?.architecture?.draft || liveContent?.architecture?.final)
-    )
+    if (currentPhase === 'ARCHITECTURE' && (liveContent?.architecture?.draft || liveContent?.architecture?.final))
       return 'architecture'
     if (currentPhase === 'REQUIREMENT' && (liveContent?.requirement?.draft || liveContent?.requirement?.final))
       return 'requirement'

@@ -36,7 +36,7 @@ function preserveMarkdownIndent(text: string): string {
 
   // Remove common indentation from all lines
   const dedented = lines
-    .map(line => {
+    .map((line) => {
       if (line.trim().length === 0) return ''
       return line.slice(minIndent)
     })

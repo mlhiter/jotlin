@@ -88,7 +88,7 @@ export function Preview({ files }: PreviewProps) {
         // Log file structure for debugging
         const fileList = Object.keys(files)
         log(`Files to mount (${fileList.length}):`)
-        fileList.forEach(f => log(`  - ${f}`))
+        fileList.forEach((f) => log(`  - ${f}`))
 
         // Check for essential files
         if (!files['package.json']) {
@@ -151,9 +151,11 @@ export function Preview({ files }: PreviewProps) {
                 log(sanitized)
 
                 // Capture potential error indicators
-                if (data.toLowerCase().includes('error') ||
-                    data.toLowerCase().includes('failed') ||
-                    data.toLowerCase().includes('warn')) {
+                if (
+                  data.toLowerCase().includes('error') ||
+                  data.toLowerCase().includes('failed') ||
+                  data.toLowerCase().includes('warn')
+                ) {
                   errorOutput += data + '\n'
                 }
               }
@@ -175,7 +177,7 @@ export function Preview({ files }: PreviewProps) {
           }
 
           // Log last 20 lines of output for context
-          const outputLines = installOutput.split('\n').filter(line => line.trim())
+          const outputLines = installOutput.split('\n').filter((line) => line.trim())
           const lastLines = outputLines.slice(-20).join('\n')
           log('Last 20 lines of output:')
           log(lastLines)
@@ -231,7 +233,7 @@ export function Preview({ files }: PreviewProps) {
           if (!serverReady && !cleanup) {
             log('⚠️ Dev server did not start within 30 seconds')
             log('Last dev server output:')
-            const outputLines = devServerOutput.split('\n').filter(line => line.trim())
+            const outputLines = devServerOutput.split('\n').filter((line) => line.trim())
             log(outputLines.slice(-10).join('\n'))
           }
         }, 30000)

@@ -12,7 +12,7 @@ interface FilePreviewProps {
 
 export function FilePreview({ file, onRemove }: FilePreviewProps) {
   return (
-    <div className="border-border relative flex items-center gap-2 rounded-lg border bg-muted/30 p-2">
+    <div className="border-border bg-muted/30 relative flex items-center gap-2 rounded-lg border p-2">
       <div className="bg-accent flex h-16 w-16 flex-shrink-0 items-center justify-center rounded">
         {isImageFile(file) ? (
           <ImageIcon className="text-accent-foreground h-8 w-8" />

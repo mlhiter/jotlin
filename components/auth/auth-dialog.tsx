@@ -102,8 +102,8 @@ export function AuthDialog({ open, onOpenChange, redirectTo = '/' }: AuthDialogP
               rel="noopener noreferrer"
               className="text-zinc-500 underline underline-offset-2 transition-colors hover:text-zinc-600">
               Terms of Service
-            </Link>
-            {' '}and acknowledge our{' '}
+            </Link>{' '}
+            and acknowledge our{' '}
             <Link
               href="/privacy"
               target="_blank"
