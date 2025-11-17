@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 export const strategyAgent = new Agent({
   name: 'strategy-agent',
-  model: 'google/gemini-2.5-pro',
+  model: 'openai/gemini-2.5-pro',
 
   instructions: `
 You are a strategic product advisor with expertise in:

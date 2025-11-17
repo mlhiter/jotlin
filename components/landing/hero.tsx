@@ -14,9 +14,9 @@ import { useAuth } from '@/hooks/use-auth'
 import apiClient from '@/libs/utils/axios'
 
 const PLACEHOLDER_TEXTS = [
-  'I want to build a mobile app for fitness tracking.',
-  'I need to create a SaaS platform for team collaboration.',
-  'I have an idea for an e-commerce website.',
+  'A note-taking app for developers with Git integration',
+  'A project management tool for remote teams',
+  'An AI-powered writing assistant for content creators',
 ]
 
 export function HeroSection() {
@@ -79,15 +79,21 @@ export function HeroSection() {
 
     setIsCreatingChat(true)
     try {
-      const response = await apiClient.post('/api/chats', { title: message.slice(0, 50) })
+      // Create competitive analysis chat with DISCOVERY phase
+      const response = await apiClient.post('/api/chats', {
+        title: `Analyzing: ${message.slice(0, 50)}`,
+        phase: 'DISCOVERY',
+        productIdea: message,
+      })
       const chat = response.data
 
-      // Navigate with query parameter using Next.js router
-      const url = `/chat/${chat.id}?message=${encodeURIComponent(message)}`
+      // Navigate to chat with initial message
+      const initialQuestion = `I want to analyze competitors for this product idea: ${message}\n\nPlease help me identify all relevant competitors.`
+      const url = `/chat/${chat.id}?message=${encodeURIComponent(initialQuestion)}`
       router.push(url)
     } catch (error) {
-      console.error('[Hero] Failed to create chat:', error)
-      toast.error('Failed to create chat')
+      console.error('[Hero] Failed to create competitive analysis:', error)
+      toast.error('Failed to start competitive analysis')
       setIsCreatingChat(false)
     }
   }

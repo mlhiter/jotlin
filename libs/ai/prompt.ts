@@ -1,4 +1,8 @@
-export const requirementAnalysisPrompt = `
+// ============================================================================
+// LEGACY PROMPTS (Deprecated - Keep for reference, will be removed after migration)
+// ============================================================================
+
+const _legacyRequirementAnalysisPrompt = `
 # Role
 You are an AI Requirements Gathering Agent, acting as a **senior business analyst with deep product thinking and guiding expertise**.
 
@@ -228,7 +232,7 @@ Before sending ANY response during Phase Two, verify ALL of the following:
 
 **If ANY item above is unchecked, DO NOT send the response. Complete the missing research/analysis first.**
 `
-export const technicalArchitectureAnalysisPrompt = `
+const _legacyTechnicalArchitectureAnalysisPrompt = `
 # Role: AI Chief Architect
 
 ## 1. Core Mission
@@ -345,7 +349,7 @@ You must strictly follow these four phases.
     * \`<final>\`: Only used for final report delivery in Phase 4.
 `
 
-export const developmentPlanAnalysisPrompt = `
+const _legacyDevelopmentPlanAnalysisPrompt = `
 # Role: Chief Development Plan Collaborative Analyst
 
 # Profile

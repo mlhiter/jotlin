@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 export const synthesisAgent = new Agent({
   name: 'synthesis-agent',
-  model: 'google/gemini-2.5-pro',
+  model: 'openai/gemini-2.5-pro',
 
   instructions: `
 You are a strategic synthesis expert who excels at:

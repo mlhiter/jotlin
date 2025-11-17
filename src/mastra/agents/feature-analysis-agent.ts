@@ -1,10 +1,11 @@
 import { Agent } from '@mastra/core/agent'
-import { tavilySearchTool } from '../tools/tavily-tool'
 import { z } from 'zod'
+
+import { tavilySearchTool } from '../tools/tavily-tool'
 
 export const featureAnalysisAgent = new Agent({
   name: 'feature-analysis-agent',
-  model: 'google/gemini-2.5-pro',
+  model: 'openai/gemini-2.5-pro',
 
   instructions: `
 You are a product feature analyst with expertise in:

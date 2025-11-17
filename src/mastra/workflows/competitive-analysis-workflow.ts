@@ -6,9 +6,7 @@ import { synthesisAgent } from '../agents/synthesis-agent'
 
 export async function runCompetitiveAnalysisWorkflow(productIdea: string) {
   try {
-    const discoveryResult = await discoveryAgent.generate(
-      `Analyze competitors for this product idea: ${productIdea}`
-    )
+    const discoveryResult = await discoveryAgent.generate(`Analyze competitors for this product idea: ${productIdea}`)
 
     const [featureAnalysisResult, marketResearchResult] = await Promise.all([
       featureAnalysisAgent.generate(

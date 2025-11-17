@@ -3,23 +3,17 @@ import { InputJsonValue } from '@prisma/client/runtime/library'
 import { streamText, convertToModelMessages, createIdGenerator, validateUIMessages } from 'ai'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { getModelForPhase } from '@/libs/ai/model-config'
-import {
-  requirementAnalysisPrompt,
-  technicalArchitectureAnalysisPrompt,
-  developmentPlanAnalysisPrompt,
-} from '@/libs/ai/prompt'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
+import { discoveryAgent, featureAnalysisAgent, marketResearchAgent, strategyAgent } from '@/src/mastra'
+import { tavilySearchTool } from '@/libs/ai/tools/tavily-search'
 
 const openai = createOpenAI({
   baseURL: process.env.OPENAI_API_BASE_URL,
   apiKey: process.env.OPENAI_API_KEY,
-  // fetch: (input, init) => {
-  //   return fetch(input, init)
-  // },
 })
+
 // Allow streaming responses up to 30 seconds
 // export const maxDuration = 30
 
@@ -59,6 +53,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         userId: true,
         title: true,
         phase: true,
+        productIdea: true,
         parentId: true,
         isDeleted: true,
         isPublic: true,
@@ -92,6 +87,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           userId: true,
           title: true,
           phase: true,
+          productIdea: true,
           parentId: true,
           isDeleted: true,
           isPublic: true,
@@ -107,34 +103,36 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       }
     }
 
-    // Select system prompt based on chat phase
-    let systemPrompt = requirementAnalysisPrompt
+    // Select system instructions and tools based on chat phase
+    let systemInstructions = discoveryAgent.instructions
+    let tools = {}
 
-    if (targetChat.phase === 'FEATURE_BENCHMARK') {
-      systemPrompt = technicalArchitectureAnalysisPrompt
+    if (targetChat.phase === 'DISCOVERY') {
+      systemInstructions = discoveryAgent.instructions
+      // Add Tavily search tool for discovery phase
+      tools = { tavilySearch: tavilySearchTool }
+    } else if (targetChat.phase === 'FEATURE_BENCHMARK') {
+      systemInstructions = featureAnalysisAgent.instructions
     } else if (targetChat.phase === 'MARKET_POSITIONING') {
-      systemPrompt = developmentPlanAnalysisPrompt
-    } else if (targetChat.phase === 'DISCOVERY') {
-      systemPrompt = requirementAnalysisPrompt
+      systemInstructions = marketResearchAgent.instructions
+    } else if (targetChat.phase === 'RECOMMENDATION') {
+      systemInstructions = strategyAgent.instructions
     }
 
-    // Select model based on chat phase
-    const modelName = getModelForPhase(targetChat.phase)
-
     const validatedMessages = await validateUIMessages({
-      // append the new message to the previous messages
       messages: messages,
-      metadataSchema, // if using custom metadata
-      // dataSchemas, // if using custom data parts
-      // tools, // if using tools
+      metadataSchema,
     })
 
     const modelMessages = convertToModelMessages(validatedMessages)
 
+    // Use AI SDK directly with Mastra agent instructions
+    // This bypasses Mastra's complex provider logic
     const result = streamText({
-      model: openai.chat(modelName),
-      system: systemPrompt,
+      model: openai('gemini-2.5-pro'),
+      system: systemInstructions,
       messages: modelMessages,
+      tools: tools,
     })
 
     return result.toUIMessageStreamResponse({

@@ -1,10 +1,12 @@
 import { Agent } from '@mastra/core/agent'
-import { tavilySearchTool } from '../tools/tavily-tool'
 import { z } from 'zod'
+
+import { tavilySearchTool } from '../tools/tavily-tool'
 
 export const discoveryAgent = new Agent({
   name: 'discovery-agent',
-  model: 'google/gemini-2.0-flash-exp',
+  // Model will be provided at runtime via OpenAI gateway
+  model: 'openai/gemini-2.5-pro',
 
   instructions: `
 You are a competitive intelligence specialist with deep expertise in:

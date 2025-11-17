@@ -11,7 +11,7 @@ import apiClient from '@/libs/utils/axios'
 
 interface NextPhaseButtonProps {
   rootChatId: string
-  currentPhase: 'DISCOVERY' | 'FEATURE_BENCHMARK'
+  currentPhase: 'DISCOVERY' | 'FEATURE_BENCHMARK' | 'MARKET_POSITIONING'
   finalDocument: string
   onSuccess: () => void
 }
@@ -41,7 +41,10 @@ export function NextPhaseButton({ rootChatId, currentPhase, finalDocument, onSuc
     }
   }
 
-  const nextPhaseName = currentPhase === 'DISCOVERY' ? 'Architecture' : ''
+  const nextPhaseName =
+    currentPhase === 'DISCOVERY' ? 'Feature Benchmarking' :
+    currentPhase === 'FEATURE_BENCHMARK' ? 'Market Positioning' :
+    ''
 
   return (
     <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/20">

@@ -5,7 +5,6 @@ import { featureAnalysisAgent } from './agents/feature-analysis-agent'
 import { marketResearchAgent } from './agents/market-research-agent'
 import { strategyAgent } from './agents/strategy-agent'
 import { synthesisAgent } from './agents/synthesis-agent'
-
 import { competitiveAnalysisWorkflow } from './workflows/competitive-analysis-workflow'
 
 export const mastra = new Mastra({
@@ -22,12 +21,6 @@ export const mastra = new Mastra({
   },
 })
 
-export {
-  discoveryAgent,
-  featureAnalysisAgent,
-  marketResearchAgent,
-  strategyAgent,
-  synthesisAgent,
-}
+export { discoveryAgent, featureAnalysisAgent, marketResearchAgent, strategyAgent, synthesisAgent }
 
 export { competitiveAnalysisWorkflow }
