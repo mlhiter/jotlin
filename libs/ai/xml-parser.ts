@@ -52,7 +52,12 @@ export const parseAIResponse = (text: string): ParsedResponse => {
     rawText: text,
   }
 
-  const proseMatches = text.matchAll(/<prose>([\s\S]*?)<\/prose>/g)
+  // First, try to extract content from <response> wrapper if it exists
+  // This handles cases where AI wraps everything in <response>...</response>
+  const responseMatch = text.match(/<response>([\s\S]*?)<\/response>/)
+  const contentToProcess = responseMatch ? responseMatch[1] : text
+
+  const proseMatches = contentToProcess.matchAll(/<prose>([\s\S]*?)<\/prose>/g)
   const proseArray: string[] = []
   for (const match of proseMatches) {
     proseArray.push(dedent(match[1]))
@@ -61,12 +66,12 @@ export const parseAIResponse = (text: string): ParsedResponse => {
     result.prose = proseArray
   }
 
-  const questionMatch = text.match(/<question>([\s\S]*?)<\/question>/)
+  const questionMatch = contentToProcess.match(/<question>([\s\S]*?)<\/question>/)
   if (questionMatch) {
     result.question = dedent(questionMatch[1])
   }
 
-  const optionsMatch = text.match(/<options(?:\s+type="(single|multiple)")?>([\s\S]*?)<\/options>/)
+  const optionsMatch = contentToProcess.match(/<options(?:\s+type="(single|multiple)")?>([\s\S]*?)<\/options>/)
   if (optionsMatch) {
     result.optionType = (optionsMatch[1] as OptionType) || 'single'
     const optionsText = optionsMatch[2]
@@ -80,19 +85,21 @@ export const parseAIResponse = (text: string): ParsedResponse => {
     }
   }
 
-  const draftMatch = text.match(/<draft>([\s\S]*?)<\/draft>/)
+  // Try to find draft in both the processed content and original text for robustness
+  const draftMatch = contentToProcess.match(/<draft>([\s\S]*?)<\/draft>/) || text.match(/<draft>([\s\S]*?)<\/draft>/)
   if (draftMatch) {
     // Use custom function to preserve markdown list indentation
     result.draft = preserveMarkdownIndent(draftMatch[1])
   }
 
-  const finalMatch = text.match(/<final>([\s\S]*?)<\/final>/)
+  // Try to find final in both the processed content and original text for robustness
+  const finalMatch = contentToProcess.match(/<final>([\s\S]*?)<\/final>/) || text.match(/<final>([\s\S]*?)<\/final>/)
   if (finalMatch) {
     // Use custom function to preserve markdown list indentation
     result.final = preserveMarkdownIndent(finalMatch[1])
   }
 
-  const inputMatch = text.match(/<input\s+type="([^"]*)"(?:\s+placeholder="([^"]*)")?\s*\/>/)
+  const inputMatch = contentToProcess.match(/<input\s+type="([^"]*)"(?:\s+placeholder="([^"]*)")?\s*\/>/)
   if (inputMatch) {
     result.input = {
       type: inputMatch[1],

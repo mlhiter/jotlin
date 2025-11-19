@@ -55,6 +55,7 @@ interface DraftPanelProps {
     development?: { draft?: string; final?: string }
   }
   readOnly?: boolean
+  mvpCodeGenerationTrigger?: number
 }
 
 export function DraftPanel({
@@ -67,6 +68,7 @@ export function DraftPanel({
   currentPhase,
   liveContent,
   readOnly = false,
+  mvpCodeGenerationTrigger = 0,
 }: DraftPanelProps) {
   const [mvpData, setMvpData] = useState<{
     files: Record<string, string>
@@ -76,6 +78,8 @@ export function DraftPanel({
   const [activeDocumentTab, setActiveDocumentTab] = useState<'requirement' | 'architecture' | 'development'>(
     'requirement'
   )
+  const [hasMvpCode, setHasMvpCode] = useState(false)
+  const [isCheckingMvp, setIsCheckingMvp] = useState(true)
 
   // Check if any live content exists
   const hasAnyLiveContent = !!(
@@ -137,10 +141,15 @@ export function DraftPanel({
   // Outer level tabs (with Documents as a single tab)
   const hasDevelopmentContent = !!(liveContent?.development?.draft || liveContent?.development?.final)
 
+  // Preview and Code tabs should show if:
+  // 1. We have confirmed MVP code exists (hasMvpCode), OR
+  // 2. We have development content (meaning we can potentially generate code)
+  const shouldShowCodeTabs = !readOnly && (hasMvpCode || hasDevelopmentContent)
+
   const availableTabs = [
     { value: 'documents', label: 'Documents', available: hasAnyDocument, icon: FileText },
-    { value: 'preview', label: 'Preview', available: !readOnly && hasDevelopmentContent, icon: Eye },
-    { value: 'code', label: 'Code', available: !readOnly && hasDevelopmentContent, icon: Code },
+    { value: 'preview', label: 'Preview', available: shouldShowCodeTabs, icon: Eye },
+    { value: 'code', label: 'Code', available: shouldShowCodeTabs, icon: Code },
   ].filter((t) => t.available)
 
   // Inner document tabs (for the nested tabs inside Documents)
@@ -171,21 +180,51 @@ export function DraftPanel({
     }
   }, [effectiveDocumentTab])
 
+  // Check if MVP code exists on mount, when chatId changes, or when code is generated
+  useEffect(() => {
+    if (!chatId) {
+      setIsCheckingMvp(false)
+      setHasMvpCode(false)
+      return
+    }
+
+    setIsCheckingMvp(true)
+
+    apiClient
+      .get(`/api/mvp/${chatId}`)
+      .then((res) => {
+        const hasCode = !!(res.data && res.data.files && Object.keys(res.data.files).length > 0)
+        setHasMvpCode(hasCode)
+        setIsCheckingMvp(false)
+      })
+      .catch(() => {
+        setHasMvpCode(false)
+        setIsCheckingMvp(false)
+      })
+  }, [chatId, mvpCodeGenerationTrigger])
+
   // Fetch MVP data only when user switches to preview or code tab
   useEffect(() => {
-    if (chatId && hasDevelopmentContent && (effectiveActiveTab === 'preview' || effectiveActiveTab === 'code')) {
+    if (chatId && shouldShowCodeTabs && (effectiveActiveTab === 'preview' || effectiveActiveTab === 'code')) {
       apiClient
         .get(`/api/mvp/${chatId}`)
         .then((res) => {
           if (res.data && res.data.files) {
+            const hasCode = Object.keys(res.data.files).length > 0
             setMvpData({
               files: res.data.files,
             })
+            // Update hasMvpCode if we successfully loaded code
+            if (hasCode && !hasMvpCode) {
+              setHasMvpCode(true)
+            }
           }
         })
-        .catch(() => {})
+        .catch(() => {
+          // Failed to fetch MVP data
+        })
     }
-  }, [chatId, hasDevelopmentContent, effectiveActiveTab])
+  }, [chatId, shouldShowCodeTabs, effectiveActiveTab, hasMvpCode])
 
   // If no tabs available, don't render
   if (availableTabs.length === 0) {

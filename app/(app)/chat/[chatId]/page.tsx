@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/page-header'
 import { CodeGenerationButton } from '@/components/project/code-generation-button'
 import { NextPhaseButton } from '@/components/project/next-phase-button'
 import { PhaseProgress } from '@/components/project/phase-progress'
+import { RequirementActionButtons } from '@/components/project/requirement-action-buttons'
 import { useSidebar } from '@/components/ui/sidebar'
 
 const DraftPanel = dynamicImport(
@@ -131,6 +132,7 @@ export default function ChatIdPage() {
   const [sidebarStateBeforeCollapse, setSidebarStateBeforeCollapse] = useState<boolean | null>(null)
   const [windowWidth, setWindowWidth] = useState(0)
   const [pendingMessage, setPendingMessage] = useState<string | null>(null)
+  const [mvpCodeGenerationTrigger, setMvpCodeGenerationTrigger] = useState(0)
   const prevSidebarOpenRef = useRef<boolean | null>(null)
   const autoCollapsedRef = useRef(false)
   const userManuallyOpenedRef = useRef(false)
@@ -253,6 +255,7 @@ export default function ChatIdPage() {
           message.parts.forEach((part) => {
             if (part.type === 'text') {
               const parsed = parseAIResponse(part.text)
+
               if (parsed.final) {
                 acc.final = parsed.final
               }
@@ -286,17 +289,21 @@ export default function ChatIdPage() {
 
     // Extract content from each phase chat's messages
     projectData.phaseChats.forEach((phaseChat) => {
+      // For current phase, use live messages state instead of stored messages
+      const isCurrentPhase = phaseChat.phase === projectData.currentPhase
+      const messagesToProcess = isCurrentPhase ? messages : phaseChat.messages || []
+
       if (phaseChat.phase === 'REQUIREMENT') {
-        result.requirement = extractContent(phaseChat.messages || [])
+        result.requirement = extractContent(messagesToProcess)
       } else if (phaseChat.phase === 'ARCHITECTURE') {
-        result.architecture = extractContent(phaseChat.messages || [])
+        result.architecture = extractContent(messagesToProcess)
       } else if (phaseChat.phase === 'DEVELOPMENT') {
-        result.development = extractContent(phaseChat.messages || [])
+        result.development = extractContent(messagesToProcess)
       }
     })
 
     return result
-  }, [projectData])
+  }, [projectData, messages])
 
   // Auto show draft panel when there's content
   useEffect(() => {
@@ -309,10 +316,10 @@ export default function ChatIdPage() {
       phaseLiveContent.development.final
     )
 
-    if (hasLiveContent) {
+    if (hasLiveContent && !showRequirementSidebar) {
       setShowRequirementSidebar(true)
     }
-  }, [phaseLiveContent])
+  }, [phaseLiveContent, showRequirementSidebar])
 
   // Auto-inject requirement document for architecture phase if no messages
   // Note: This only handles initial page load. Phase transitions are handled in handleNextPhaseSuccess
@@ -643,15 +650,20 @@ export default function ChatIdPage() {
       ]
     : []
 
-  // Check if should show "Start Next Phase" button
+  // Check if should show "Requirement Action Buttons" (dual choice)
+  const showRequirementActionButtons =
+    projectData &&
+    projectData.currentPhase === 'REQUIREMENT' &&
+    phaseLiveContent.requirement.final &&
+    !projectData.phaseChats.some((pc) => pc.phase === 'ARCHITECTURE') &&
+    !projectData.phaseChats.some((pc) => pc.phase === 'DEVELOPMENT')
+
+  // Check if should show "Start Next Phase" button (single button for Architecture -> Development)
   const showNextPhaseButton =
     projectData &&
-    ((projectData.currentPhase === 'REQUIREMENT' &&
-      phaseLiveContent.requirement.final &&
-      !projectData.phaseChats.some((pc) => pc.phase === 'ARCHITECTURE')) ||
-      (projectData.currentPhase === 'ARCHITECTURE' &&
-        phaseLiveContent.architecture.final &&
-        !projectData.phaseChats.some((pc) => pc.phase === 'DEVELOPMENT')))
+    projectData.currentPhase === 'ARCHITECTURE' &&
+    phaseLiveContent.architecture.final &&
+    !projectData.phaseChats.some((pc) => pc.phase === 'DEVELOPMENT')
 
   // Check if should show "Generate Code" button
   const showCodeGenerationButton =
@@ -706,39 +718,18 @@ export default function ChatIdPage() {
   }
 
   const handleCodeGenerationSuccess = async () => {
-    // Reload project data to update UI (without full page reload)
-    try {
-      const [phaseChatsRes, documentsRes] = await Promise.all([
-        apiClient.get(`/api/projects/${chatId}/chats`),
-        apiClient.get(`/api/projects/${chatId}/documents`),
-      ])
+    // Code generation completed - switch UI to show the generated code
+    // Ensure the draft panel is open to show the preview
+    setShowRequirementSidebar(true)
 
-      const phaseChats = phaseChatsRes.data
-      const documentsData = documentsRes.data
+    // Trigger DraftPanel to recheck for MVP code
+    setMvpCodeGenerationTrigger((prev) => prev + 1)
 
-      // Transform documents: convert null to undefined
-      const documents = {
-        ...(documentsData.requirement && { requirement: documentsData.requirement }),
-        ...(documentsData.architecture && { architecture: documentsData.architecture }),
-        ...(documentsData.development && { development: documentsData.development }),
-      }
-
-      setProjectData((prev) => {
-        if (!prev) return null
-        return {
-          ...prev,
-          phaseChats,
-          documents,
-        }
-      })
-
-      // Auto switch to Preview tab after successful generation
+    // Auto switch to Preview tab after successful generation
+    // Small delay to ensure panel is open and MVP code check is triggered
+    setTimeout(() => {
       setDraftActiveTab('preview')
-      // Ensure the sidebar is open
-      setShowRequirementSidebar(true)
-    } catch (error) {
-      console.error('Failed to reload project data:', error)
-    }
+    }, 200)
   }
 
   if (isLoading) {
@@ -787,12 +778,24 @@ export default function ChatIdPage() {
               onRollback={handleRollback}
             />
 
-            {/* Next Phase Button */}
-            {showNextPhaseButton && projectData!.currentPhase !== 'DEVELOPMENT' && (
+            {/* Requirement Action Buttons (dual choice) */}
+            {showRequirementActionButtons && (
+              <div className="mx-auto max-w-3xl px-4 pb-4">
+                <RequirementActionButtons
+                  rootChatId={projectData!.rootChatId}
+                  requirementContent={phaseLiveContent.requirement.final!}
+                  onNextPhase={handleNextPhaseSuccess}
+                  onGenerateSuccess={handleCodeGenerationSuccess}
+                />
+              </div>
+            )}
+
+            {/* Next Phase Button (Architecture -> Development) */}
+            {showNextPhaseButton && (
               <div className="mx-auto max-w-3xl px-4 pb-4">
                 <NextPhaseButton
                   rootChatId={projectData!.rootChatId}
-                  currentPhase={projectData!.currentPhase!}
+                  currentPhase={projectData!.currentPhase as 'REQUIREMENT' | 'ARCHITECTURE'}
                   onSuccess={handleNextPhaseSuccess}
                 />
               </div>
@@ -840,6 +843,7 @@ export default function ChatIdPage() {
           onActiveTabChange={setDraftActiveTab}
           currentPhase={projectData?.currentPhase}
           liveContent={phaseLiveContent}
+          mvpCodeGenerationTrigger={mvpCodeGenerationTrigger}
         />
       </div>
     </div>
