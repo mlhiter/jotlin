@@ -40,21 +40,22 @@ model Account {
 }
 
 model Chat {
-  id        String     @id @default(cuid())
-  title     String?
-  userId    String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  deletedAt DateTime?
-  isDeleted Boolean    @default(false)
-  isPublic  Boolean    @default(false)
-  parentId  String?
-  phase     ChatPhase?
-  parent    Chat?      @relation("ProjectPhases", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Chat[]     @relation("ProjectPhases")
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
-  mvp       Mvp?
+  id                   String               @id @default(cuid())
+  title                String?
+  userId               String
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  deletedAt            DateTime?
+  isDeleted            Boolean              @default(false)
+  isPublic             Boolean              @default(false)
+  parentId             String?
+  phase                ChatPhase?
+  parent               Chat?                @relation("ProjectPhases", fields: [parentId], references: [id], onDelete: Cascade)
+  children             Chat[]               @relation("ProjectPhases")
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages             Message[]
+  mvp                  Mvp?
+  competitorResearches CompetitorResearch[]
 
   @@map("chat")
 }
@@ -125,4 +126,22 @@ enum ChatPhase {
   REQUIREMENT
   ARCHITECTURE
   DEVELOPMENT
+}
+
+model CompetitorResearch {
+  id           String    @id @default(cuid())
+  chatId       String
+  phase        ChatPhase @default(REQUIREMENT)
+  query        String
+  results      Json
+  analysis     Json?
+  status       String    @default("pending")
+  errorMessage String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  chat         Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([chatId, phase])
+  @@map("competitor_research")
 }

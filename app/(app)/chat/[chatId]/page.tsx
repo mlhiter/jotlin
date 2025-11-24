@@ -133,6 +133,7 @@ export default function ChatIdPage() {
   const [windowWidth, setWindowWidth] = useState(0)
   const [pendingMessage, setPendingMessage] = useState<string | null>(null)
   const [mvpCodeGenerationTrigger, setMvpCodeGenerationTrigger] = useState(0)
+  const [competitorRefreshTrigger, setCompetitorRefreshTrigger] = useState(0)
   const prevSidebarOpenRef = useRef<boolean | null>(null)
   const autoCollapsedRef = useRef(false)
   const userManuallyOpenedRef = useRef(false)
@@ -829,6 +830,17 @@ export default function ChatIdPage() {
               status={status}
               quotes={quotes}
               onRemoveQuote={handleRemoveQuote}
+              chatId={actualChatId}
+              phase={projectData?.currentPhase || null}
+              onCompetitorSearchComplete={() => {
+                console.log('[ChatPage] Competitor search completed from input')
+                setDraftActiveTab('competitors')
+                setShowRequirementSidebar(true)
+                setCompetitorRefreshTrigger((prev) => {
+                  console.log('[ChatPage] Updating competitorRefreshTrigger from', prev, 'to', prev + 1)
+                  return prev + 1
+                })
+              }}
             />
           </div>
         </div>
@@ -839,11 +851,13 @@ export default function ChatIdPage() {
           onToggle={() => setShowRequirementSidebar(!showRequirementSidebar)}
           onQuote={handleQuote}
           chatId={projectData?.rootChatId || chatId}
+          currentPhaseChatId={actualChatId}
           activeTab={draftActiveTab}
           onActiveTabChange={setDraftActiveTab}
           currentPhase={projectData?.currentPhase}
           liveContent={phaseLiveContent}
           mvpCodeGenerationTrigger={mvpCodeGenerationTrigger}
+          competitorRefreshTrigger={competitorRefreshTrigger}
         />
       </div>
     </div>

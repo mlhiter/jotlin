@@ -1,10 +1,22 @@
 'use client'
 
-import { ChevronsLeft, ChevronsRight, Copy, FileText, Eye, Code, Maximize2, Minimize2, Files } from 'lucide-react'
+import {
+  ChevronsLeft,
+  ChevronsRight,
+  Copy,
+  FileText,
+  Eye,
+  Code,
+  Maximize2,
+  Minimize2,
+  Files,
+  Search,
+} from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 
+import { CompetitorView } from '@/components/chat/competitor-view'
 import { Markdown } from '@/components/chat/markdown'
 import { TextSelectionMenu } from '@/components/chat/text-selection-menu'
 import { Button } from '@/components/ui/button'
@@ -46,6 +58,7 @@ interface DraftPanelProps {
   onToggle?: () => void
   onQuote?: (selectedText: string) => void
   chatId?: string
+  currentPhaseChatId?: string
   activeTab?: string
   onActiveTabChange?: (tab: string) => void
   currentPhase?: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
@@ -56,6 +69,7 @@ interface DraftPanelProps {
   }
   readOnly?: boolean
   mvpCodeGenerationTrigger?: number
+  competitorRefreshTrigger?: number
 }
 
 export function DraftPanel({
@@ -63,12 +77,14 @@ export function DraftPanel({
   onToggle,
   onQuote,
   chatId,
+  currentPhaseChatId,
   activeTab: externalActiveTab,
   onActiveTabChange,
   currentPhase,
   liveContent,
   readOnly = false,
   mvpCodeGenerationTrigger = 0,
+  competitorRefreshTrigger = 0,
 }: DraftPanelProps) {
   const [mvpData, setMvpData] = useState<{
     files: Record<string, string>
@@ -80,6 +96,11 @@ export function DraftPanel({
   )
   const [hasMvpCode, setHasMvpCode] = useState(false)
   const [isCheckingMvp, setIsCheckingMvp] = useState(true)
+
+  // Debug log for competitor refresh trigger
+  useEffect(() => {
+    console.log('[DraftPanel] competitorRefreshTrigger changed:', competitorRefreshTrigger)
+  }, [competitorRefreshTrigger])
 
   // Check if any live content exists
   const hasAnyLiveContent = !!(
@@ -148,6 +169,12 @@ export function DraftPanel({
 
   const availableTabs = [
     { value: 'documents', label: 'Documents', available: hasAnyDocument, icon: FileText },
+    {
+      value: 'competitors',
+      label: 'Competitors',
+      available: !readOnly && currentPhase === 'REQUIREMENT',
+      icon: Search,
+    },
     { value: 'preview', label: 'Preview', available: shouldShowCodeTabs, icon: Eye },
     { value: 'code', label: 'Code', available: shouldShowCodeTabs, icon: Code },
   ].filter((t) => t.available)
@@ -357,6 +384,16 @@ export function DraftPanel({
             </div>
           </TabsContent>
 
+          <TabsContent value="competitors" className="mt-0 flex-1 overflow-hidden">
+            {currentPhaseChatId ? (
+              <CompetitorView chatId={currentPhaseChatId} refreshTrigger={competitorRefreshTrigger} />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-muted-foreground text-sm">No chat selected</p>
+              </div>
+            )}
+          </TabsContent>
+
           <TabsContent value="preview" className="mt-0 flex-1 overflow-hidden">
             {mvpData ? (
               <Preview files={mvpData.files} />
@@ -491,6 +528,16 @@ export function DraftPanel({
                   </div>
                 </ScrollArea>
               </div>
+            </TabsContent>
+
+            <TabsContent value="competitors" className="mt-0 flex-1 overflow-hidden">
+              {currentPhaseChatId ? (
+                <CompetitorView chatId={currentPhaseChatId} refreshTrigger={competitorRefreshTrigger} />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-muted-foreground text-sm">No chat selected</p>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent
