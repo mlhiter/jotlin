@@ -2,6 +2,25 @@
 
 This document outlines the design system structure, patterns, and conventions used in the Jotlin codebase for AI assistants and developers integrating Figma designs.
 
+## Project Overview
+
+**Jotlin** is focused on AI-powered requirement document generation. The application helps users create professional requirement analysis documents through conversational AI.
+
+### Core Features
+
+- ✅ **Requirement Analysis Phase**: Generate comprehensive requirement documents through AI conversation
+- ✅ **Competitor Research**: Analyze competitors and market positioning
+- ✅ **Document Version Management**: Track and rollback document versions
+- ✅ **Multi-language Support**: i18n support for global users
+- ✅ **User Authentication**: Secure JWT-based authentication
+
+### Removed Features (as of 2025-01-26)
+
+- ❌ Architecture Phase (Technical Architecture Design)
+- ❌ Development Phase (Development Planning)
+- ❌ MVP Code Generation
+- ❌ Phase Progression System
+
 ## AI Assistant Guidelines
 
 ### Development Server Management

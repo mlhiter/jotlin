@@ -54,7 +54,6 @@ model Chat {
   children             Chat[]               @relation("ProjectPhases")
   user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages             Message[]
-  mvp                  Mvp?
   competitorResearches CompetitorResearch[]
 
   @@map("chat")
@@ -72,26 +71,6 @@ model Message {
 
   @@index([chatId, createdAt])
   @@map("message")
-}
-
-model Mvp {
-  id                  String   @id @default(cuid())
-  chatId              String   @unique
-  sandboxId           String?  @unique
-  previewUrl          String?
-  files               Json
-  requirementSnapshot String
-  status              String   @default("running")
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  vercelDeploymentId  String?  @unique
-  vercelUrl           String?
-  chat                Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-
-  @@index([chatId])
-  @@index([sandboxId])
-  @@index([vercelDeploymentId])
-  @@map("mvp")
 }
 
 model Feedback {
@@ -125,8 +104,6 @@ enum FeedbackType {
 
 enum ChatPhase {
   REQUIREMENT
-  ARCHITECTURE
-  DEVELOPMENT
 }
 
 model CompetitorResearch {

@@ -4,11 +4,7 @@ import { streamText, convertToModelMessages, createIdGenerator, validateUIMessag
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getModelForPhase } from '@/libs/ai/model-config'
-import {
-  requirementAnalysisPrompt,
-  technicalArchitectureAnalysisPrompt,
-  developmentPlanAnalysisPrompt,
-} from '@/libs/ai/prompt'
+import { requirementAnalysisPrompt } from '@/libs/ai/prompt'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
@@ -108,16 +104,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       }
     }
 
-    // Select system prompt based on chat phase
+    // Only one phase now - always use requirement prompt
     let systemPrompt = requirementAnalysisPrompt
-
-    if (targetChat.phase === 'ARCHITECTURE') {
-      systemPrompt = technicalArchitectureAnalysisPrompt
-    } else if (targetChat.phase === 'DEVELOPMENT') {
-      systemPrompt = developmentPlanAnalysisPrompt
-    } else if (targetChat.phase === 'REQUIREMENT') {
-      systemPrompt = requirementAnalysisPrompt
-    }
 
     // Inject competitor research context for REQUIREMENT phase
     if (targetChat.phase === 'REQUIREMENT') {
