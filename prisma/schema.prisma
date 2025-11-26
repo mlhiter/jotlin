@@ -70,6 +70,7 @@ model Message {
   order     Int      @default(0)
   chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
+  @@index([chatId, createdAt])
   @@map("message")
 }
 

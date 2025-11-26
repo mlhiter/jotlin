@@ -5,6 +5,7 @@ import { DefaultChatTransport } from 'ai'
 import dynamicImport from 'next/dynamic'
 import { useParams, useSearchParams, notFound } from 'next/navigation'
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { ChatInput } from '@/components/chat/chat-input'
 import { MessageList } from '@/components/chat/message-list'
@@ -38,6 +39,7 @@ export default function ChatIdPage() {
   const chatId = params.chatId as string
   const initialMessage = searchParams.get('message')
   const { handleMessageSent, handleLimitError } = useMessageLimits()
+  const queryClient = useQueryClient()
 
   const [initialMessages, setInitialMessages] = useState<MyUIMessage[]>([])
   const [chatReady, setChatReady] = useState(false)
@@ -73,6 +75,10 @@ export default function ChatIdPage() {
     }),
     onFinish: () => {
       handleMessageSent()
+      // Delay version refresh to ensure server-side save completes
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['versions', actualChatId] })
+      }, 500)
     },
     onError: (error) => {
       const isLimitError = handleLimitError(error)
@@ -83,7 +89,7 @@ export default function ChatIdPage() {
   })
 
   // Rollback function - rollback to a specific message and delete all messages after it
-  const handleRollback = (messageId: string) => {
+  const handleRollback = async (messageId: string) => {
     const messageIndex = messages.findIndex((msg) => msg.id === messageId)
     if (messageIndex === -1) return
 
@@ -109,6 +115,18 @@ export default function ChatIdPage() {
 
     // Update messages state
     setMessages(updatedMessages)
+
+    // Save rollback to server immediately to sync versions
+    try {
+      await apiClient.post(`/api/chats/${actualChatId}/messages`, {
+        messages: updatedMessages,
+      })
+
+      // Refresh version list after rollback
+      queryClient.invalidateQueries({ queryKey: ['versions', actualChatId] })
+    } catch (error) {
+      console.error('Failed to save rollback:', error)
+    }
   }
 
   // Simple regenerate function - resend last user message (kept for retry button)
@@ -138,6 +156,7 @@ export default function ChatIdPage() {
   const autoCollapsedRef = useRef(false)
   const userManuallyOpenedRef = useRef(false)
   const isSwitchingRef = useRef(false)
+  const messageRefs = useRef<Map<string, HTMLElement>>(new Map())
 
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar()
 
@@ -733,6 +752,19 @@ export default function ChatIdPage() {
     }, 200)
   }
 
+  const handleScrollToMessage = (messageId: string) => {
+    const messageElement = messageRefs.current.get(messageId)
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+      // Add highlight effect
+      messageElement.classList.add('highlight-version-message')
+      setTimeout(() => {
+        messageElement.classList.remove('highlight-version-message')
+      }, 2000)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex h-[calc(100vh-1.5rem)] flex-col overflow-hidden">
@@ -777,6 +809,7 @@ export default function ChatIdPage() {
               onSendMessage={sendMessage}
               onUpdateMessage={handleUpdateMessage}
               onRollback={handleRollback}
+              messageRefs={messageRefs}
             />
 
             {/* Requirement Action Buttons (dual choice) */}
@@ -858,6 +891,7 @@ export default function ChatIdPage() {
           liveContent={phaseLiveContent}
           mvpCodeGenerationTrigger={mvpCodeGenerationTrigger}
           competitorRefreshTrigger={competitorRefreshTrigger}
+          onScrollToMessage={handleScrollToMessage}
         />
       </div>
     </div>

@@ -86,14 +86,24 @@ export const parseAIResponse = (text: string): ParsedResponse => {
   }
 
   // Try to find draft in both the processed content and original text for robustness
-  const draftMatch = contentToProcess.match(/<draft>([\s\S]*?)<\/draft>/) || text.match(/<draft>([\s\S]*?)<\/draft>/)
+  // Support both complete tags and incomplete tags (for streaming)
+  let draftMatch = contentToProcess.match(/<draft>([\s\S]*?)<\/draft>/) || text.match(/<draft>([\s\S]*?)<\/draft>/)
+  if (!draftMatch) {
+    // Try to match incomplete draft tag (streaming case)
+    draftMatch = contentToProcess.match(/<draft>([\s\S]*)$/) || text.match(/<draft>([\s\S]*)$/)
+  }
   if (draftMatch) {
     // Use custom function to preserve markdown list indentation
     result.draft = preserveMarkdownIndent(draftMatch[1])
   }
 
   // Try to find final in both the processed content and original text for robustness
-  const finalMatch = contentToProcess.match(/<final>([\s\S]*?)<\/final>/) || text.match(/<final>([\s\S]*?)<\/final>/)
+  // Support both complete tags and incomplete tags (for streaming)
+  let finalMatch = contentToProcess.match(/<final>([\s\S]*?)<\/final>/) || text.match(/<final>([\s\S]*?)<\/final>/)
+  if (!finalMatch) {
+    // Try to match incomplete final tag (streaming case)
+    finalMatch = contentToProcess.match(/<final>([\s\S]*)$/) || text.match(/<final>([\s\S]*)$/)
+  }
   if (finalMatch) {
     // Use custom function to preserve markdown list indentation
     result.final = preserveMarkdownIndent(finalMatch[1])

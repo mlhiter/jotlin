@@ -12,6 +12,7 @@ import {
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
+import { extractDraftContent, createVersionMetadata } from '@/libs/utils/version-utils'
 
 const openai = createOpenAI({
   baseURL: process.env.OPENAI_API_BASE_URL,
@@ -198,14 +199,29 @@ ${topResults
           // Save all messages to the target chat (phase chat if applicable)
           if (messages.length > 0) {
             await prisma.message.createMany({
-              data: messages.map((msg, index) => ({
-                id: msg.id,
-                role: msg.role,
-                parts: msg.parts as InputJsonValue,
-                metadata: msg.metadata as InputJsonValue,
-                chatId: targetChatId,
-                order: index,
-              })),
+              data: messages.map((msg, index) => {
+                let metadata = msg.metadata as InputJsonValue
+
+                // Mark all assistant messages that contain draft/final as version snapshots
+                if (msg.role === 'assistant' && targetChat.phase) {
+                  const { draft, final } = extractDraftContent(msg.parts)
+                  const content = final || draft
+
+                  if (content) {
+                    const type = final ? 'final' : 'draft'
+                    metadata = createVersionMetadata(content, type, targetChat.phase) as InputJsonValue
+                  }
+                }
+
+                return {
+                  id: msg.id,
+                  role: msg.role,
+                  parts: msg.parts as InputJsonValue,
+                  metadata,
+                  chatId: targetChatId,
+                  order: index,
+                }
+              }),
             })
           }
         } catch (error) {

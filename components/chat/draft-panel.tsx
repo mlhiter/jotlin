@@ -13,18 +13,20 @@ import {
   Search,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
 import { CompetitorView } from '@/components/chat/competitor-view'
 import { Markdown } from '@/components/chat/markdown'
 import { TextSelectionMenu } from '@/components/chat/text-selection-menu'
+import { VersionSelector } from '@/components/chat/version-selector'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 import apiClient from '@/libs/utils/axios'
+import { useVersions } from '@/hooks/use-versions'
 
 // NOTE: turbopack will cause dev refresh error,so I do not use turbopack to solve this problem
 const PreviewLoader = () => {
@@ -70,6 +72,7 @@ interface DraftPanelProps {
   readOnly?: boolean
   mvpCodeGenerationTrigger?: number
   competitorRefreshTrigger?: number
+  onScrollToMessage?: (messageId: string) => void
 }
 
 export function DraftPanel({
@@ -85,6 +88,7 @@ export function DraftPanel({
   readOnly = false,
   mvpCodeGenerationTrigger = 0,
   competitorRefreshTrigger = 0,
+  onScrollToMessage,
 }: DraftPanelProps) {
   const [mvpData, setMvpData] = useState<{
     files: Record<string, string>
@@ -96,11 +100,41 @@ export function DraftPanel({
   )
   const [hasMvpCode, setHasMvpCode] = useState(false)
   const [isCheckingMvp, setIsCheckingMvp] = useState(true)
+  const [selectedVersionId, setSelectedVersionId] = useState<string | undefined>(undefined)
 
-  // Debug log for competitor refresh trigger
+  // Fetch versions for the current phase chat
+  const { versions } = useVersions(currentPhaseChatId)
+
+  // Track previous live content to detect rollback
+  const prevLiveContentRef = useRef<string>('')
+
+  // Reset selected version when phase chat changes
   useEffect(() => {
-    console.log('[DraftPanel] competitorRefreshTrigger changed:', competitorRefreshTrigger)
-  }, [competitorRefreshTrigger])
+    setSelectedVersionId(undefined)
+  }, [currentPhaseChatId])
+
+  // Reset selected version when live content changes significantly (rollback case)
+  useEffect(() => {
+    if (!liveContent || !selectedVersionId) return
+
+    const currentContent = [
+      liveContent.requirement?.draft,
+      liveContent.requirement?.final,
+      liveContent.architecture?.draft,
+      liveContent.architecture?.final,
+      liveContent.development?.draft,
+      liveContent.development?.final,
+    ]
+      .filter(Boolean)
+      .join('')
+
+    // If content changed and we're viewing a specific version, reset to live view
+    if (prevLiveContentRef.current && currentContent !== prevLiveContentRef.current) {
+      setSelectedVersionId(undefined)
+    }
+
+    prevLiveContentRef.current = currentContent
+  }, [liveContent, selectedVersionId])
 
   // Check if any live content exists
   const hasAnyLiveContent = !!(
@@ -119,14 +153,23 @@ export function DraftPanel({
 
   const setActiveTab = onActiveTabChange ?? setInternalActiveTab
 
-  // Determine which document content to show - directly from live content
+  // Determine which document content to show - from version or live content
   const getDocumentContent = (phase: 'requirement' | 'architecture' | 'development'): string | undefined => {
+    // If viewing a specific version AND it matches the requested phase, return version content
+    if (selectedVersionId) {
+      const selectedVersion = versions.find((v) => v.id === selectedVersionId)
+      if (selectedVersion && selectedVersion.phase === phase.toUpperCase()) {
+        return selectedVersion.content
+      }
+      // If version doesn't match requested phase, fall through to live content
+    }
+
     // Priority 1: Live final content for this phase
     if (liveContent?.[phase]?.final) {
       return liveContent[phase].final
     }
 
-    // Priority 2: Live draft content for this phase (preview only)
+    // Priority 2: Live draft content for this phase
     if (liveContent?.[phase]?.draft) {
       return liveContent[phase].draft
     }
@@ -353,31 +396,45 @@ export function DraftPanel({
           </div>
 
           <TabsContent value="documents" className="mt-0 flex h-full flex-col overflow-hidden">
-            {/* Nested document tabs */}
-            {availableDocumentTabs.length > 1 && (
-              <div className="border-border flex items-center gap-1 border-b px-4">
-                {availableDocumentTabs.map((tab) => (
-                  <button
-                    key={tab.value}
-                    onClick={() => setActiveDocumentTab(tab.value as 'requirement' | 'architecture' | 'development')}
-                    className={`relative flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
-                      activeDocumentTab === tab.value
-                        ? 'text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}>
-                    {tab.label}
-                    {activeDocumentTab === tab.value && (
-                      <div className="bg-primary absolute bottom-0 left-0 right-0 h-0.5" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Nested document tabs with version selector */}
+            <div className="border-border flex items-center justify-between gap-1 border-b px-4">
+              {availableDocumentTabs.length > 1 && (
+                <div className="flex items-center gap-1">
+                  {availableDocumentTabs.map((tab) => (
+                    <button
+                      key={tab.value}
+                      onClick={() => setActiveDocumentTab(tab.value as 'requirement' | 'architecture' | 'development')}
+                      className={`relative flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
+                        activeDocumentTab === tab.value
+                          ? 'text-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}>
+                      {tab.label}
+                      {activeDocumentTab === tab.value && (
+                        <div className="bg-primary absolute bottom-0 left-0 right-0 h-0.5" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {currentPhaseChatId && (
+                <VersionSelector
+                  chatId={currentPhaseChatId}
+                  selectedVersionId={selectedVersionId}
+                  onVersionSelect={setSelectedVersionId}
+                  onScrollToMessage={onScrollToMessage}
+                  className="my-1"
+                />
+              )}
+            </div>
             {/* Document content */}
             <div className="relative flex-1 overflow-hidden">
               <ScrollArea className="h-full">
                 <div className="relative p-4" data-selection-container>
-                  <Markdown content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''} />
+                  <Markdown
+                    key={`${activeDocumentTab}-${selectedVersionId || 'live'}`}
+                    content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''}
+                  />
                   <TextSelectionMenu onQuote={onQuote} />
                 </div>
               </ScrollArea>
@@ -499,31 +556,45 @@ export function DraftPanel({
             </div>
 
             <TabsContent value="documents" className="mt-0 flex h-full flex-col overflow-hidden">
-              {/* Nested document tabs */}
-              {availableDocumentTabs.length > 1 && (
-                <div className="border-border flex items-center gap-1 border-b px-4">
-                  {availableDocumentTabs.map((tab) => (
-                    <button
-                      key={tab.value}
-                      onClick={() => setActiveDocumentTab(tab.value as 'requirement' | 'architecture' | 'development')}
-                      className={`relative flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
-                        activeDocumentTab === tab.value
-                          ? 'text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}>
-                      {tab.label}
-                      {activeDocumentTab === tab.value && (
-                        <div className="bg-primary absolute bottom-0 left-0 right-0 h-0.5" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* Nested document tabs with version selector */}
+              <div className="border-border flex items-center justify-between gap-1 border-b px-4">
+                {availableDocumentTabs.length > 1 && (
+                  <div className="flex items-center gap-1">
+                    {availableDocumentTabs.map((tab) => (
+                      <button
+                        key={tab.value}
+                        onClick={() => setActiveDocumentTab(tab.value as 'requirement' | 'architecture' | 'development')}
+                        className={`relative flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
+                          activeDocumentTab === tab.value
+                            ? 'text-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}>
+                        {tab.label}
+                        {activeDocumentTab === tab.value && (
+                          <div className="bg-primary absolute bottom-0 left-0 right-0 h-0.5" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {currentPhaseChatId && (
+                  <VersionSelector
+                    chatId={currentPhaseChatId}
+                    selectedVersionId={selectedVersionId}
+                    onVersionSelect={setSelectedVersionId}
+                    onScrollToMessage={onScrollToMessage}
+                    className="my-1"
+                  />
+                )}
+              </div>
               {/* Document content */}
               <div className="relative flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
                   <div className="relative p-4" data-selection-container>
-                    <Markdown content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''} />
+                    <Markdown
+                      key={`${activeDocumentTab}-${selectedVersionId || 'live'}-content`}
+                      content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''}
+                    />
                     <TextSelectionMenu onQuote={onQuote} />
                   </div>
                 </ScrollArea>

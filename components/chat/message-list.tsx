@@ -21,6 +21,7 @@ interface MessageListProps {
   onSendMessage: (message: { text: string }) => void
   onUpdateMessage?: (messageId: string, metadata: MyUIMessage['metadata']) => void
   onRollback: (messageId: string) => void
+  messageRefs?: React.MutableRefObject<Map<string, HTMLElement>>
 }
 
 export function MessageList({
@@ -30,6 +31,7 @@ export function MessageList({
   onSendMessage,
   onUpdateMessage,
   onRollback,
+  messageRefs,
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -85,7 +87,12 @@ export function MessageList({
               .map((message) => (
                 <div
                   key={message.id}
-                  className={cn('group flex gap-4', message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                  ref={(el) => {
+                    if (el && messageRefs) {
+                      messageRefs.current.set(message.id, el)
+                    }
+                  }}
+                  className={cn('group flex gap-4 transition-colors', message.role === 'user' ? 'justify-end' : 'justify-start')}>
                   {message.role === 'user' ? (
                     <UserMessage
                       key={message.id}
