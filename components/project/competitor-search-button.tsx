@@ -117,7 +117,7 @@ export function CompetitorSearchButton({ chatId, onSearchComplete, disabled }: C
   }
 
   return (
-    <Button onClick={handleSearch} disabled={disabled || isSearching} variant="outline" size="sm" className="gap-2">
+    <Button onClick={handleSearch} disabled={true} variant="outline" size="sm" className="gap-2">
       {isSearching ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -126,7 +126,7 @@ export function CompetitorSearchButton({ chatId, onSearchComplete, disabled }: C
       ) : (
         <>
           <Search className="h-4 w-4" />
-          {getButtonText()}
+          Coming Soon
         </>
       )}
     </Button>

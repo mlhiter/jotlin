@@ -380,9 +380,7 @@ export function ChatInput({
                           e.stopPropagation()
                           handleCompetitorSearch()
                         }}
-                        disabled={
-                          isSearchingCompetitors || status === 'submitted' || status === 'streaming' || disabled
-                        }
+                        disabled={true}
                         className="h-8 w-8 p-0"
                         aria-label="Search competitors">
                         {isSearchingCompetitors ? (
@@ -393,7 +391,7 @@ export function ChatInput({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top">
-                      <p className="text-xs">Search Competitors</p>
+                      <p className="text-xs">Search Competitors (Coming Soon)</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
