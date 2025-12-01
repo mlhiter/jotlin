@@ -798,8 +798,8 @@ export default function ChatIdPage() {
               </div>
             )}
 
-            {/* Code Generation Button */}
-            {showCodeGenerationButton && (
+            {/* Code Generation Button - DISABLED */}
+            {/* {showCodeGenerationButton && (
               <div className="mx-auto max-w-3xl px-4 pb-4">
                 <CodeGenerationButton
                   documents={{
@@ -817,7 +817,7 @@ export default function ChatIdPage() {
                   onSuccess={handleCodeGenerationSuccess}
                 />
               </div>
-            )}
+            )} */}
 
             <ChatInput
               onSendMessage={handleSendMessage}
