@@ -36,12 +36,9 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
   useEffect(() => {
     const loadResearch = async () => {
       try {
-        console.log('[CompetitorView] Loading research for chatId:', chatId, 'refreshTrigger:', refreshTrigger)
         setIsLoading(true)
         setError(null)
         const response = await apiClient.get(`/api/chats/${chatId}/competitor-research/latest`)
-        console.log('[CompetitorView] Research loaded:', response.data)
-        console.log('[CompetitorView] Analysis data:', response.data.analysis)
         setResearch(response.data)
       } catch (err: unknown) {
         console.error('[CompetitorView] Error loading research:', err)

@@ -7,8 +7,8 @@ import { getModelForPhase } from '@/libs/ai/model-config'
 import { requirementAnalysisPrompt } from '@/libs/ai/prompt'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
-import { metadataSchema, MyUIMessage } from '@/schema/chat'
 import { extractDraftContent, createVersionMetadata } from '@/libs/utils/version-utils'
+import { metadataSchema, MyUIMessage } from '@/schema/chat'
 
 const openai = createOpenAI({
   baseURL: process.env.OPENAI_API_BASE_URL,

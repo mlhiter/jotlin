@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { History, Check, ChevronDown } from 'lucide-react'
+import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,8 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useVersions, Version } from '@/hooks/use-versions'
-import { toast } from 'sonner'
+
+import { useVersions } from '@/hooks/use-versions'
 
 interface VersionSelectorProps {
   chatId: string
@@ -57,9 +57,14 @@ export function VersionSelector({
   // Show disabled button when no versions exist
   if (versions.length === 0) {
     return (
-      <Button variant="ghost" size="sm" className={className} disabled title="No version history. Versions will be created automatically after AI generates content.">
-        <History className="h-4 w-4 text-muted-foreground" />
-        <span className="ml-1 text-muted-foreground">No versions</span>
+      <Button
+        variant="ghost"
+        size="sm"
+        className={className}
+        disabled
+        title="No version history. Versions will be created automatically after AI generates content.">
+        <History className="text-muted-foreground h-4 w-4" />
+        <span className="text-muted-foreground ml-1">No versions</span>
       </Button>
     )
   }
@@ -85,28 +90,27 @@ export function VersionSelector({
           return (
             <div key={version.id} className="relative">
               <DropdownMenuItem
-                className="flex flex-col items-start py-3 cursor-pointer"
-                onSelect={() => handleVersionClick(version.id)}
-              >
-                <div className="flex items-center gap-2 w-full mb-1">
-                  {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
-                  <span className="font-medium truncate flex-1">{version.title}</span>
+                className="flex cursor-pointer flex-col items-start py-3"
+                onSelect={() => handleVersionClick(version.id)}>
+                <div className="mb-1 flex w-full items-center gap-2">
+                  {isSelected && <Check className="text-primary h-4 w-4 shrink-0" />}
+                  <span className="flex-1 truncate font-medium">{version.title}</span>
                   {isCurrent && (
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded shrink-0">Current</span>
+                    <span className="bg-primary/10 text-primary shrink-0 rounded px-2 py-0.5 text-xs">Current</span>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-muted-foreground text-xs">
                   <span>{version.type === 'final' ? 'Final' : 'Draft'}</span>
                 </div>
                 {version.preview && (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{version.preview}</p>
+                  <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{version.preview}</p>
                 )}
               </DropdownMenuItem>
             </div>
           )
         })}
         {versions.length === 0 && (
-          <div className="py-6 text-center text-sm text-muted-foreground">No version history</div>
+          <div className="text-muted-foreground py-6 text-center text-sm">No version history</div>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

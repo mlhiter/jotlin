@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getSessionFromRequest } from '@/libs/auth/auth'
@@ -11,6 +12,7 @@ import type {
   CompetitorResearchResponse,
   KeywordExtractionResult,
   TavilySearchResponse,
+  CompetitorAnalysis,
 } from '@/libs/types/competitor.types'
 import type { MyUIMessage } from '@/schema/chat'
 
@@ -35,8 +37,8 @@ async function processCompetitorResearch(researchId: string, searchQuery: string
     await prisma.competitorResearch.update({
       where: { id: researchId },
       data: {
-        results: searchResults as unknown as Record<string, unknown>,
-        analysis: analysis as unknown as Record<string, unknown>,
+        results: searchResults as unknown as Prisma.InputJsonValue,
+        analysis: analysis as unknown as Prisma.InputJsonValue,
         status: 'completed',
       },
     })
@@ -96,11 +98,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         searchQuery: body.manualQuery,
         confidence: 1.0,
       }
-      console.log('[CompetitorResearch] Using manual query:', keywords)
     } else {
       try {
         keywords = await keywordService.extractFromConversation(messages as unknown as MyUIMessage[])
-        console.log('[CompetitorResearch] Extracted keywords:', keywords)
       } catch (error) {
         console.warn('[CompetitorResearch] Keyword extraction failed, using fallback', error)
         keywords = {

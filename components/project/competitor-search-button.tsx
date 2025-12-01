@@ -37,7 +37,6 @@ export function CompetitorSearchButton({ chatId, onSearchComplete, disabled }: C
 
       if (!research) return
 
-      console.log('[CompetitorSearchButton] Poll result:', research.status, 'has analysis:', !!research.analysis)
       setSearchStatus(research.status)
 
       if (research.status === 'completed' && research.analysis) {
@@ -73,9 +72,7 @@ export function CompetitorSearchButton({ chatId, onSearchComplete, disabled }: C
     setSearchStatus('pending')
 
     try {
-      console.log('[CompetitorSearchButton] Starting search for chatId:', chatId)
       const response = await apiClient.post(`/api/chats/${chatId}/competitor-research`)
-      console.log('[CompetitorSearchButton] Search initiated, response:', response.data)
 
       researchIdRef.current = response.data.id
 

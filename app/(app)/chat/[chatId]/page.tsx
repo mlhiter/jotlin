@@ -1,11 +1,11 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
+import { useQueryClient } from '@tanstack/react-query'
 import { DefaultChatTransport } from 'ai'
 import dynamicImport from 'next/dynamic'
 import { useParams, useSearchParams, notFound } from 'next/navigation'
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 
 import { ChatInput } from '@/components/chat/chat-input'
 import { MessageList } from '@/components/chat/message-list'
@@ -150,7 +150,6 @@ export default function ChatIdPage() {
   const prevSidebarOpenRef = useRef<boolean | null>(null)
   const autoCollapsedRef = useRef(false)
   const userManuallyOpenedRef = useRef(false)
-  const isSwitchingRef = useRef(false)
   const messageRefs = useRef<Map<string, HTMLElement>>(new Map())
 
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar()
@@ -546,7 +545,6 @@ export default function ChatIdPage() {
               messageRefs={messageRefs}
             />
 
-
             <ChatInput
               onSendMessage={handleSendMessage}
               onMarkMessageAnswered={handleMarkMessageAnswered}
@@ -557,13 +555,9 @@ export default function ChatIdPage() {
               chatId={actualChatId}
               phase={projectData?.currentPhase || null}
               onCompetitorSearchComplete={() => {
-                console.log('[ChatPage] Competitor search completed from input')
                 setDraftActiveTab('competitors')
                 setShowRequirementSidebar(true)
-                setCompetitorRefreshTrigger((prev) => {
-                  console.log('[ChatPage] Updating competitorRefreshTrigger from', prev, 'to', prev + 1)
-                  return prev + 1
-                })
+                setCompetitorRefreshTrigger((prev) => prev + 1)
               }}
             />
           </div>

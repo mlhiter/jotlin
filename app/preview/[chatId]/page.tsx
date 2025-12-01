@@ -51,13 +51,6 @@ export default function ChatPreviewPage() {
     requirement?: { content: string; status: string }
   }>({})
   const [showDraftPanel, setShowDraftPanel] = useState(true)
-  const [phaseChats, setPhaseChats] = useState<Array<{
-    id: string
-    title: string | null
-    phase: 'REQUIREMENT' | null
-    createdAt: string
-    messages: MyUIMessage[]
-  }> | null>(null)
   const [currentPhase, setCurrentPhase] = useState<'REQUIREMENT' | null>(null)
   const [displayMessages, setDisplayMessages] = useState<MyUIMessage[]>([])
 
@@ -75,7 +68,6 @@ export default function ChatPreviewPage() {
         }
 
         if (response.data.phaseChats && response.data.phaseChats.length > 0) {
-          setPhaseChats(response.data.phaseChats)
           const lastPhase = response.data.phaseChats[response.data.phaseChats.length - 1]
           setCurrentPhase(lastPhase.phase)
           setDisplayMessages(lastPhase.messages || [])
@@ -102,10 +94,6 @@ export default function ChatPreviewPage() {
     }
   }, [chatId])
 
-  // No phase switching - only requirement phase
-  const handlePhaseSwitch = (_phase: 'REQUIREMENT') => {
-    // Single phase, no switching needed
-  }
 
   if (isLoading) {
     return (
@@ -157,8 +145,6 @@ export default function ChatPreviewPage() {
     return true
   })
 
-  // No phase progress needed - single phase only
-  const phaseProgress: any[] = []
 
   // Extract live draft/final content from messages
   const liveContent = filteredMessages.reduce(

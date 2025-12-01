@@ -36,11 +36,9 @@ export function DraftPanel({
   isVisible = true,
   onToggle,
   onQuote,
-  chatId,
   currentPhaseChatId,
   activeTab: externalActiveTab,
   onActiveTabChange,
-  currentPhase,
   liveContent,
   readOnly = false,
   competitorRefreshTrigger = 0,
@@ -85,7 +83,7 @@ export function DraftPanel({
   const setActiveTab = onActiveTabChange ?? setInternalActiveTab
 
   // Determine which document content to show - from version or live content
-  const getDocumentContent = (phase: 'requirement'): string | undefined => {
+  const getDocumentContent = (): string | undefined => {
     // If viewing a specific version AND it matches the requested phase, return version content
     if (selectedVersionId) {
       const selectedVersion = versions.find((v) => v.id === selectedVersionId)
@@ -113,7 +111,7 @@ export function DraftPanel({
     {
       value: 'requirement',
       label: 'Requirements',
-      content: getDocumentContent('requirement'),
+      content: getDocumentContent(),
       available: !!(liveContent?.requirement?.draft || liveContent?.requirement?.final),
       icon: FileText,
     },
@@ -125,7 +123,7 @@ export function DraftPanel({
     {
       value: 'competitors',
       label: 'Competitors',
-      available: !readOnly && currentPhase === 'REQUIREMENT',
+      available: !readOnly,
       icon: Search,
     },
   ].filter((t) => t.available)
@@ -159,9 +157,7 @@ export function DraftPanel({
       }
     } else {
       // Copy requirement document
-      const allDocs = [
-        getDocumentContent('requirement') && `# Requirements Analysis Document\n\n${getDocumentContent('requirement')}`,
-      ]
+      const allDocs = [getDocumentContent() && `# Requirements Analysis Document\n\n${getDocumentContent()}`]
         .filter(Boolean)
         .join('\n\n---\n\n')
       content = allDocs

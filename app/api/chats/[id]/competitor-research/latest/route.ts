@@ -3,7 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSessionFromRequest } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 
-import type { CompetitorResearchResponse, TavilySearchResponse } from '@/libs/types/competitor.types'
+import type {
+  CompetitorResearchResponse,
+  TavilySearchResponse,
+  CompetitorAnalysis,
+} from '@/libs/types/competitor.types'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
