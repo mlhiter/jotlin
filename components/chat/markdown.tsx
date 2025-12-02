@@ -11,14 +11,16 @@ import remarkGfm from 'remark-gfm'
 import { cn } from '@/libs/utils/utils'
 
 import { Button } from '../ui/button'
+import { MermaidChart } from './mermaid-chart'
 
 interface MarkdownProps {
   content: string
   className?: string
   inline?: boolean
+  hideMermaid?: boolean
 }
 
-export function Markdown({ content, className, inline = false }: MarkdownProps) {
+export function Markdown({ content, className, inline = false, hideMermaid = false }: MarkdownProps) {
   const { theme } = useTheme()
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
@@ -47,6 +49,18 @@ export function Markdown({ content, className, inline = false }: MarkdownProps) 
                 </code>
               )
             }
+
+            if (language === 'mermaid') {
+              if (hideMermaid) {
+                return (
+                  <div className="rounded-lg border border-dashed bg-muted/50 p-4 text-center">
+                    <p className="text-muted-foreground text-sm">📊 Chart generated - view in document panel →</p>
+                  </div>
+                )
+              }
+              return <MermaidChart code={codeContent} />
+            }
+
             return (
               <div className="group relative">
                 <div className="bg-muted flex items-center justify-between rounded-t-lg px-2 py-1">

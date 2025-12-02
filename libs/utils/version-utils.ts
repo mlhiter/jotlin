@@ -1,4 +1,5 @@
 import { parseAIResponse } from '@/libs/ai/xml-parser'
+import { DocumentType } from '@/schema/chat'
 import { ChatPhase } from '@prisma/client'
 
 /**
@@ -32,13 +33,17 @@ export function extractTitle(markdown: string): string {
 }
 
 /**
- * Extract draft and final content from message parts
+ * Extract all document content from message parts
  * @param parts - Message parts from Message.parts
- * @returns Extracted draft and final content
+ * @returns Extracted document content for all types
  */
-export function extractDraftContent(parts: any): {
+export function extractDocumentContent(parts: any): {
   draft?: string
   final?: string
+  prd?: string
+  flowchart?: string
+  sitemap?: string
+  wireframe?: string
 } {
   if (!parts || !Array.isArray(parts)) {
     return {}
@@ -46,38 +51,97 @@ export function extractDraftContent(parts: any): {
 
   let draft: string | undefined
   let final: string | undefined
+  let prd: string | undefined
+  let flowchart: string | undefined
+  let sitemap: string | undefined
+  let wireframe: string | undefined
 
   for (const part of parts) {
     if (part.type === 'text' && part.text) {
       const parsed = parseAIResponse(part.text)
-      if (parsed.draft) {
-        draft = parsed.draft
-      }
-      if (parsed.final) {
-        final = parsed.final
-      }
+      if (parsed.draft) draft = parsed.draft
+      if (parsed.final) final = parsed.final
+      if (parsed.prd) prd = parsed.prd
+      if (parsed.flowchart) flowchart = parsed.flowchart
+      if (parsed.sitemap) sitemap = parsed.sitemap
+      if (parsed.wireframe) wireframe = parsed.wireframe
     }
   }
 
+  return { draft, final, prd, flowchart, sitemap, wireframe }
+}
+
+/**
+ * Backward compatibility: Extract draft and final content only
+ */
+export function extractDraftContent(parts: any): {
+  draft?: string
+  final?: string
+} {
+  const { draft, final } = extractDocumentContent(parts)
   return { draft, final }
 }
 
 /**
- * Create version metadata for a message
- * @param content - Draft or final content
+ * Create version metadata for a message with document type support
+ * @param content - Document content
  * @param type - 'draft' or 'final'
  * @param phase - Chat phase
+ * @param documentType - Document type (optional)
+ * @param versionGroupId - Version group ID for multi-document versioning (optional)
+ * @param generatedFrom - Source message ID for generated documents (optional)
  * @returns Metadata object
  */
-export function createVersionMetadata(content: string, type: 'draft' | 'final', phase: ChatPhase) {
+export function createVersionMetadata(
+  content: string,
+  type: 'draft' | 'final',
+  phase: ChatPhase,
+  documentType?: DocumentType,
+  versionGroupId?: string,
+  generatedFrom?: string
+) {
   return {
     isVersionSnapshot: true,
     versionTitle: extractTitle(content),
     versionType: type,
     phase,
+    documentType,
+    versionGroupId,
+    generatedFrom,
     answered: true,
     answeredAt: new Date().toISOString(),
   }
+}
+
+/**
+ * Create a unique version group ID for a batch of generated documents
+ */
+export function createVersionGroupId(): string {
+  return crypto.randomUUID()
+}
+
+/**
+ * Extract document title based on document type
+ * @param content - Document content
+ * @param documentType - Document type
+ * @returns Title string
+ */
+export function extractDocumentTitle(content: string, documentType: DocumentType): string {
+  const defaultTitles: Record<DocumentType, string> = {
+    REQUIREMENT: 'Requirement Document',
+    PRD: 'Product Requirements Document',
+    FLOWCHART: 'Business Flowchart',
+    SITEMAP: 'Site Structure Map',
+    WIREFRAME: 'UI Wireframe',
+  }
+
+  // For Requirement and PRD, try to extract from content
+  if (documentType === 'REQUIREMENT' || documentType === 'PRD') {
+    return extractTitle(content)
+  }
+
+  // For diagrams, use default title
+  return defaultTitles[documentType] || 'Document'
 }
 
 /**
@@ -88,12 +152,15 @@ export function isVersionSnapshot(metadata: any): boolean {
 }
 
 /**
- * Get version info from message metadata
+ * Get version info from message metadata with document type support
  */
 export function getVersionInfo(metadata: any): {
   title: string
   type: 'draft' | 'final'
   phase: ChatPhase
+  documentType?: DocumentType
+  versionGroupId?: string
+  generatedFrom?: string
 } | null {
   if (!isVersionSnapshot(metadata)) {
     return null
@@ -103,5 +170,8 @@ export function getVersionInfo(metadata: any): {
     title: metadata.versionTitle || 'Untitled Version',
     type: metadata.versionType || 'draft',
     phase: metadata.phase,
+    documentType: metadata.documentType,
+    versionGroupId: metadata.versionGroupId,
+    generatedFrom: metadata.generatedFrom,
   }
 }

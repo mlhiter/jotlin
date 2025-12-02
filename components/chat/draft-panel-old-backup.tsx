@@ -1,22 +1,11 @@
 'use client'
 
-import {
-  ChevronsLeft,
-  ChevronsRight,
-  Copy,
-  FileText,
-  Files,
-  Search,
-  FileCode,
-  Workflow,
-  Map,
-  Layout,
-} from 'lucide-react'
+import { ChevronsLeft, ChevronsRight, Copy, FileText, Files, Search } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
 import { CompetitorView } from '@/components/chat/competitor-view'
-import { DocumentRenderer } from '@/components/chat/document-renderer'
+import { Markdown } from '@/components/chat/markdown'
 import { TextSelectionMenu } from '@/components/chat/text-selection-menu'
 import { VersionSelector } from '@/components/chat/version-selector'
 import { Button } from '@/components/ui/button'
@@ -25,9 +14,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 import { useVersions } from '@/hooks/use-versions'
-import { DocumentType } from '@/schema/chat'
-
-type DocumentTabValue = 'REQUIREMENT' | 'PRD' | 'FLOWCHART' | 'SITEMAP' | 'WIREFRAME'
 
 interface DraftPanelProps {
   isVisible?: boolean
@@ -40,10 +26,6 @@ interface DraftPanelProps {
   currentPhase?: 'REQUIREMENT' | null
   liveContent?: {
     requirement?: { draft?: string; final?: string }
-    prd?: string
-    flowchart?: string
-    sitemap?: string
-    wireframe?: string
   }
   readOnly?: boolean
   competitorRefreshTrigger?: number
@@ -54,31 +36,38 @@ export function DraftPanel({
   isVisible = true,
   onToggle,
   onQuote,
+  chatId,
   currentPhaseChatId,
   activeTab: externalActiveTab,
   onActiveTabChange,
+  currentPhase,
   liveContent,
   readOnly = false,
   competitorRefreshTrigger = 0,
   onScrollToMessage,
 }: DraftPanelProps) {
   const [internalActiveTab, setInternalActiveTab] = useState<string | null>(null)
-  const [activeDocumentTab, setActiveDocumentTab] = useState<DocumentTabValue>('REQUIREMENT')
+  const [activeDocumentTab, setActiveDocumentTab] = useState<'requirement'>('requirement')
   const [selectedVersionId, setSelectedVersionId] = useState<string | undefined>(undefined)
 
+  // Fetch versions for the current phase chat
   const { versions } = useVersions(currentPhaseChatId)
 
+  // Track previous live content to detect rollback
   const prevLiveContentRef = useRef<string>('')
 
+  // Reset selected version when phase chat changes
   useEffect(() => {
     setSelectedVersionId(undefined)
   }, [currentPhaseChatId])
 
+  // Reset selected version when live content changes significantly (rollback case)
   useEffect(() => {
     if (!liveContent || !selectedVersionId) return
 
-    const currentContent = Object.values(liveContent).filter(Boolean).join('')
+    const currentContent = [liveContent.requirement?.draft, liveContent.requirement?.final].filter(Boolean).join('')
 
+    // If content changed and we're viewing a specific version, reset to live view
     if (prevLiveContentRef.current && currentContent !== prevLiveContentRef.current) {
       setSelectedVersionId(undefined)
     }
@@ -86,100 +75,75 @@ export function DraftPanel({
     prevLiveContentRef.current = currentContent
   }, [liveContent, selectedVersionId])
 
-  const hasAnyLiveContent = !!(
-    liveContent?.requirement?.draft ||
-    liveContent?.requirement?.final ||
-    liveContent?.prd ||
-    liveContent?.flowchart ||
-    liveContent?.sitemap ||
-    liveContent?.wireframe
-  )
+  // Check if any live content exists
+  const hasAnyLiveContent = !!(liveContent?.requirement?.draft || liveContent?.requirement?.final)
 
+  // Compute effective active tab - include live content in the check
   const hasAnyDocument = hasAnyLiveContent
   const effectiveActiveTab = externalActiveTab ?? internalActiveTab ?? (hasAnyDocument ? 'documents' : 'documents')
 
   const setActiveTab = onActiveTabChange ?? setInternalActiveTab
 
-  const getDocumentContent = (docType: DocumentTabValue): string | undefined => {
+  // Determine which document content to show - from version or live content
+  const getDocumentContent = (phase: 'requirement'): string | undefined => {
+    // If viewing a specific version AND it matches the requested phase, return version content
     if (selectedVersionId) {
       const selectedVersion = versions.find((v) => v.id === selectedVersionId)
-      if (selectedVersion && selectedVersion.metadata?.documentType === docType) {
+      if (selectedVersion && selectedVersion.phase === 'REQUIREMENT') {
         return selectedVersion.content
       }
+      // If version doesn't match requested phase, fall through to live content
     }
 
-    switch (docType) {
-      case 'REQUIREMENT':
-        return liveContent?.requirement?.final || liveContent?.requirement?.draft
-      case 'PRD':
-        return liveContent?.prd
-      case 'FLOWCHART':
-        return liveContent?.flowchart
-      case 'SITEMAP':
-        return liveContent?.sitemap
-      case 'WIREFRAME':
-        return liveContent?.wireframe
-      default:
-        return undefined
+    // Priority 1: Live final content for this phase
+    if (liveContent?.requirement?.final) {
+      return liveContent.requirement.final
     }
+
+    // Priority 2: Live draft content for this phase
+    if (liveContent?.requirement?.draft) {
+      return liveContent.requirement.draft
+    }
+
+    return undefined
   }
 
+  // Dynamic tab list based on available documents
   const documentTabs = [
     {
-      value: 'REQUIREMENT' as DocumentTabValue,
+      value: 'requirement',
       label: 'Requirements',
-      content: getDocumentContent('REQUIREMENT'),
+      content: getDocumentContent('requirement'),
       available: !!(liveContent?.requirement?.draft || liveContent?.requirement?.final),
       icon: FileText,
     },
-    {
-      value: 'PRD' as DocumentTabValue,
-      label: 'PRD',
-      content: getDocumentContent('PRD'),
-      available: !!liveContent?.prd,
-      icon: FileCode,
-    },
-    {
-      value: 'FLOWCHART' as DocumentTabValue,
-      label: 'Flowchart',
-      content: getDocumentContent('FLOWCHART'),
-      available: !!liveContent?.flowchart,
-      icon: Workflow,
-    },
-    {
-      value: 'SITEMAP' as DocumentTabValue,
-      label: 'Sitemap',
-      content: getDocumentContent('SITEMAP'),
-      available: !!liveContent?.sitemap,
-      icon: Map,
-    },
-    {
-      value: 'WIREFRAME' as DocumentTabValue,
-      label: 'Wireframe',
-      content: getDocumentContent('WIREFRAME'),
-      available: !!liveContent?.wireframe,
-      icon: Layout,
-    },
   ]
 
+  // Outer level tabs (with Documents as a single tab)
   const availableTabs = [
     { value: 'documents', label: 'Documents', available: hasAnyDocument, icon: FileText },
     {
       value: 'competitors',
       label: 'Competitors',
-      available: !readOnly,
+      available: !readOnly && currentPhase === 'REQUIREMENT',
       icon: Search,
     },
   ].filter((t) => t.available)
 
+  // Inner document tabs (for the nested tabs inside Documents)
   const availableDocumentTabs = documentTabs.filter((t) => t.available)
 
-  useEffect(() => {
-    if (availableDocumentTabs.length > 0 && !availableDocumentTabs.find((t) => t.value === activeDocumentTab)) {
-      setActiveDocumentTab(availableDocumentTabs[0].value)
-    }
-  }, [availableDocumentTabs, activeDocumentTab])
+  // Compute effective document sub-tab based on current phase
+  const effectiveDocumentTab = 'requirement'
 
+  // Update activeDocumentTab when computed value changes
+  useEffect(() => {
+    if (effectiveDocumentTab !== activeDocumentTab) {
+      setActiveDocumentTab(effectiveDocumentTab)
+    }
+  }, [effectiveDocumentTab])
+
+  // If no tabs available, don't render
   if (availableTabs.length === 0) {
     return null
   }
@@ -188,14 +152,17 @@ export function DraftPanel({
     let content = ''
 
     if (type === 'current') {
+      // When in documents tab, copy the active document sub-tab
       if (effectiveActiveTab === 'documents') {
         const currentDoc = documentTabs.find((t) => t.value === activeDocumentTab)
         content = currentDoc?.content || ''
       }
     } else {
-      const allDocs = documentTabs
-        .filter((doc) => doc.content)
-        .map((doc) => `# ${doc.label}\n\n${doc.content}`)
+      // Copy requirement document
+      const allDocs = [
+        getDocumentContent('requirement') && `# Requirements Analysis Document\n\n${getDocumentContent('requirement')}`,
+      ]
+        .filter(Boolean)
         .join('\n\n---\n\n')
       content = allDocs
     }
@@ -203,7 +170,7 @@ export function DraftPanel({
     if (content) {
       try {
         await navigator.clipboard.writeText(content)
-        toast.success(type === 'current' ? 'Copied current document' : 'Copied all documents')
+        toast.success(type === 'current' ? 'Copied current document' : 'Copied document')
       } catch (err) {
         console.error('Failed to copy text: ', err)
         toast.error('Failed to copy text')
@@ -280,47 +247,49 @@ export function DraftPanel({
                     </PopoverContent>
                   </Popover>
                 )}
+                {/* Fullscreen removed - single phase only */}
               </div>
             </div>
 
             <TabsContent value="documents" className="mt-0 flex h-full flex-col overflow-hidden">
-              <div className="border-border flex items-center justify-between gap-2 border-b px-4">
-                <div className="flex items-center gap-1 overflow-x-auto">
-                  {availableDocumentTabs.map((tab) => (
-                    <button
-                      key={tab.value}
-                      onClick={() => setActiveDocumentTab(tab.value)}
-                      className={`relative flex items-center gap-1.5 whitespace-nowrap px-3 py-2 text-xs font-medium transition-colors ${
-                        activeDocumentTab === tab.value
-                          ? 'text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}>
-                      <tab.icon className="h-3 w-3" />
-                      {tab.label}
-                      {activeDocumentTab === tab.value && (
-                        <div className="bg-primary absolute bottom-0 left-0 right-0 h-0.5" />
-                      )}
-                    </button>
-                  ))}
-                </div>
+              {/* Nested document tabs with version selector */}
+              <div className="border-border flex items-center justify-between gap-1 border-b px-4">
+                {availableDocumentTabs.length > 1 && (
+                  <div className="flex items-center gap-1">
+                    {availableDocumentTabs.map((tab) => (
+                      <button
+                        key={tab.value}
+                        onClick={() => setActiveDocumentTab(tab.value as 'requirement')}
+                        className={`relative flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
+                          activeDocumentTab === tab.value
+                            ? 'text-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}>
+                        {tab.label}
+                        {activeDocumentTab === tab.value && (
+                          <div className="bg-primary absolute bottom-0 left-0 right-0 h-0.5" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {currentPhaseChatId && (
                   <VersionSelector
                     chatId={currentPhaseChatId}
                     selectedVersionId={selectedVersionId}
                     onVersionSelect={setSelectedVersionId}
                     onScrollToMessage={onScrollToMessage}
-                    documentType={activeDocumentTab}
                     className="my-1"
                   />
                 )}
               </div>
+              {/* Document content */}
               <div className="relative flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
                   <div className="relative p-4" data-selection-container>
-                    <DocumentRenderer
-                      key={`${activeDocumentTab}-${selectedVersionId || 'live'}`}
+                    <Markdown
+                      key={`${activeDocumentTab}-${selectedVersionId || 'live'}-content`}
                       content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''}
-                      documentType={activeDocumentTab}
                     />
                     <TextSelectionMenu onQuote={onQuote} />
                   </div>

@@ -7,10 +7,35 @@ export interface ParsedResponse {
   optionType?: OptionType
   draft?: string
   final?: string
+  prd?: string
+  flowchart?: string
+  sitemap?: string
+  wireframe?: string
   input?: { type: string; placeholder: string }
   rawText: string
 }
 export type OptionType = 'single' | 'multiple'
+
+export const DOCUMENT_TAGS = [
+  'draft',
+  'final',
+  'prd',
+  'flowchart',
+  'sitemap',
+  'wireframe',
+  'prose',
+  'question',
+  'options',
+] as const
+
+export const TAG_TO_DOCUMENT_TYPE = {
+  draft: 'REQUIREMENT',
+  final: 'REQUIREMENT',
+  prd: 'PRD',
+  flowchart: 'FLOWCHART',
+  sitemap: 'SITEMAP',
+  wireframe: 'WIREFRAME',
+} as const
 
 /**
  * Remove common leading indentation from all lines while preserving relative indentation.
@@ -116,5 +141,45 @@ export const parseAIResponse = (text: string): ParsedResponse => {
       placeholder: inputMatch[2] || '',
     }
   }
+
+  // Parse PRD document
+  let prdMatch = contentToProcess.match(/<prd>([\s\S]*?)<\/prd>/) || text.match(/<prd>([\s\S]*?)<\/prd>/)
+  if (!prdMatch) {
+    prdMatch = contentToProcess.match(/<prd>([\s\S]*)$/) || text.match(/<prd>([\s\S]*)$/)
+  }
+  if (prdMatch) {
+    result.prd = preserveMarkdownIndent(prdMatch[1])
+  }
+
+  // Parse Flowchart (Mermaid)
+  let flowchartMatch =
+    contentToProcess.match(/<flowchart>([\s\S]*?)<\/flowchart>/) || text.match(/<flowchart>([\s\S]*?)<\/flowchart>/)
+  if (!flowchartMatch) {
+    flowchartMatch = contentToProcess.match(/<flowchart>([\s\S]*)$/) || text.match(/<flowchart>([\s\S]*)$/)
+  }
+  if (flowchartMatch) {
+    result.flowchart = preserveMarkdownIndent(flowchartMatch[1])
+  }
+
+  // Parse Sitemap (Mermaid)
+  let sitemapMatch =
+    contentToProcess.match(/<sitemap>([\s\S]*?)<\/sitemap>/) || text.match(/<sitemap>([\s\S]*?)<\/sitemap>/)
+  if (!sitemapMatch) {
+    sitemapMatch = contentToProcess.match(/<sitemap>([\s\S]*)$/) || text.match(/<sitemap>([\s\S]*)$/)
+  }
+  if (sitemapMatch) {
+    result.sitemap = preserveMarkdownIndent(sitemapMatch[1])
+  }
+
+  // Parse Wireframe (Mermaid)
+  let wireframeMatch =
+    contentToProcess.match(/<wireframe>([\s\S]*?)<\/wireframe>/) || text.match(/<wireframe>([\s\S]*?)<\/wireframe>/)
+  if (!wireframeMatch) {
+    wireframeMatch = contentToProcess.match(/<wireframe>([\s\S]*)$/) || text.match(/<wireframe>([\s\S]*)$/)
+  }
+  if (wireframeMatch) {
+    result.wireframe = preserveMarkdownIndent(wireframeMatch[1])
+  }
+
   return result
 }

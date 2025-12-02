@@ -1,12 +1,22 @@
 import { UIMessage } from 'ai'
 import z from 'zod'
 
+export const documentTypeSchema = z.enum(['REQUIREMENT', 'PRD', 'FLOWCHART', 'SITEMAP', 'WIREFRAME'])
+
+export type DocumentType = z.infer<typeof documentTypeSchema>
+
 export const metadataSchema = z
   .object({
     answered: z.boolean(),
     selectedOptions: z.array(z.string()).optional(),
     inputValue: z.string().optional(),
     answeredAt: z.string().datetime(),
+    isVersionSnapshot: z.boolean().optional(),
+    versionTitle: z.string().optional(),
+    versionType: z.enum(['draft', 'final']).optional(),
+    documentType: documentTypeSchema.optional(),
+    versionGroupId: z.string().uuid().optional(),
+    generatedFrom: z.string().optional(),
   })
   .nullish()
 

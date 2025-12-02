@@ -100,6 +100,12 @@ export function AssistantMessage({
     }
   }
 
+  // Don't render document content in chat messages
+  const hasDocumentContent = parsed.prd || parsed.flowchart || parsed.sitemap || parsed.wireframe
+  if (hasDocumentContent && !parsed.prose && !parsed.question && parsed.options.length === 0) {
+    return null
+  }
+
   return (
     <div className="flex max-w-[85%] flex-col items-end">
       <div className="bg-background space-y-4 rounded-xl border-none p-2.5 shadow-none">
@@ -107,7 +113,7 @@ export function AssistantMessage({
         {parsed.prose && parsed.prose.length > 0 && (
           <div className="text-muted-foreground space-y-2 text-sm">
             {parsed.prose.map((prose, index) => (
-              <Markdown key={index} content={prose} />
+              <Markdown key={index} content={prose} hideMermaid={true} />
             ))}
           </div>
         )}
@@ -115,7 +121,7 @@ export function AssistantMessage({
         {/* Question */}
         {parsed.question && (
           <div className="text-sm font-medium">
-            <Markdown content={parsed.question} />
+            <Markdown content={parsed.question} hideMermaid={true} />
           </div>
         )}
 
@@ -184,7 +190,11 @@ export function AssistantMessage({
           parsed.options.length === 0 &&
           !parsed.draft &&
           !parsed.final &&
-          !parsed.input && <Markdown content={parsed.rawText} className="text-sm" />}
+          !parsed.prd &&
+          !parsed.flowchart &&
+          !parsed.sitemap &&
+          !parsed.wireframe &&
+          !parsed.input && <Markdown content={parsed.rawText} className="text-sm" hideMermaid={true} />}
       </div>
       <div className="mt-1 flex w-full items-center justify-between gap-1 px-2.5">
         {answered && (

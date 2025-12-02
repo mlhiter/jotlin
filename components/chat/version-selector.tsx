@@ -2,6 +2,7 @@
 
 import { History, Check, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -13,13 +14,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { useVersions } from '@/hooks/use-versions'
+import { useVersions, Version } from '@/hooks/use-versions'
+import { DocumentType } from '@/schema/chat'
 
 interface VersionSelectorProps {
   chatId: string
   selectedVersionId?: string
   onVersionSelect: (versionId: string | undefined) => void
   onScrollToMessage?: (messageId: string) => void
+  documentType?: DocumentType
   className?: string
 }
 
@@ -28,12 +31,16 @@ export function VersionSelector({
   selectedVersionId,
   onVersionSelect,
   onScrollToMessage,
+  documentType,
   className,
 }: VersionSelectorProps) {
   const { versions, isLoading } = useVersions(chatId)
   const [openDropdown, setOpenDropdown] = useState(false)
 
-  const currentVersion = versions.find((v) => v.id === selectedVersionId)
+  // Filter versions by document type if provided
+  const filteredVersions = documentType ? versions.filter((v) => v.metadata?.documentType === documentType) : versions
+
+  const currentVersion = filteredVersions.find((v) => v.id === selectedVersionId)
   const isViewingHistory = !!selectedVersionId && selectedVersionId !== versions[0]?.id
 
   const handleVersionClick = (versionId: string) => {
@@ -55,7 +62,7 @@ export function VersionSelector({
   }
 
   // Show disabled button when no versions exist
-  if (versions.length === 0) {
+  if (filteredVersions.length === 0) {
     return (
       <Button
         variant="ghost"
@@ -83,7 +90,7 @@ export function VersionSelector({
       <DropdownMenuContent align="start" className="w-[320px]">
         <DropdownMenuLabel>Version History</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {versions.map((version, index) => {
+        {filteredVersions.map((version, index) => {
           const isSelected = version.id === selectedVersionId
           const isCurrent = index === 0
 
@@ -109,7 +116,7 @@ export function VersionSelector({
             </div>
           )
         })}
-        {versions.length === 0 && (
+        {filteredVersions.length === 0 && (
           <div className="text-muted-foreground py-6 text-center text-sm">No version history</div>
         )}
       </DropdownMenuContent>

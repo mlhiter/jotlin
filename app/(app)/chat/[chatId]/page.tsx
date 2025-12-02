@@ -8,6 +8,7 @@ import { useParams, useSearchParams, notFound } from 'next/navigation'
 import { useState, useEffect, useRef, useMemo } from 'react'
 
 import { ChatInput } from '@/components/chat/chat-input'
+import { GenerateDocumentsButton } from '@/components/chat/generate-documents-button'
 import { MessageList } from '@/components/chat/message-list'
 import { PublicButton } from '@/components/chat/public-button'
 import { PageHeader } from '@/components/page-header'
@@ -257,7 +258,7 @@ export default function ChatIdPage() {
     return true
   })
 
-  // Extract draft/final content from messages
+  // Extract all document content from messages
   const extractContent = (msgs: MyUIMessage[]) => {
     return msgs.reduce(
       (acc, message) => {
@@ -266,46 +267,67 @@ export default function ChatIdPage() {
             if (part.type === 'text') {
               const parsed = parseAIResponse(part.text)
 
-              if (parsed.final) {
-                acc.final = parsed.final
-              }
-              if (parsed.draft) {
-                acc.draft = parsed.draft
-              }
+              if (parsed.final) acc.final = parsed.final
+              if (parsed.draft) acc.draft = parsed.draft
+              if (parsed.prd) acc.prd = parsed.prd
+              if (parsed.flowchart) acc.flowchart = parsed.flowchart
+              if (parsed.sitemap) acc.sitemap = parsed.sitemap
+              if (parsed.wireframe) acc.wireframe = parsed.wireframe
             }
           })
         }
         return acc
       },
-      { draft: undefined as string | undefined, final: undefined as string | undefined }
+      {
+        draft: undefined as string | undefined,
+        final: undefined as string | undefined,
+        prd: undefined as string | undefined,
+        flowchart: undefined as string | undefined,
+        sitemap: undefined as string | undefined,
+        wireframe: undefined as string | undefined,
+      }
     )
   }
 
-  // Calculate live content only for requirement phase
+  // Calculate live content for all document types
   const phaseLiveContent = useMemo(() => {
     if (!projectData) {
       return {
         requirement: { draft: undefined, final: undefined },
+        prd: undefined,
+        flowchart: undefined,
+        sitemap: undefined,
+        wireframe: undefined,
       }
     }
 
-    const result = {
-      requirement: { draft: undefined as string | undefined, final: undefined as string | undefined },
+    // Extract content from current phase chat's messages
+    const currentPhaseChat = projectData.phaseChats.find((pc) => pc.phase === projectData.currentPhase)
+    const messagesToProcess = currentPhaseChat ? messages : []
+
+    const allContent = extractContent(messagesToProcess)
+
+    return {
+      requirement: { draft: allContent.draft, final: allContent.final },
+      prd: allContent.prd,
+      flowchart: allContent.flowchart,
+      sitemap: allContent.sitemap,
+      wireframe: allContent.wireframe,
     }
-
-    // Extract content from requirement phase chat's messages
-    projectData.phaseChats.forEach((phaseChat) => {
-      // For current phase, use live messages state instead of stored messages
-      const isCurrentPhase = phaseChat.phase === projectData.currentPhase
-      const messagesToProcess = isCurrentPhase ? messages : phaseChat.messages || []
-
-      if (phaseChat.phase === 'REQUIREMENT') {
-        result.requirement = extractContent(messagesToProcess)
-      }
-    })
-
-    return result
   }, [projectData, messages])
+
+  // Find the last final requirement message for document generation
+  const lastRequirementMessageId = useMemo(() => {
+    const finalMessages = filteredMessages.filter(
+      (m) => m.role === 'assistant' && m.metadata?.isVersionSnapshot === true && m.metadata?.versionType === 'final'
+    )
+    return finalMessages.length > 0 ? finalMessages[finalMessages.length - 1].id : undefined
+  }, [filteredMessages])
+
+  // Check if documents have been generated
+  const hasGeneratedDocuments = useMemo(() => {
+    return filteredMessages.some((m) => m.metadata?.documentType && m.metadata.documentType !== 'REQUIREMENT')
+  }, [filteredMessages])
 
   // Auto show draft panel when there's content
   useEffect(() => {
@@ -544,6 +566,24 @@ export default function ChatIdPage() {
               onRollback={handleRollback}
               messageRefs={messageRefs}
             />
+
+            {/* Generate Documents Button - shown when requirement is completed but documents not generated */}
+            {lastRequirementMessageId && !hasGeneratedDocuments && (
+              <div className="border-t px-4 py-3">
+                <GenerateDocumentsButton
+                  chatId={actualChatId}
+                  requirementMessageId={lastRequirementMessageId}
+                  onGenerated={() => {
+                    // Refresh messages and show draft panel with documents
+                    queryClient.invalidateQueries({ queryKey: ['versions', actualChatId] })
+                    setDraftActiveTab('documents')
+                    setShowRequirementSidebar(true)
+                    window.location.reload()
+                  }}
+                  disabled={status !== 'ready'}
+                />
+              </div>
+            )}
 
             <ChatInput
               onSendMessage={handleSendMessage}
