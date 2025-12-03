@@ -2,6 +2,35 @@
 
 This document outlines the design system structure, patterns, and conventions used in the Jotlin codebase for AI assistants and developers integrating Figma designs.
 
+## ⚠️ IMPORTANT: Design System Reference
+
+**ALL new UI components and page designs MUST follow the Jotlin Design System.**
+
+📖 **Design System Documentation**: `/DESIGN-SYSTEM.md`
+
+Before implementing any UI components or pages, you MUST:
+1. Read and understand the design principles in `DESIGN-SYSTEM.md`
+2. Follow the specified color system, typography, spacing, and component patterns
+3. Use the provided component specifications and code examples
+4. Check the code review checklist to ensure compliance
+5. Reference the Draft Panel implementation as a gold standard example
+
+**Key Design Principles:**
+- Minimalism: Remove unnecessary decorative elements
+- Refinement: Use delicate borders (40% opacity), subtle backgrounds (20% opacity)
+- Clear Hierarchy: Establish visual hierarchy through size, color, and spacing
+- Smooth Transitions: Fast transitions of 150-200ms
+
+**Do NOT:**
+- Create inconsistent UI components that don't match the design system
+- Use different sizing, spacing, or color patterns than specified
+- Add excessive shadows, gradients, or decorative effects
+- Deviate from the established component patterns without good reason
+
+When in doubt, refer to `/components/chat/draft-panel.tsx` as the reference implementation.
+
+---
+
 ## Project Overview
 
 **Jotlin** is focused on AI-powered requirement document generation. The application helps users create professional requirement analysis documents through conversational AI.
@@ -32,6 +61,8 @@ This document outlines the design system structure, patterns, and conventions us
 
 ## Table of Contents
 
+- [⚠️ IMPORTANT: Design System Reference](#️-important-design-system-reference)
+- [Project Overview](#project-overview)
 - [AI Assistant Guidelines](#ai-assistant-guidelines)
 - [Technology Stack](#technology-stack)
 - [Design Tokens](#design-tokens)
@@ -1045,5 +1076,16 @@ When integrating Figma designs, ensure:
 
 ---
 
-**Last Updated:** 2025-01-19
-**Version:** 1.0.0
+## Related Documentation
+
+- **[Jotlin Design System](/DESIGN-SYSTEM.md)** - Complete design system specifications (MUST READ for UI development)
+- **[Draft Panel Reference](/components/chat/draft-panel.tsx)** - Gold standard implementation example
+
+---
+
+**Last Updated:** 2025-01-26
+**Version:** 1.1.0
+
+**Changelog:**
+- v1.1.0 (2025-01-26): Added Design System reference and requirements
+- v1.0.0 (2025-01-19): Initial version

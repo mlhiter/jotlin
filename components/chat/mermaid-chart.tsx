@@ -179,27 +179,40 @@ export function MermaidChart({ code, className }: MermaidChartProps) {
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={handleCopyCode}>
-          <Copy className="h-3 w-3" />
-          Copy Code
+    <div className="group relative">
+      <div className="absolute right-2 top-2 z-10 flex gap-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleCopyCode}
+          className="h-7 w-7 rounded-md border border-border/40 bg-background/80 backdrop-blur-sm hover:bg-accent"
+          title="Copy Mermaid Code">
+          <Copy className="h-3.5 w-3.5" strokeWidth={1.5} />
         </Button>
-        <Button variant="outline" size="sm" onClick={handleDownloadPNG}>
-          <Download className="h-3 w-3" />
-          Download PNG
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleDownloadPNG}
+          className="h-7 w-7 rounded-md border border-border/40 bg-background/80 backdrop-blur-sm hover:bg-accent"
+          title="Download as PNG">
+          <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
         </Button>
-        <Button variant="outline" size="sm" onClick={handleFullscreen}>
-          <Maximize2 className="h-3 w-3" />
-          Fullscreen
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleFullscreen}
+          className="h-7 w-7 rounded-md border border-border/40 bg-background/80 backdrop-blur-sm hover:bg-accent"
+          title="Toggle Fullscreen">
+          <Maximize2 className="h-3.5 w-3.5" strokeWidth={1.5} />
         </Button>
       </div>
 
       <div
         ref={containerRef}
         className={cn(
-          'mermaid-container overflow-auto rounded-lg border bg-card p-6',
+          'mermaid-container min-h-[500px] overflow-auto rounded-lg border border-border/40 bg-muted/20 p-8',
           '[&_svg]:mx-auto [&_svg]:max-w-full',
+          'transition-all duration-200',
           className
         )}
       />

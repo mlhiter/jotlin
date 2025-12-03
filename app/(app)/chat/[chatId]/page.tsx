@@ -139,6 +139,7 @@ export default function ChatIdPage() {
   }
 
   const [showRequirementSidebar, setShowRequirementSidebar] = useState(false)
+  const [userClosedSidebar, setUserClosedSidebar] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [hasAutoSent, setHasAutoSent] = useState(false)
   const [quotes, setQuotes] = useState<Array<{ id: string; text: string }>>([])
@@ -329,14 +330,14 @@ export default function ChatIdPage() {
     return filteredMessages.some((m) => m.metadata?.documentType && m.metadata.documentType !== 'REQUIREMENT')
   }, [filteredMessages])
 
-  // Auto show draft panel when there's content
+  // Auto show draft panel when there's content (but respect user's manual close)
   useEffect(() => {
     const hasLiveContent = !!(phaseLiveContent.requirement.draft || phaseLiveContent.requirement.final)
 
-    if (hasLiveContent && !showRequirementSidebar) {
+    if (hasLiveContent && !showRequirementSidebar && !userClosedSidebar) {
       setShowRequirementSidebar(true)
     }
-  }, [phaseLiveContent, showRequirementSidebar])
+  }, [phaseLiveContent, showRequirementSidebar, userClosedSidebar])
 
   // Monitor window width
   useEffect(() => {
@@ -578,6 +579,7 @@ export default function ChatIdPage() {
                     queryClient.invalidateQueries({ queryKey: ['versions', actualChatId] })
                     setDraftActiveTab('documents')
                     setShowRequirementSidebar(true)
+                    setUserClosedSidebar(false)
                     window.location.reload()
                   }}
                   disabled={status !== 'ready'}
@@ -606,7 +608,17 @@ export default function ChatIdPage() {
         {/* Right side: DraftPanel */}
         <DraftPanel
           isVisible={showRequirementSidebar}
-          onToggle={() => setShowRequirementSidebar(!showRequirementSidebar)}
+          onToggle={() => {
+            const newState = !showRequirementSidebar
+            setShowRequirementSidebar(newState)
+            // If user is closing the sidebar, mark it as manually closed
+            if (!newState) {
+              setUserClosedSidebar(true)
+            } else {
+              // If user is opening it, reset the flag
+              setUserClosedSidebar(false)
+            }
+          }}
           onQuote={handleQuote}
           chatId={projectData?.rootChatId || chatId}
           currentPhaseChatId={actualChatId}

@@ -197,7 +197,7 @@ Use Mermaid **flowchart** with **subgraphs** to describe the layout structure of
 - Describe component placement, not detailed UI elements
 - Keep it simple and high-level
 - **CRITICAL**: Do NOT use parentheses (), square brackets [], or curly braces {} inside node labels
-- Use line breaks `<br/>` to separate items in lists, NOT parentheses or brackets
+- Use line breaks &lt;br/&gt; to separate items in lists, NOT parentheses or brackets
 - Use hyphens or commas for additional descriptions instead of parentheses
 
 ### Template:
