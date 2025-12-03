@@ -45,7 +45,7 @@ export function ChatList() {
     return (
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-muted/50 h-10 animate-pulse rounded-md" />
+          <div key={i} className="bg-muted/40 h-10 animate-pulse rounded-md" />
         ))}
       </div>
     )
@@ -54,7 +54,7 @@ export function ChatList() {
   if (chats.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
-        <MessageSquare className="text-muted-foreground mb-2 h-8 w-8" />
+        <MessageSquare className="text-muted-foreground mb-2 h-8 w-8" strokeWidth={1.5} />
         <p className="text-muted-foreground text-sm">No chats yet</p>
         <p className="text-muted-foreground mt-1 text-xs">Start a conversation to see your chat history</p>
       </div>
@@ -76,7 +76,7 @@ export function ChatList() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuAction onClick={(e) => e.preventDefault()}>
-                  <MoreHorizontal className="h-3 w-3" />
+                  <MoreHorizontal className="h-3.5 w-3.5" strokeWidth={1.5} />
                   <span className="sr-only">More</span>
                 </SidebarMenuAction>
               </DropdownMenuTrigger>
@@ -85,7 +85,7 @@ export function ChatList() {
                 side={isMobile ? 'bottom' : 'right'}
                 align={isMobile ? 'end' : 'start'}>
                 <DropdownMenuItem onClick={(e) => handleDelete(chat.id, e)}>
-                  <Trash2 className="text-muted-foreground" />
+                  <Trash2 className="text-muted-foreground" strokeWidth={1.5} />
                   <span>Delete</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>

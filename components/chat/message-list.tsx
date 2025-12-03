@@ -124,7 +124,7 @@ export function MessageList({
           {(status === 'submitted' || status === 'streaming') && (
             <div className="flex justify-start gap-4">
               <div className="flex animate-pulse items-center gap-2">
-                <Brain className="text-muted-foreground h-4 w-4" />
+                <Brain className="text-muted-foreground h-4 w-4" strokeWidth={1.5} />
                 <span className="text-muted-foreground text-xs">{'Thinking...'}</span>
               </div>
             </div>
@@ -132,17 +132,17 @@ export function MessageList({
 
           {status === 'error' && (
             <div className="flex justify-start gap-4">
-              <Card className="mr-12 border-red-200 bg-red-50 p-2.5 shadow-none dark:border-red-800 dark:bg-red-950">
+              <Card className="mr-12 border-border/40 bg-muted/20 p-2.5 shadow-none">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-red-600 dark:text-red-400">Failed to get response</span>
+                    <span className="text-muted-foreground text-sm">Failed to get response</span>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={onRetry}
-                    className="h-7 px-2 text-xs text-red-600 hover:bg-transparent hover:text-red-600 dark:text-red-400">
-                    <RefreshCw className="mr-1 h-3 w-3" />
+                    className="text-muted-foreground hover:text-foreground h-7 px-2 text-xs transition-all duration-150">
+                    <RefreshCw className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} />
                     Retry
                   </Button>
                 </div>
@@ -161,8 +161,8 @@ export function MessageList({
             onClick={scrollToBottom}
             size="sm"
             variant="secondary"
-            className="bg-background hover:bg-muted h-8 w-8 rounded-full border p-0 shadow-lg">
-            <ChevronDown className="h-4 w-4" />
+            className="bg-background/95 hover:bg-accent h-8 w-8 rounded-full border border-border/40 p-0 shadow-sm backdrop-blur-sm transition-all duration-150">
+            <ChevronDown className="h-4 w-4" strokeWidth={1.5} />
           </Button>
         </div>
       )}

@@ -266,8 +266,8 @@ export function ChatInput({
             {quotes.map((quote) => (
               <div
                 key={quote.id}
-                className="border-1 border-border bg-muted/30 flex w-48 items-center gap-1 rounded px-2 py-1">
-                <TextAlignStart className="text-accent-foreground/70 h-3 w-3 flex-shrink-0" />
+                className="bg-muted/20 flex w-48 items-center gap-1 rounded-md border border-border/40 px-2 py-1 transition-all duration-150">
+                <TextAlignStart className="text-accent-foreground/70 h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.5} />
                 <div className="text-muted-foreground flex-1 truncate text-xs">{quote.text}</div>
                 {onRemoveQuote && (
                   <Button
@@ -276,7 +276,7 @@ export function ChatInput({
                     variant="ghost"
                     onClick={() => onRemoveQuote(quote.id)}
                     className="h-4 w-4 p-0">
-                    <X className="h-2 w-2 text-neutral-500" />
+                    <X className="h-3 w-3 text-neutral-500" strokeWidth={1.5} />
                   </Button>
                 )}
               </div>
@@ -292,7 +292,7 @@ export function ChatInput({
                 {selectedOptions.map((option, index) => (
                   <div
                     key={`${option.value}-${index}`}
-                    className="border-border bg-accent/30 flex items-center gap-2 rounded border px-2 py-1 text-sm">
+                    className="bg-accent/40 flex items-center gap-2 rounded-md border border-border/40 px-2 py-1 text-sm transition-all duration-150">
                     <span className="text-muted-foreground text-xs font-medium">{option.value}</span>
                     <Button
                       type="button"
@@ -300,7 +300,7 @@ export function ChatInput({
                       variant="ghost"
                       onClick={() => removeOption(option.value)}
                       className="h-4 w-4 p-0">
-                      <X className="h-2 w-2 text-neutral-500" />
+                      <X className="h-3 w-3 text-neutral-500" strokeWidth={1.5} />
                     </Button>
                   </div>
                 ))}
@@ -359,7 +359,7 @@ export function ChatInput({
                       }
                       className="h-8 w-8 p-0"
                       aria-label="Upload image">
-                      <ImageIcon className="h-4 w-4" />
+                      <ImageIcon className="h-4 w-4" strokeWidth={1.5} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top">
@@ -384,9 +384,9 @@ export function ChatInput({
                         className="h-8 w-8 p-0"
                         aria-label="Search competitors">
                         {isSearchingCompetitors ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
                         ) : (
-                          <Target className="h-4 w-4" />
+                          <Target className="h-4 w-4" strokeWidth={1.5} />
                         )}
                       </Button>
                     </TooltipTrigger>
@@ -409,7 +409,11 @@ export function ChatInput({
               disabled={status !== 'streaming' && !input.trim() && selectedOptions.length === 0 && !files}
               size="sm"
               className="h-8 w-8 p-0">
-              {status === 'streaming' ? <Square className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
+              {status === 'streaming' ? (
+                <Square className="h-4 w-4" strokeWidth={1.5} />
+              ) : (
+                <ArrowUp className="h-4 w-4" strokeWidth={1.5} />
+              )}
             </Button>
           </div>
         </div>

@@ -74,7 +74,7 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
     return (
       <div className="flex h-full items-center justify-center p-4">
         <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle className="h-4 w-4" strokeWidth={1.5} />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       </div>
@@ -98,7 +98,7 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
     return (
       <div className="flex h-full items-center justify-center p-4">
         <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle className="h-4 w-4" strokeWidth={1.5} />
           <AlertDescription>Analysis failed: {research.errorMessage || 'Unknown error'}</AlertDescription>
         </Alert>
       </div>
@@ -165,8 +165,8 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
                           href={competitor.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary hover:text-primary/80 shrink-0">
-                          <ExternalLink className="h-4 w-4" />
+                          className="text-primary hover:text-primary/80 shrink-0 transition-colors duration-150">
+                          <ExternalLink className="h-4 w-4" strokeWidth={1.5} />
                         </a>
                       )}
                     </div>
@@ -189,7 +189,7 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
                       {competitor.strengths.length > 0 && (
                         <div>
                           <h4 className="mb-2 flex items-center gap-1 text-xs font-medium">
-                            <CheckCircle2 className="h-3 w-3 text-green-500" />
+                            <CheckCircle2 className="h-3.5 w-3.5 text-green-500" strokeWidth={1.5} />
                             Strengths
                           </h4>
                           <ul className="space-y-1">
@@ -205,7 +205,7 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
                       {competitor.weaknesses.length > 0 && (
                         <div>
                           <h4 className="mb-2 flex items-center gap-1 text-xs font-medium">
-                            <XCircle className="h-3 w-3 text-red-500" />
+                            <XCircle className="h-3.5 w-3.5 text-red-500" strokeWidth={1.5} />
                             Weaknesses
                           </h4>
                           <ul className="space-y-1">
@@ -222,13 +222,13 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
                     <div className="flex items-center gap-4 border-t pt-2 text-xs">
                       {competitor.targetAudience && (
                         <div className="flex items-center gap-1.5">
-                          <Users className="text-muted-foreground h-3 w-3" />
+                          <Users className="text-muted-foreground h-3.5 w-3.5" strokeWidth={1.5} />
                           <span className="text-muted-foreground">{competitor.targetAudience}</span>
                         </div>
                       )}
                       {competitor.pricing && (
                         <div className="flex items-center gap-1.5">
-                          <DollarSign className="text-muted-foreground h-3 w-3" />
+                          <DollarSign className="text-muted-foreground h-3.5 w-3.5" strokeWidth={1.5} />
                           <span className="text-muted-foreground">{competitor.pricing}</span>
                         </div>
                       )}
@@ -243,7 +243,7 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm">
-                  <Target className="h-4 w-4" />
+                  <Target className="h-4 w-4" strokeWidth={1.5} />
                   Common Features
                 </CardTitle>
               </CardHeader>
@@ -265,7 +265,7 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm">
-                  <Lightbulb className="h-4 w-4 text-yellow-500" />
+                  <Lightbulb className="h-4 w-4 text-yellow-500" strokeWidth={1.5} />
                   Market Gaps & Opportunities
                 </CardTitle>
               </CardHeader>
@@ -302,7 +302,7 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-sm">
-                    <TrendingUp className="h-4 w-4 text-blue-500" />
+                    <TrendingUp className="h-4 w-4 text-blue-500" strokeWidth={1.5} />
                     Market Trends
                   </CardTitle>
                 </CardHeader>

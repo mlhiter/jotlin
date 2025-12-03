@@ -73,17 +73,17 @@ export function UserMessage({ parts, onRollback }: UserMessageProps) {
 
   return (
     <div className="flex max-w-[85%] flex-col items-end space-y-2">
-      <div className="bg-muted text-foreground w-fit min-w-8 rounded-xl border-none p-2.5 shadow-none">
+      <div className="bg-muted/40 text-foreground w-fit min-w-8 rounded-lg p-2.5">
         {files.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
             {files.map((file, index) => (
               <div
                 key={`file-${index}`}
-                className="border-border bg-background/50 flex items-center gap-2 rounded-lg border px-3 py-2">
+                className="bg-background/50 flex items-center gap-2 rounded-md border border-border/40 px-3 py-2 transition-all duration-150">
                 {file.type === 'image' ? (
-                  <ImageIcon className="text-primary h-4 w-4 flex-shrink-0" />
+                  <ImageIcon className="text-primary h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
                 ) : (
-                  <FileText className="text-primary h-4 w-4 flex-shrink-0" />
+                  <FileText className="text-primary h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
                 )}
                 <span className="text-foreground truncate text-xs font-medium">{file.name}</span>
               </div>
@@ -95,7 +95,7 @@ export function UserMessage({ parts, onRollback }: UserMessageProps) {
           <div>
             {quotes.map((quote, index) => (
               <div key={`quote-${index}`} className="flex items-center gap-2">
-                <TextAlignStart className="text-accent-foreground/70 h-4 w-4 flex-shrink-0" />
+                <TextAlignStart className="text-accent-foreground/70 h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
                 <div className="text-muted-foreground truncate text-sm leading-relaxed">{quote}</div>
               </div>
             ))}
@@ -107,9 +107,9 @@ export function UserMessage({ parts, onRollback }: UserMessageProps) {
         variant="ghost"
         size="sm"
         onClick={() => onRollback()}
-        className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+        className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs opacity-0 transition-opacity duration-150 group-hover:opacity-100"
         title="Rollback to this message">
-        <RotateCcw className="mr-1 h-4 w-4" />
+        <RotateCcw className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} />
         Rollback
       </Button>
     </div>

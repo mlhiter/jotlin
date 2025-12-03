@@ -108,7 +108,7 @@ export function AssistantMessage({
 
   return (
     <div className="flex max-w-[85%] flex-col items-end">
-      <div className="bg-background space-y-4 rounded-xl border-none p-2.5 shadow-none">
+      <div className="space-y-4 rounded-lg p-2.5">
         {/* Prose */}
         {parsed.prose && parsed.prose.length > 0 && (
           <div className="text-muted-foreground space-y-2 text-sm">
@@ -141,8 +141,8 @@ export function AssistantMessage({
                   <Button
                     key={`${option.value}-${index}`}
                     variant="outline"
-                    className={`h-auto justify-start whitespace-pre-wrap px-4 py-3 text-left ${
-                      isSelected && 'bg-accent'
+                    className={`h-auto justify-start whitespace-pre-wrap border-border/40 px-4 py-3 text-left transition-all duration-150 ${
+                      isSelected && 'bg-accent/80'
                     }`}
                     disabled={answered}
                     onClick={() => {
@@ -151,7 +151,7 @@ export function AssistantMessage({
                     <span className="text-muted-foreground mr-2 text-xs font-medium">{option.value}.</span>
                     <Markdown content={option.text} inline />
                     <div className="flex h-4 w-4 items-center justify-center">
-                      {isSelected && <Check className="h-4 w-4" />}
+                      {isSelected && <Check className="h-4 w-4" strokeWidth={1.5} />}
                     </div>
                   </Button>
                 )
@@ -207,9 +207,9 @@ export function AssistantMessage({
           variant="ghost"
           size="sm"
           onClick={() => onRollback()}
-          className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+          className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs opacity-0 transition-opacity duration-150 group-hover:opacity-100"
           title="Rollback to this message">
-          <RotateCcw className="mr-1 h-4 w-4" />
+          <RotateCcw className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} />
           Rollback
         </Button>
       </div>
