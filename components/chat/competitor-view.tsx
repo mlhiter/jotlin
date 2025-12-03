@@ -41,15 +41,16 @@ export function CompetitorView({ chatId, refreshTrigger }: CompetitorViewProps) 
         const response = await apiClient.get(`/api/chats/${chatId}/competitor-research/latest`)
         setResearch(response.data)
       } catch (err: unknown) {
-        console.error('[CompetitorView] Error loading research:', err)
         if (err && typeof err === 'object' && 'response' in err) {
           const axiosError = err as { response?: { status?: number } }
           if (axiosError.response?.status === 404) {
             setResearch(null)
           } else {
+            console.error('[CompetitorView] Error loading research:', err)
             setError('Failed to load competitor research')
           }
         } else {
+          console.error('[CompetitorView] Error loading research:', err)
           setError('Failed to load competitor research')
         }
       } finally {
