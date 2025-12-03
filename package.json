@@ -3,9 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3001",
-    "dev:turbo": "next dev --turbopack",
-    "build": "next build",
+    "dev": "next dev --port 3001 --turbopack",
+    "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
     "prettier": "prettier --write .",
