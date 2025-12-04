@@ -7,7 +7,7 @@ export interface ParsedResponse {
   optionType?: OptionType
   draft?: string
   final?: string
-  prd?: string
+  productDocument?: string
   flowchart?: string
   sitemap?: string
   wireframe?: string
@@ -19,7 +19,7 @@ export type OptionType = 'single' | 'multiple'
 export const DOCUMENT_TAGS = [
   'draft',
   'final',
-  'prd',
+  'product-document',
   'flowchart',
   'sitemap',
   'wireframe',
@@ -31,7 +31,7 @@ export const DOCUMENT_TAGS = [
 export const TAG_TO_DOCUMENT_TYPE = {
   draft: 'REQUIREMENT',
   final: 'REQUIREMENT',
-  prd: 'PRD',
+  'product-document': 'PRODUCT_DOCUMENT',
   flowchart: 'FLOWCHART',
   sitemap: 'SITEMAP',
   wireframe: 'WIREFRAME',
@@ -142,13 +142,13 @@ export const parseAIResponse = (text: string): ParsedResponse => {
     }
   }
 
-  // Parse PRD document
-  let prdMatch = contentToProcess.match(/<prd>([\s\S]*?)<\/prd>/) || text.match(/<prd>([\s\S]*?)<\/prd>/)
-  if (!prdMatch) {
-    prdMatch = contentToProcess.match(/<prd>([\s\S]*)$/) || text.match(/<prd>([\s\S]*)$/)
+  // Parse Product Document
+  let productDocMatch = contentToProcess.match(/<product-document>([\s\S]*?)<\/product-document>/) || text.match(/<product-document>([\s\S]*?)<\/product-document>/)
+  if (!productDocMatch) {
+    productDocMatch = contentToProcess.match(/<product-document>([\s\S]*)$/) || text.match(/<product-document>([\s\S]*)$/)
   }
-  if (prdMatch) {
-    result.prd = preserveMarkdownIndent(prdMatch[1])
+  if (productDocMatch) {
+    result.productDocument = preserveMarkdownIndent(productDocMatch[1])
   }
 
   // Parse Flowchart (Mermaid)

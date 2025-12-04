@@ -8,7 +8,6 @@ import { useParams, useSearchParams, notFound } from 'next/navigation'
 import { useState, useEffect, useRef, useMemo } from 'react'
 
 import { ChatInput } from '@/components/chat/chat-input'
-import { GenerateDocumentsButton } from '@/components/chat/generate-documents-button'
 import { MessageList } from '@/components/chat/message-list'
 import { PublicButton } from '@/components/chat/public-button'
 import { PageHeader } from '@/components/page-header'
@@ -93,6 +92,26 @@ export default function ChatIdPage() {
     // Get messages up to and including the target message
     const rollbackMessages = messages.slice(0, messageIndex + 1)
 
+    // Get messages that will be deleted
+    const deletedMessages = messages.slice(messageIndex + 1)
+
+    // Check if we're deleting the final requirement or any generated documents
+    const deletedFinalRequirement = deletedMessages.some(
+      (msg) => msg.metadata?.isVersionSnapshot === true && msg.metadata?.versionType === 'final'
+    )
+    const deletedGeneratedDocuments = deletedMessages.some(
+      (msg) => msg.metadata?.documentType && msg.metadata.documentType !== 'REQUIREMENT'
+    )
+
+    // Reset auto-generation flag if we deleted final requirement or generated documents
+    if (deletedFinalRequirement || deletedGeneratedDocuments) {
+      hasTriggeredAutoGeneration.current = false
+      // Force a generation check after state updates
+      setTimeout(() => {
+        setForceCheckGeneration((prev) => prev + 1)
+      }, 100)
+    }
+
     // Update the last message if it's an assistant message - set answered to false
     const updatedMessages = rollbackMessages.map((msg, index) => {
       if (index === rollbackMessages.length - 1 && msg.role === 'assistant') {
@@ -149,6 +168,9 @@ export default function ChatIdPage() {
   const [windowWidth, setWindowWidth] = useState(0)
   const [pendingMessage, setPendingMessage] = useState<string | null>(null)
   const [competitorRefreshTrigger, setCompetitorRefreshTrigger] = useState(0)
+  const [isGeneratingDocuments, setIsGeneratingDocuments] = useState(false)
+  const [forceCheckGeneration, setForceCheckGeneration] = useState(0)
+  const hasTriggeredAutoGeneration = useRef(false)
   const prevSidebarOpenRef = useRef<boolean | null>(null)
   const autoCollapsedRef = useRef(false)
   const userManuallyOpenedRef = useRef(false)
@@ -270,7 +292,7 @@ export default function ChatIdPage() {
 
               if (parsed.final) acc.final = parsed.final
               if (parsed.draft) acc.draft = parsed.draft
-              if (parsed.prd) acc.prd = parsed.prd
+              if (parsed.productDocument) acc.productDocument = parsed.productDocument
               if (parsed.flowchart) acc.flowchart = parsed.flowchart
               if (parsed.sitemap) acc.sitemap = parsed.sitemap
               if (parsed.wireframe) acc.wireframe = parsed.wireframe
@@ -282,7 +304,7 @@ export default function ChatIdPage() {
       {
         draft: undefined as string | undefined,
         final: undefined as string | undefined,
-        prd: undefined as string | undefined,
+        productDocument: undefined as string | undefined,
         flowchart: undefined as string | undefined,
         sitemap: undefined as string | undefined,
         wireframe: undefined as string | undefined,
@@ -295,7 +317,7 @@ export default function ChatIdPage() {
     if (!projectData) {
       return {
         requirement: { draft: undefined, final: undefined },
-        prd: undefined,
+        productDocument: undefined,
         flowchart: undefined,
         sitemap: undefined,
         wireframe: undefined,
@@ -310,7 +332,7 @@ export default function ChatIdPage() {
 
     return {
       requirement: { draft: allContent.draft, final: allContent.final },
-      prd: allContent.prd,
+      productDocument: allContent.productDocument,
       flowchart: allContent.flowchart,
       sitemap: allContent.sitemap,
       wireframe: allContent.wireframe,
@@ -318,11 +340,15 @@ export default function ChatIdPage() {
   }, [projectData, messages])
 
   // Find the last final requirement message for document generation
+  // Use <final> tag detection instead of metadata since backend might not set it correctly
   const lastRequirementMessageId = useMemo(() => {
-    const finalMessages = filteredMessages.filter(
-      (m) => m.role === 'assistant' && m.metadata?.isVersionSnapshot === true && m.metadata?.versionType === 'final'
-    )
-    return finalMessages.length > 0 ? finalMessages[finalMessages.length - 1].id : undefined
+    const messagesWithFinalTag = filteredMessages.filter((m) => {
+      if (m.role !== 'assistant') return false
+      const textPart = m.parts.find((p) => p.type === 'text')
+      return textPart && textPart.text && textPart.text.includes('<final>')
+    })
+
+    return messagesWithFinalTag.length > 0 ? messagesWithFinalTag[messagesWithFinalTag.length - 1].id : undefined
   }, [filteredMessages])
 
   // Check if documents have been generated
@@ -338,6 +364,67 @@ export default function ChatIdPage() {
       setShowRequirementSidebar(true)
     }
   }, [phaseLiveContent, showRequirementSidebar, userClosedSidebar])
+
+  // Auto-generate documents when final requirement is completed
+  useEffect(() => {
+    const autoGenerateDocuments = async () => {
+      if (
+        !lastRequirementMessageId ||
+        hasGeneratedDocuments ||
+        hasTriggeredAutoGeneration.current ||
+        isGeneratingDocuments ||
+        status !== 'ready'
+      ) {
+        return
+      }
+
+      hasTriggeredAutoGeneration.current = true
+      setIsGeneratingDocuments(true)
+
+      // Show draft panel immediately when generation starts
+      setDraftActiveTab('documents')
+      setShowRequirementSidebar(true)
+      setUserClosedSidebar(false)
+
+      try {
+        const response = await apiClient.post(
+          `/api/chats/${actualChatId}/generate-documents`,
+          {
+            requirementMessageId: lastRequirementMessageId,
+          },
+          {
+            timeout: 120000,
+          }
+        )
+
+        if (response.status === 200) {
+          // Refresh messages to load new document messages
+          queryClient.invalidateQueries({ queryKey: ['versions', actualChatId] })
+          window.location.reload()
+        }
+      } catch (error) {
+        console.error('Failed to auto-generate documents:', error)
+        hasTriggeredAutoGeneration.current = false
+      } finally {
+        setIsGeneratingDocuments(false)
+      }
+    }
+
+    autoGenerateDocuments()
+  }, [
+    lastRequirementMessageId,
+    hasGeneratedDocuments,
+    isGeneratingDocuments,
+    status,
+    actualChatId,
+    queryClient,
+    forceCheckGeneration,
+  ])
+
+  // Reset auto-generation flag when switching chats
+  useEffect(() => {
+    hasTriggeredAutoGeneration.current = false
+  }, [chatId])
 
   // Monitor window width
   useEffect(() => {
@@ -568,25 +655,6 @@ export default function ChatIdPage() {
               messageRefs={messageRefs}
             />
 
-            {/* Generate Documents Button - shown when requirement is completed but documents not generated */}
-            {lastRequirementMessageId && !hasGeneratedDocuments && (
-              <div className="border-t px-4 py-3">
-                <GenerateDocumentsButton
-                  chatId={actualChatId}
-                  requirementMessageId={lastRequirementMessageId}
-                  onGenerated={() => {
-                    // Refresh messages and show draft panel with documents
-                    queryClient.invalidateQueries({ queryKey: ['versions', actualChatId] })
-                    setDraftActiveTab('documents')
-                    setShowRequirementSidebar(true)
-                    setUserClosedSidebar(false)
-                    window.location.reload()
-                  }}
-                  disabled={status !== 'ready'}
-                />
-              </div>
-            )}
-
             <ChatInput
               onSendMessage={handleSendMessage}
               onMarkMessageAnswered={handleMarkMessageAnswered}
@@ -628,6 +696,7 @@ export default function ChatIdPage() {
           liveContent={phaseLiveContent}
           competitorRefreshTrigger={competitorRefreshTrigger}
           onScrollToMessage={handleScrollToMessage}
+          isGeneratingDocuments={isGeneratingDocuments}
         />
       </div>
     </div>

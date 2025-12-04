@@ -64,8 +64,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           const docType = versionInfo.documentType.toLowerCase()
           if (docType === 'requirement') {
             content = allContent.final || allContent.draft || ''
-          } else if (docType === 'prd') {
-            content = allContent.prd || ''
+          } else if (docType === 'product_document') {
+            content = allContent.productDocument || ''
           } else if (docType === 'flowchart') {
             content = allContent.flowchart || ''
           } else if (docType === 'sitemap') {

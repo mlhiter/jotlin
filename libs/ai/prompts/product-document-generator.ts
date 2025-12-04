@@ -1,12 +1,12 @@
-export function generatePRDPrompt(requirementContent: string): string {
-  return `You are a professional Product Manager responsible for generating detailed Product Requirements Documents (PRD) based on requirement documents.
+export function generateProductDocumentPrompt(requirementContent: string): string {
+  return `You are a professional Product Manager responsible for generating detailed Product Documents based on requirement documents.
 
 ## Input Content
 Requirement Document:
 ${requirementContent}
 
 ## Output Requirements
-Please generate a complete PRD wrapped in <prd></prd> tags, including the following sections:
+Please generate a complete Product Document wrapped in <product-document></product-document> tags, including the following sections:
 
 ### 1. Product Overview
 - Product positioning
@@ -65,8 +65,8 @@ Use MoSCoW method:
 
 ## Output Format Example
 
-<prd>
-# {Product Name} - Product Requirements Document
+<product-document>
+# {Product Name} - Product Document
 
 ## 1. Product Overview
 
@@ -241,7 +241,7 @@ Use MoSCoW method:
 **Owner**: Product Team
 **Status**: Draft/Approved/In Development
 
-</prd>
+</product-document>
 
 ## Important Guidelines
 
@@ -259,5 +259,5 @@ Use MoSCoW method:
 
 7. **Complete**: Cover all aspects from functionality to risks to success metrics.
 
-Now, please generate the PRD based on the requirement document provided above. Wrap your output in <prd></prd> tags.`
+Now, please generate the Product Document based on the requirement document provided above. Wrap your output in <product-document></product-document> tags.`
 }

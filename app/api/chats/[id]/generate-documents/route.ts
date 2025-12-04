@@ -73,12 +73,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       {
         chatId,
         role: 'assistant' as const,
-        parts: [{ type: 'text', text: `<prd>${documents.prd}</prd>` }],
+        parts: [{ type: 'text', text: `<product-document>${documents.productDocument}</product-document>` }],
         metadata: {
           isVersionSnapshot: true,
-          versionTitle: extractDocumentTitle(documents.prd, 'PRD'),
+          versionTitle: extractDocumentTitle(documents.productDocument, 'PRODUCT_DOCUMENT'),
           versionType: 'final',
-          documentType: 'PRD',
+          documentType: 'PRODUCT_DOCUMENT',
           versionGroupId,
           generatedFrom: requirementMessageId,
           answered: true,

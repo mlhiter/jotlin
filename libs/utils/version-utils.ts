@@ -40,7 +40,7 @@ export function extractTitle(markdown: string): string {
 export function extractDocumentContent(parts: any): {
   draft?: string
   final?: string
-  prd?: string
+  productDocument?: string
   flowchart?: string
   sitemap?: string
   wireframe?: string
@@ -51,7 +51,7 @@ export function extractDocumentContent(parts: any): {
 
   let draft: string | undefined
   let final: string | undefined
-  let prd: string | undefined
+  let productDocument: string | undefined
   let flowchart: string | undefined
   let sitemap: string | undefined
   let wireframe: string | undefined
@@ -61,14 +61,14 @@ export function extractDocumentContent(parts: any): {
       const parsed = parseAIResponse(part.text)
       if (parsed.draft) draft = parsed.draft
       if (parsed.final) final = parsed.final
-      if (parsed.prd) prd = parsed.prd
+      if (parsed.productDocument) productDocument = parsed.productDocument
       if (parsed.flowchart) flowchart = parsed.flowchart
       if (parsed.sitemap) sitemap = parsed.sitemap
       if (parsed.wireframe) wireframe = parsed.wireframe
     }
   }
 
-  return { draft, final, prd, flowchart, sitemap, wireframe }
+  return { draft, final, productDocument, flowchart, sitemap, wireframe }
 }
 
 /**
@@ -129,14 +129,14 @@ export function createVersionGroupId(): string {
 export function extractDocumentTitle(content: string, documentType: DocumentType): string {
   const defaultTitles: Record<DocumentType, string> = {
     REQUIREMENT: 'Requirement Document',
-    PRD: 'Product Requirements Document',
+    PRODUCT_DOCUMENT: 'Product Document',
     FLOWCHART: 'Business Flowchart',
     SITEMAP: 'Site Structure Map',
     WIREFRAME: 'UI Wireframe',
   }
 
-  // For Requirement and PRD, try to extract from content
-  if (documentType === 'REQUIREMENT' || documentType === 'PRD') {
+  // For Requirement and Product Document, try to extract from content
+  if (documentType === 'REQUIREMENT' || documentType === 'PRODUCT_DOCUMENT') {
     return extractTitle(content)
   }
 

@@ -1,7 +1,7 @@
 import { createOpenAI } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 
-import { generatePRDPrompt } from '@/libs/ai/prompts/prd-generator'
+import { generateProductDocumentPrompt } from '@/libs/ai/prompts/product-document-generator'
 import {
   generateFlowchartPrompt,
   generateSitemapPrompt,
@@ -15,7 +15,7 @@ const openai = createOpenAI({
 })
 
 export interface GeneratedDocuments {
-  prd: string
+  productDocument: string
   flowchart: string
   sitemap: string
   wireframe: string
@@ -25,13 +25,13 @@ export class DocumentGenerationService {
   private model = openai('gpt-4o')
 
   /**
-   * Generate PRD document based on requirement content
+   * Generate Product Document based on requirement content
    * @param requirementContent - The final requirement document content
-   * @returns PRD document content
+   * @returns Product Document content
    */
-  async generatePRD(requirementContent: string): Promise<string> {
+  async generateProductDocument(requirementContent: string): Promise<string> {
     try {
-      const prompt = generatePRDPrompt(requirementContent)
+      const prompt = generateProductDocumentPrompt(requirementContent)
 
       const { text } = await generateText({
         model: this.model,
@@ -42,23 +42,23 @@ export class DocumentGenerationService {
 
       const parsed = parseAIResponse(text)
 
-      if (!parsed.prd) {
-        throw new Error('Failed to extract PRD content from AI response')
+      if (!parsed.productDocument) {
+        throw new Error('Failed to extract Product Document content from AI response')
       }
 
-      return parsed.prd
+      return parsed.productDocument
     } catch (error) {
-      console.error('Error generating PRD:', error)
-      throw new Error(`PRD generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Error generating Product Document:', error)
+      throw new Error(`Product Document generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
   /**
-   * Generate flowchart diagram based on requirement and PRD
+   * Generate flowchart diagram based on requirement and Product Document
    */
-  async generateFlowchart(requirementContent: string, prdContent: string): Promise<string> {
+  async generateFlowchart(requirementContent: string, productDocContent: string): Promise<string> {
     try {
-      const prompt = generateFlowchartPrompt(requirementContent, prdContent)
+      const prompt = generateFlowchartPrompt(requirementContent, productDocContent)
 
       console.log('[DEBUG] Generating flowchart...')
       const { text } = await generateText({
@@ -84,11 +84,11 @@ export class DocumentGenerationService {
   }
 
   /**
-   * Generate sitemap diagram based on requirement and PRD
+   * Generate sitemap diagram based on requirement and Product Document
    */
-  async generateSitemap(requirementContent: string, prdContent: string): Promise<string> {
+  async generateSitemap(requirementContent: string, productDocContent: string): Promise<string> {
     try {
-      const prompt = generateSitemapPrompt(requirementContent, prdContent)
+      const prompt = generateSitemapPrompt(requirementContent, productDocContent)
 
       console.log('[DEBUG] Generating sitemap...')
       const { text } = await generateText({
@@ -114,11 +114,11 @@ export class DocumentGenerationService {
   }
 
   /**
-   * Generate wireframe diagram based on requirement and PRD
+   * Generate wireframe diagram based on requirement and Product Document
    */
-  async generateWireframe(requirementContent: string, prdContent: string): Promise<string> {
+  async generateWireframe(requirementContent: string, productDocContent: string): Promise<string> {
     try {
-      const prompt = generateWireframePrompt(requirementContent, prdContent)
+      const prompt = generateWireframePrompt(requirementContent, productDocContent)
 
       console.log('[DEBUG] Generating wireframe...')
       const { text } = await generateText({
@@ -144,7 +144,7 @@ export class DocumentGenerationService {
   }
 
   /**
-   * Generate all documents (PRD + design diagrams) in sequence
+   * Generate all documents (Product Document first, then design diagrams in parallel)
    * @param requirementContent - The requirement document content
    * @returns All generated documents
    */
@@ -152,26 +152,22 @@ export class DocumentGenerationService {
     try {
       console.log('[DEBUG] Starting document generation sequence...')
 
-      // Round 1: Generate PRD
-      console.log('[DEBUG] Step 1/4: Generating PRD...')
-      const prd = await this.generatePRD(requirementContent)
-      console.log('[DEBUG] PRD generated, length:', prd.length)
+      // Step 1: Generate Product Document (must be first as others depend on it)
+      console.log('[DEBUG] Step 1/4: Generating Product Document...')
+      const productDocument = await this.generateProductDocument(requirementContent)
+      console.log('[DEBUG] Product Document generated, length:', productDocument.length)
 
-      // Round 2: Generate flowchart
-      console.log('[DEBUG] Step 2/4: Generating flowchart...')
-      const flowchart = await this.generateFlowchart(requirementContent, prd)
-
-      // Round 3: Generate sitemap
-      console.log('[DEBUG] Step 3/4: Generating sitemap...')
-      const sitemap = await this.generateSitemap(requirementContent, prd)
-
-      // Round 4: Generate wireframe
-      console.log('[DEBUG] Step 4/4: Generating wireframe...')
-      const wireframe = await this.generateWireframe(requirementContent, prd)
+      // Step 2-4: Generate design diagrams in parallel (all depend only on requirement + product doc)
+      console.log('[DEBUG] Step 2-4: Generating design diagrams in parallel...')
+      const [flowchart, sitemap, wireframe] = await Promise.all([
+        this.generateFlowchart(requirementContent, productDocument),
+        this.generateSitemap(requirementContent, productDocument),
+        this.generateWireframe(requirementContent, productDocument),
+      ])
 
       console.log('[DEBUG] All documents generated successfully')
       return {
-        prd,
+        productDocument,
         flowchart,
         sitemap,
         wireframe,

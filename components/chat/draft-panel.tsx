@@ -26,7 +26,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 import { useVersions } from '@/hooks/use-versions'
 
-type DocumentTabValue = 'REQUIREMENT' | 'PRD' | 'FLOWCHART' | 'SITEMAP' | 'WIREFRAME'
+type DocumentTabValue = 'REQUIREMENT' | 'PRODUCT_DOCUMENT' | 'FLOWCHART' | 'SITEMAP' | 'WIREFRAME'
 
 interface DraftPanelProps {
   isVisible?: boolean
@@ -39,7 +39,7 @@ interface DraftPanelProps {
   currentPhase?: 'REQUIREMENT' | null
   liveContent?: {
     requirement?: { draft?: string; final?: string }
-    prd?: string
+    productDocument?: string
     flowchart?: string
     sitemap?: string
     wireframe?: string
@@ -47,6 +47,7 @@ interface DraftPanelProps {
   readOnly?: boolean
   competitorRefreshTrigger?: number
   onScrollToMessage?: (messageId: string) => void
+  isGeneratingDocuments?: boolean
 }
 
 export function DraftPanel({
@@ -60,6 +61,7 @@ export function DraftPanel({
   readOnly = false,
   competitorRefreshTrigger = 0,
   onScrollToMessage,
+  isGeneratingDocuments = false,
 }: DraftPanelProps) {
   const [internalActiveTab, setInternalActiveTab] = useState<string | null>(null)
   const [activeDocumentTab, setActiveDocumentTab] = useState<DocumentTabValue>('REQUIREMENT')
@@ -89,13 +91,13 @@ export function DraftPanel({
   const hasAnyLiveContent = !!(
     liveContent?.requirement?.draft ||
     liveContent?.requirement?.final ||
-    liveContent?.prd ||
+    liveContent?.productDocument ||
     liveContent?.flowchart ||
     liveContent?.sitemap ||
     liveContent?.wireframe
   )
 
-  const hasAnyDocument = hasAnyLiveContent
+  const hasAnyDocument = hasAnyLiveContent || isGeneratingDocuments
   const effectiveActiveTab = externalActiveTab ?? internalActiveTab ?? (hasAnyDocument ? 'documents' : 'documents')
 
   const setActiveTab = onActiveTabChange ?? setInternalActiveTab
@@ -111,8 +113,8 @@ export function DraftPanel({
     switch (docType) {
       case 'REQUIREMENT':
         return liveContent?.requirement?.final || liveContent?.requirement?.draft
-      case 'PRD':
-        return liveContent?.prd
+      case 'PRODUCT_DOCUMENT':
+        return liveContent?.productDocument
       case 'FLOWCHART':
         return liveContent?.flowchart
       case 'SITEMAP':
@@ -133,31 +135,31 @@ export function DraftPanel({
       icon: FileText,
     },
     {
-      value: 'PRD' as DocumentTabValue,
-      label: 'PRD',
-      content: getDocumentContent('PRD'),
-      available: !!liveContent?.prd,
+      value: 'PRODUCT_DOCUMENT' as DocumentTabValue,
+      label: 'Product Doc',
+      content: getDocumentContent('PRODUCT_DOCUMENT'),
+      available: !!liveContent?.productDocument || isGeneratingDocuments,
       icon: FileCode,
     },
     {
       value: 'FLOWCHART' as DocumentTabValue,
       label: 'Flowchart',
       content: getDocumentContent('FLOWCHART'),
-      available: !!liveContent?.flowchart,
+      available: !!liveContent?.flowchart || isGeneratingDocuments,
       icon: Workflow,
     },
     {
       value: 'SITEMAP' as DocumentTabValue,
       label: 'Sitemap',
       content: getDocumentContent('SITEMAP'),
-      available: !!liveContent?.sitemap,
+      available: !!liveContent?.sitemap || isGeneratingDocuments,
       icon: Map,
     },
     {
       value: 'WIREFRAME' as DocumentTabValue,
       label: 'Wireframe',
       content: getDocumentContent('WIREFRAME'),
-      available: !!liveContent?.wireframe,
+      available: !!liveContent?.wireframe || isGeneratingDocuments,
       icon: Layout,
     },
   ]
@@ -350,7 +352,11 @@ export function DraftPanel({
                             <span className="truncate text-[13px] font-medium">{tab.label}</span>
                             <div
                               className={`h-1 w-1 shrink-0 rounded-full transition-colors ${
-                                tab.content ? 'bg-green-500/80' : 'animate-pulse bg-amber-400/80'
+                                tab.content
+                                  ? 'bg-green-500/80'
+                                  : isGeneratingDocuments && tab.value !== 'REQUIREMENT'
+                                    ? 'animate-pulse bg-amber-400/80'
+                                    : 'bg-muted-foreground/30'
                               }`}
                             />
                           </div>
@@ -375,14 +381,21 @@ export function DraftPanel({
                             <>
                               <currentTab.icon className="text-muted-foreground/70 h-4 w-4" strokeWidth={1.5} />
                               <span className="text-foreground text-sm font-medium">{currentTab.label}</span>
-                              {currentTab.content && (
+                              {currentTab.content ? (
                                 <div className="ml-1 flex items-center gap-1 rounded-full bg-green-500/10 px-1.5 py-0.5">
                                   <div className="h-1 w-1 rounded-full bg-green-500" />
                                   <span className="text-[10px] font-medium text-green-700 dark:text-green-400">
                                     Ready
                                   </span>
                                 </div>
-                              )}
+                              ) : isGeneratingDocuments && currentTab.value !== 'REQUIREMENT' ? (
+                                <div className="ml-1 flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5">
+                                  <div className="h-1 w-1 animate-pulse rounded-full bg-amber-500" />
+                                  <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">
+                                    Generating
+                                  </span>
+                                </div>
+                              ) : null}
                             </>
                           )}
                         </>

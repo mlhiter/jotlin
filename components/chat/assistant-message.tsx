@@ -101,7 +101,7 @@ export function AssistantMessage({
   }
 
   // Don't render document content in chat messages
-  const hasDocumentContent = parsed.prd || parsed.flowchart || parsed.sitemap || parsed.wireframe
+  const hasDocumentContent = parsed.productDocument || parsed.flowchart || parsed.sitemap || parsed.wireframe
   if (hasDocumentContent && !parsed.prose && !parsed.question && parsed.options.length === 0) {
     return null
   }
@@ -190,7 +190,7 @@ export function AssistantMessage({
           parsed.options.length === 0 &&
           !parsed.draft &&
           !parsed.final &&
-          !parsed.prd &&
+          !parsed.productDocument &&
           !parsed.flowchart &&
           !parsed.sitemap &&
           !parsed.wireframe &&

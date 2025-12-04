@@ -1,7 +1,7 @@
 import { UIMessage } from 'ai'
 import z from 'zod'
 
-export const documentTypeSchema = z.enum(['REQUIREMENT', 'PRD', 'FLOWCHART', 'SITEMAP', 'WIREFRAME'])
+export const documentTypeSchema = z.enum(['REQUIREMENT', 'PRODUCT_DOCUMENT', 'FLOWCHART', 'SITEMAP', 'WIREFRAME'])
 
 export type DocumentType = z.infer<typeof documentTypeSchema>
 
