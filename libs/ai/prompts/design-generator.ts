@@ -185,17 +185,18 @@ ${prdContent}
 
 ## Output Requirements
 
-Please generate ONE Mermaid diagram to visualize the layout structure of key pages.
+Please generate ONE comprehensive Mermaid diagram that includes the layout structure of **AT LEAST 3 key pages**. Each page should be a separate top-level subgraph showing its complete layout structure.
 
 ## UI Wireframe
 
 Use Mermaid **flowchart** with **subgraphs** to describe the layout structure of key pages.
 
 ### Guidelines:
-- Show 2-3 most important page layouts (e.g., Dashboard, Main Feature Page, Document View)
-- Use subgraphs to represent different layout sections (Header, Sidebar, Main Content, Footer)
+- **MUST show at least 3 most important page layouts** (e.g., Landing/Login, Dashboard, Main Feature Page)
+- Each page should be represented as a separate top-level subgraph
+- Use nested subgraphs within each page to represent layout sections (Header, Sidebar, Main Content, Footer)
 - Describe component placement, not detailed UI elements
-- Keep it simple and high-level
+- Keep each page layout simple and high-level
 - **CRITICAL**: Do NOT use parentheses (), square brackets [], or curly braces {} inside node labels
 - Use line breaks &lt;br/&gt; to separate items in lists, NOT parentheses or brackets
 - Use hyphens or commas for additional descriptions instead of parentheses
@@ -205,54 +206,106 @@ Use Mermaid **flowchart** with **subgraphs** to describe the layout structure of
 <wireframe>
 \`\`\`mermaid
 flowchart TB
-    subgraph Header["页面头部 (Header)"]
-        Logo[Logo] --- Nav[导航菜单] --- UserMenu[用户菜单]
-    end
+    subgraph Page1["页面 1: 登录页/首页"]
+        direction TB
 
-    subgraph MainLayout["主要布局区"]
-        direction LR
-
-        subgraph Sidebar["左侧边栏"]
-            ProjectList[项目列表<br/>- 当前项目<br/>- 历史项目<br/>- 新建按钮]
+        subgraph P1_Header["头部区域"]
+            P1_Logo[Logo和品牌名称]
+            P1_Nav[导航链接<br/>- 功能介绍<br/>- 定价<br/>- 帮助]
         end
 
-        subgraph Content["中间内容区"]
-            ChatArea[AI 对话区域<br/>- 消息列表<br/>- 输入框<br/>- 文件上传]
+        subgraph P1_Main["主内容区"]
+            P1_Hero[Hero 区域<br/>标题和副标题<br/>CTA 按钮]
+            P1_LoginForm[登录表单<br/>- 邮箱输入<br/>- 密码输入<br/>- 登录按钮<br/>- 注册链接]
         end
 
-        subgraph RightPanel["右侧面板"]
-            DocTabs[文档标签页<br/>- 需求文档<br/>- PRD<br/>- 流程图<br/>- 结构图<br/>- 线框图]
-            VersionSelect[版本选择器]
-            PreviewArea[文档预览区<br/>Markdown 渲染<br/>或 Mermaid 图表]
-            Actions[操作按钮<br/>- 复制<br/>- 导出<br/>- 分享]
+        subgraph P1_Footer["底部区域"]
+            P1_Links[链接和版权信息]
         end
 
-        Sidebar -.-> Content
-        Content -.-> RightPanel
+        P1_Header --> P1_Main
+        P1_Main --> P1_Footer
     end
 
-    subgraph Footer["页面底部 (Footer)"]
-        Copyright[版权信息] --- Links[帮助链接] --- Social[社交媒体]
+    subgraph Page2["页面 2: 工作台/Dashboard"]
+        direction TB
+
+        subgraph P2_Header["顶部导航栏"]
+            P2_Logo[Logo]
+            P2_Search[搜索框]
+            P2_UserMenu[用户菜单]
+        end
+
+        subgraph P2_Layout["主布局区"]
+            direction LR
+
+            subgraph P2_Sidebar["左侧边栏"]
+                P2_Menu[导航菜单<br/>- 项目列表<br/>- 创建新项目<br/>- 历史记录<br/>- 设置]
+            end
+
+            subgraph P2_Content["中间内容区"]
+                P2_ProjectGrid[项目卡片网格<br/>- 项目缩略图<br/>- 项目名称<br/>- 更新时间<br/>- 快捷操作]
+                P2_Actions[操作按钮<br/>新建项目按钮<br/>筛选和排序]
+            end
+
+            P2_Sidebar -.-> P2_Content
+        end
+
+        P2_Header --> P2_Layout
     end
 
-    Header --> MainLayout
-    MainLayout --> Footer
+    subgraph Page3["页面 3: 主功能页"]
+        direction TB
 
-    style Header fill:#e3f2fd
-    style Sidebar fill:#f3e5f5
-    style Content fill:#e8f5e9
-    style RightPanel fill:#fff9c4
-    style Footer fill:#fce4ec
+        subgraph P3_Header["顶部栏"]
+            P3_Logo[Logo和导航]
+            P3_ProjectName[当前项目名称]
+            P3_UserMenu[用户菜单]
+        end
+
+        subgraph P3_Layout["三栏布局"]
+            direction LR
+
+            subgraph P3_Left["左侧栏"]
+                P3_ProjectList[项目列表<br/>- 当前项目<br/>- 最近项目<br/>- 切换项目]
+            end
+
+            subgraph P3_Center["中间主区域"]
+                P3_MainContent[核心功能区<br/>- 输入区域<br/>- 内容展示区<br/>- 交互控件]
+                P3_Toolbar[工具栏<br/>常用操作按钮]
+            end
+
+            subgraph P3_Right["右侧面板"]
+                P3_Tabs[标签页切换<br/>- 文档<br/>- 设置<br/>- 历史]
+                P3_Preview[预览区域<br/>实时预览<br/>或辅助信息]
+                P3_Actions[操作按钮组<br/>- 保存<br/>- 导出<br/>- 分享]
+            end
+
+            P3_Left -.-> P3_Center
+            P3_Center -.-> P3_Right
+        end
+
+        P3_Header --> P3_Layout
+    end
+
+    style Page1 fill:#fff9c4
+    style Page2 fill:#e8f5e9
+    style Page3 fill:#e3f2fd
+    style P1_Main fill:#ffecb3
+    style P2_Content fill:#c8e6c9
+    style P3_Center fill:#bbdefb
 \`\`\`
 </wireframe>
 
 ## Important Guidelines
 
-1. **Accuracy**: Base the diagram on the provided requirement and PRD documents. Do not invent features or layouts not mentioned.
-2. **Simplicity**: Keep the diagram focused on 2-3 most important pages. Use subgraphs for different sections.
-3. **Chinese Labels**: Use Chinese for all component and section labels.
-4. **Mermaid Syntax**: Ensure the Mermaid code is syntactically correct and will render properly.
-5. **Completeness**: Generate a complete, valid Mermaid wireframe diagram.
+1. **Multiple Pages Required**: You MUST generate wireframes for at least 3 most important pages. Each page should be a separate top-level subgraph.
+2. **Accuracy**: Base the diagram on the provided requirement and PRD documents. Do not invent features or layouts not mentioned.
+3. **Page Selection**: Choose the 3-4 most critical pages for the user journey (e.g., Landing/Login, Dashboard/Main, Core Feature Page, Settings/Profile).
+4. **Nested Structure**: Each page should contain nested subgraphs for layout sections (Header, Sidebar, Content, Footer, etc.).
+5. **Chinese Labels**: Use Chinese for all component and section labels.
+6. **Mermaid Syntax**: Ensure the Mermaid code is syntactically correct and will render properly.
+7. **Completeness**: Generate a complete, valid Mermaid wireframe diagram with all pages.
 
 ## Output Format
 
