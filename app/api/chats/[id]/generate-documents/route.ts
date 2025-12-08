@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSessionFromRequest } from '@/libs/auth/auth'
 import { documentGenerationService } from '@/libs/services/document-generation-service'
 import { prisma } from '@/libs/utils/prisma'
-import { createVersionGroupId, extractDocumentTitle } from '@/libs/utils/version-utils'
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -44,11 +43,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Requirement message not found' }, { status: 404 })
     }
 
-    const requirementMetadata = requirementMessage.metadata as any
-    if (!requirementMetadata?.isVersionSnapshot) {
-      return NextResponse.json({ error: 'Message is not a version snapshot' }, { status: 400 })
-    }
-
     const requirementParts = requirementMessage.parts as any[]
     const requirementText = requirementParts.find((p) => p.type === 'text')?.text || ''
 
@@ -58,7 +52,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const documents = await documentGenerationService.generateAllDocuments(requirementText)
 
-    const versionGroupId = createVersionGroupId()
     const now = new Date()
 
     const maxOrder = await prisma.message.findFirst({
@@ -75,12 +68,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         role: 'assistant' as const,
         parts: [{ type: 'text', text: `<product-document>${documents.productDocument}</product-document>` }],
         metadata: {
-          isVersionSnapshot: true,
-          versionTitle: extractDocumentTitle(documents.productDocument, 'PRODUCT_DOCUMENT'),
-          versionType: 'final',
-          documentType: 'PRODUCT_DOCUMENT',
-          versionGroupId,
-          generatedFrom: requirementMessageId,
           answered: true,
           answeredAt: now.toISOString(),
         },
@@ -92,12 +79,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         role: 'assistant' as const,
         parts: [{ type: 'text', text: `<flowchart>${documents.flowchart}</flowchart>` }],
         metadata: {
-          isVersionSnapshot: true,
-          versionTitle: 'Business Flowchart',
-          versionType: 'final',
-          documentType: 'FLOWCHART',
-          versionGroupId,
-          generatedFrom: requirementMessageId,
           answered: true,
           answeredAt: now.toISOString(),
         },
@@ -109,12 +90,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         role: 'assistant' as const,
         parts: [{ type: 'text', text: `<sitemap>${documents.sitemap}</sitemap>` }],
         metadata: {
-          isVersionSnapshot: true,
-          versionTitle: 'Site Structure Map',
-          versionType: 'final',
-          documentType: 'SITEMAP',
-          versionGroupId,
-          generatedFrom: requirementMessageId,
           answered: true,
           answeredAt: now.toISOString(),
         },
@@ -126,12 +101,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         role: 'assistant' as const,
         parts: [{ type: 'text', text: `<wireframe>${documents.wireframe}</wireframe>` }],
         metadata: {
-          isVersionSnapshot: true,
-          versionTitle: 'UI Wireframe',
-          versionType: 'final',
-          documentType: 'WIREFRAME',
-          versionGroupId,
-          generatedFrom: requirementMessageId,
           answered: true,
           answeredAt: now.toISOString(),
         },
@@ -151,7 +120,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({
       success: true,
-      versionGroupId,
       documentsGenerated: 4,
     })
   } catch (error) {

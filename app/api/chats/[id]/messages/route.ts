@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { getSessionFromRequest } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
-import { extractDraftContent, createVersionMetadata } from '@/libs/utils/version-utils'
 import { MyUIMessage } from '@/schema/chat'
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -40,32 +39,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         where: { chatId },
       })
 
-      // Save new messages with version metadata
+      // Save new messages
       if (messages.length > 0) {
         await tx.message.createMany({
-          data: messages.map((msg, index) => {
-            let metadata = msg.metadata as InputJsonValue
-
-            // Mark all assistant messages that contain draft/final as version snapshots
-            if (msg.role === 'assistant' && chat.phase) {
-              const { draft, final } = extractDraftContent(msg.parts)
-              const content = final || draft
-
-              if (content) {
-                const type = final ? 'final' : 'draft'
-                metadata = createVersionMetadata(content, type, chat.phase) as InputJsonValue
-              }
-            }
-
-            return {
-              id: msg.id,
-              role: msg.role,
-              parts: msg.parts as InputJsonValue,
-              metadata,
-              chatId,
-              order: index,
-            }
-          }),
+          data: messages.map((msg, index) => ({
+            id: msg.id,
+            role: msg.role,
+            parts: msg.parts as InputJsonValue,
+            metadata: msg.metadata as InputJsonValue,
+            chatId,
+            order: index,
+          })),
         })
       }
     })

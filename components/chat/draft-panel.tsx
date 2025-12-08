@@ -18,13 +18,10 @@ import { toast } from 'sonner'
 import { CompetitorView } from '@/components/chat/competitor-view'
 import { DocumentRenderer } from '@/components/chat/document-renderer'
 import { TextSelectionMenu } from '@/components/chat/text-selection-menu'
-import { VersionSelector } from '@/components/chat/version-selector'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-
-import { useVersions } from '@/hooks/use-versions'
 
 type DocumentTabValue = 'REQUIREMENT' | 'PRODUCT_DOCUMENT' | 'FLOWCHART' | 'SITEMAP' | 'WIREFRAME'
 
@@ -65,28 +62,7 @@ export function DraftPanel({
 }: DraftPanelProps) {
   const [internalActiveTab, setInternalActiveTab] = useState<string | null>(null)
   const [activeDocumentTab, setActiveDocumentTab] = useState<DocumentTabValue>('REQUIREMENT')
-  const [selectedVersionId, setSelectedVersionId] = useState<string | undefined>(undefined)
   const [isNavCollapsed, setIsNavCollapsed] = useState(false)
-
-  const { versions } = useVersions(currentPhaseChatId)
-
-  const prevLiveContentRef = useRef<string>('')
-
-  useEffect(() => {
-    setSelectedVersionId(undefined)
-  }, [currentPhaseChatId])
-
-  useEffect(() => {
-    if (!liveContent || !selectedVersionId) return
-
-    const currentContent = Object.values(liveContent).filter(Boolean).join('')
-
-    if (prevLiveContentRef.current && currentContent !== prevLiveContentRef.current) {
-      setSelectedVersionId(undefined)
-    }
-
-    prevLiveContentRef.current = currentContent
-  }, [liveContent, selectedVersionId])
 
   const hasAnyLiveContent = !!(
     liveContent?.requirement?.draft ||
@@ -103,13 +79,6 @@ export function DraftPanel({
   const setActiveTab = onActiveTabChange ?? setInternalActiveTab
 
   const getDocumentContent = (docType: DocumentTabValue): string | undefined => {
-    if (selectedVersionId) {
-      const selectedVersion = versions.find((v) => v.id === selectedVersionId)
-      if (selectedVersion && selectedVersion.phase === docType) {
-        return selectedVersion.content
-      }
-    }
-
     switch (docType) {
       case 'REQUIREMENT':
         return liveContent?.requirement?.final || liveContent?.requirement?.draft
@@ -402,17 +371,6 @@ export function DraftPanel({
                       )
                     })()}
                   </div>
-                  <div className="flex items-center gap-2">
-                    {currentPhaseChatId && (
-                      <VersionSelector
-                        chatId={currentPhaseChatId}
-                        selectedVersionId={selectedVersionId}
-                        onVersionSelect={setSelectedVersionId}
-                        onScrollToMessage={onScrollToMessage}
-                        documentType={activeDocumentTab}
-                      />
-                    )}
-                  </div>
                 </div>
                 <div className="bg-background relative flex-1 overflow-hidden">
                   <ScrollArea className="h-full">
@@ -420,7 +378,7 @@ export function DraftPanel({
                       className="animate-in fade-in slide-in-from-bottom-2 relative px-6 py-8 duration-300"
                       data-selection-container>
                       <DocumentRenderer
-                        key={`${activeDocumentTab}-${selectedVersionId || 'live'}`}
+                        key={activeDocumentTab}
                         content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''}
                         documentType={activeDocumentTab}
                       />

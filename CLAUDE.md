@@ -39,7 +39,6 @@ When in doubt, refer to `/components/chat/draft-panel.tsx` as the reference impl
 
 - ✅ **Requirement Analysis Phase**: Generate comprehensive requirement documents through AI conversation
 - ✅ **Competitor Research**: Analyze competitors and market positioning
-- ✅ **Document Version Management**: Track and rollback document versions
 - ✅ **Multi-language Support**: i18n support for global users
 - ✅ **User Authentication**: Secure JWT-based authentication
 
@@ -49,6 +48,7 @@ When in doubt, refer to `/components/chat/draft-panel.tsx` as the reference impl
 - ❌ Development Phase (Development Planning)
 - ❌ MVP Code Generation
 - ❌ Phase Progression System
+- ❌ Document Version Management
 
 ## AI Assistant Guidelines
 
