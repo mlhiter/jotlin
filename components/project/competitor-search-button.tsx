@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 
 import apiClient from '@/libs/utils/axios'
 
-import type { CompetitorResearchResponse } from '@/libs/types/competitor.types'
+import type { CompetitorResearchResponse } from '@/types/competitor'
 
 interface CompetitorSearchButtonProps {
   chatId: string

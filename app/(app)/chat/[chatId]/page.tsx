@@ -23,11 +23,12 @@ const DraftPanel = dynamicImport(
 export const dynamic = 'force-dynamic'
 
 import { useMessageLimits } from '@/hooks/use-message-limits'
-import { SelectedOption } from '@/hooks/use-selected-options'
 import { parseAIResponse } from '@/libs/ai/xml-parser'
 import apiClient from '@/libs/utils/axios'
 import { MyUIMessage } from '@/schema/chat'
 import { useAuthStore } from '@/store/auth-store'
+
+import type { SelectedOption } from '@/types/chat'
 
 export default function ChatIdPage() {
   const params = useParams()

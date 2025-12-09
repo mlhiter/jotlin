@@ -1,8 +1,8 @@
 import { createOpenAI } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 
-import type { KeywordExtractionResult } from '@/libs/types/competitor.types'
 import type { MyUIMessage } from '@/schema/chat'
+import type { KeywordExtractionResult } from '@/types/competitor'
 
 const openai = createOpenAI({
   baseURL: process.env.OPENAI_API_BASE_URL,

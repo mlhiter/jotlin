@@ -1,20 +1,6 @@
 import dedent from 'dedent'
 
-export interface ParsedResponse {
-  prose?: string[]
-  question?: string
-  options: { value: string; text: string }[]
-  optionType?: OptionType
-  draft?: string
-  final?: string
-  productDocument?: string
-  flowchart?: string
-  sitemap?: string
-  wireframe?: string
-  input?: { type: string; placeholder: string }
-  rawText: string
-}
-export type OptionType = 'single' | 'multiple'
+import type { ParsedResponse, OptionType } from '@/types/ai'
 
 export const DOCUMENT_TAGS = [
   'draft',
@@ -143,9 +129,12 @@ export const parseAIResponse = (text: string): ParsedResponse => {
   }
 
   // Parse Product Document
-  let productDocMatch = contentToProcess.match(/<product-document>([\s\S]*?)<\/product-document>/) || text.match(/<product-document>([\s\S]*?)<\/product-document>/)
+  let productDocMatch =
+    contentToProcess.match(/<product-document>([\s\S]*?)<\/product-document>/) ||
+    text.match(/<product-document>([\s\S]*?)<\/product-document>/)
   if (!productDocMatch) {
-    productDocMatch = contentToProcess.match(/<product-document>([\s\S]*)$/) || text.match(/<product-document>([\s\S]*)$/)
+    productDocMatch =
+      contentToProcess.match(/<product-document>([\s\S]*)$/) || text.match(/<product-document>([\s\S]*)$/)
   }
   if (productDocMatch) {
     result.productDocument = preserveMarkdownIndent(productDocMatch[1])

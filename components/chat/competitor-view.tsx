@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import apiClient from '@/libs/utils/axios'
 
-import type { CompetitorResearchResponse } from '@/libs/types/competitor.types'
+import type { CompetitorResearchResponse } from '@/types/competitor'
 
 interface CompetitorViewProps {
   chatId: string

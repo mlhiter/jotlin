@@ -6,13 +6,15 @@ import { useRef, useEffect, useState } from 'react'
 
 import { AssistantMessage } from '@/components/chat/assistant-message'
 import { EmptyState } from '@/components/chat/empty-state'
-import { UserMessage, MessagePart } from '@/components/chat/user-message'
+import { UserMessage } from '@/components/chat/user-message'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 import { cn } from '@/libs/utils/utils'
 import { MyUIMessage } from '@/schema/chat'
+
+import type { MessagePart } from '@/types/chat'
 
 interface MessageListProps {
   messages: MyUIMessage[]
@@ -92,7 +94,10 @@ export function MessageList({
                       messageRefs.current.set(message.id, el)
                     }
                   }}
-                  className={cn('group flex gap-4 transition-colors', message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                  className={cn(
+                    'group flex gap-4 transition-colors',
+                    message.role === 'user' ? 'justify-end' : 'justify-start'
+                  )}>
                   {message.role === 'user' ? (
                     <UserMessage
                       key={message.id}
@@ -132,7 +137,7 @@ export function MessageList({
 
           {status === 'error' && (
             <div className="flex justify-start gap-4">
-              <Card className="mr-12 border-border/40 bg-muted/20 p-2.5 shadow-none">
+              <Card className="border-border/40 bg-muted/20 mr-12 p-2.5 shadow-none">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground text-sm">Failed to get response</span>
@@ -161,7 +166,7 @@ export function MessageList({
             onClick={scrollToBottom}
             size="sm"
             variant="secondary"
-            className="bg-background/95 hover:bg-accent h-8 w-8 rounded-full border border-border/40 p-0 shadow-sm backdrop-blur-sm transition-all duration-150">
+            className="bg-background/95 hover:bg-accent border-border/40 h-8 w-8 rounded-full border p-0 shadow-sm backdrop-blur-sm transition-all duration-150">
             <ChevronDown className="h-4 w-4" strokeWidth={1.5} />
           </Button>
         </div>

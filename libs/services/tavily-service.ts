@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import type { TavilySearchOptions, TavilySearchResponse } from '@/libs/types/competitor.types'
+import type { TavilySearchOptions, TavilySearchResponse } from '@/types/competitor'
 
 export class TavilyService {
   private apiClient

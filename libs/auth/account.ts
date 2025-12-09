@@ -1,8 +1,7 @@
 import { prisma } from '@/libs/utils/prisma'
 
+import type { OAuthProvider } from '@/types/auth'
 import type { User } from '@prisma/client'
-
-export type OAuthProvider = 'github' | 'google' | 'sealos'
 
 export async function findOrCreateUser(
   email: string,

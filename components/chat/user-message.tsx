@@ -4,15 +4,7 @@ import { RotateCcw, TextAlignStart, FileText, ImageIcon } from 'lucide-react'
 
 import { Button } from '../ui/button'
 
-export interface MessagePart {
-  type: string
-  text?: string
-  image?: string | URL | ArrayBuffer | Uint8Array | Buffer
-  data?: string | ArrayBuffer | Uint8Array | Buffer
-  mimeType?: string
-  url?: string
-  filename?: string
-}
+import type { MessagePart } from '@/types/chat'
 
 interface UserMessageProps {
   parts: MessagePart[]
@@ -79,7 +71,7 @@ export function UserMessage({ parts, onRollback }: UserMessageProps) {
             {files.map((file, index) => (
               <div
                 key={`file-${index}`}
-                className="bg-background/50 flex items-center gap-2 rounded-md border border-border/40 px-3 py-2 transition-all duration-150">
+                className="bg-background/50 border-border/40 flex items-center gap-2 rounded-md border px-3 py-2 transition-all duration-150">
                 {file.type === 'image' ? (
                   <ImageIcon className="text-primary h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
                 ) : (

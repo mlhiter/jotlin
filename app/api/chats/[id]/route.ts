@@ -3,7 +3,6 @@ import { InputJsonValue } from '@prisma/client/runtime/library'
 import { streamText, convertToModelMessages, createIdGenerator, validateUIMessages } from 'ai'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { getModelForPhase } from '@/libs/ai/model-config'
 import { requirementAnalysisPrompt } from '@/libs/ai/prompt'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
@@ -151,8 +150,7 @@ ${topResults
       }
     }
 
-    // Select model based on chat phase
-    const modelName = getModelForPhase(targetChat.phase)
+    const modelName = 'gemini-2.5-pro'
 
     const validatedMessages = await validateUIMessages({
       // append the new message to the previous messages

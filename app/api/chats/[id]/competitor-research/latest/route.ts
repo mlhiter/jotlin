@@ -1,13 +1,10 @@
+import { ChatPhase } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getSessionFromRequest } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 
-import type {
-  CompetitorResearchResponse,
-  TavilySearchResponse,
-  CompetitorAnalysis,
-} from '@/libs/types/competitor.types'
+import type { CompetitorResearchResponse, TavilySearchResponse, CompetitorAnalysis } from '@/types/competitor'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -42,7 +39,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const response: CompetitorResearchResponse = {
       id: latestResearch.id,
       chatId: latestResearch.chatId,
-      phase: latestResearch.phase as 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT',
+      phase: latestResearch.phase as ChatPhase,
       query: latestResearch.query,
       results: latestResearch.results as unknown as TavilySearchResponse,
       analysis: latestResearch.analysis as unknown as CompetitorAnalysis | undefined,

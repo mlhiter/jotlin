@@ -1,5 +1,6 @@
 'use client'
 
+import { ChatPhase } from '@prisma/client'
 import { ChatStatus } from 'ai'
 import { ArrowUp, Square, X, TextAlignStart, Image as ImageIcon, Target, Loader2 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
@@ -10,16 +11,12 @@ import { FilePreview } from '@/components/chat/file-preview'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
-import { SelectedOption, useSelectedOptions } from '@/hooks/use-selected-options'
+import { useSelectedOptions } from '@/hooks/use-selected-options'
 import apiClient from '@/libs/utils/axios'
 import { validateFile, extractFileContent, isImageFile } from '@/libs/utils/file-utils'
 
-import type { CompetitorResearchResponse } from '@/libs/types/competitor.types'
-
-interface Quote {
-  id: string
-  text: string
-}
+import type { Quote, SelectedOption } from '@/types/chat'
+import type { CompetitorResearchResponse } from '@/types/competitor'
 
 interface ChatInputProps {
   onSendMessage: (message: { text: string }) => void
@@ -32,7 +29,7 @@ interface ChatInputProps {
   onMarkMessageAnswered?: (messageId: string, selectedOptions: SelectedOption[]) => void
   autoFocus?: boolean
   chatId?: string
-  phase?: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+  phase?: ChatPhase | null
   onCompetitorSearchComplete?: () => void
 }
 
@@ -266,7 +263,7 @@ export function ChatInput({
             {quotes.map((quote) => (
               <div
                 key={quote.id}
-                className="bg-muted/20 flex w-48 items-center gap-1 rounded-md border border-border/40 px-2 py-1 transition-all duration-150">
+                className="bg-muted/20 border-border/40 flex w-48 items-center gap-1 rounded-md border px-2 py-1 transition-all duration-150">
                 <TextAlignStart className="text-accent-foreground/70 h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.5} />
                 <div className="text-muted-foreground flex-1 truncate text-xs">{quote.text}</div>
                 {onRemoveQuote && (
@@ -292,7 +289,7 @@ export function ChatInput({
                 {selectedOptions.map((option, index) => (
                   <div
                     key={`${option.value}-${index}`}
-                    className="bg-accent/40 flex items-center gap-2 rounded-md border border-border/40 px-2 py-1 text-sm transition-all duration-150">
+                    className="bg-accent/40 border-border/40 flex items-center gap-2 rounded-md border px-2 py-1 text-sm transition-all duration-150">
                     <span className="text-muted-foreground text-xs font-medium">{option.value}</span>
                     <Button
                       type="button"

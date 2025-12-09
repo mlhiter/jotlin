@@ -2,10 +2,7 @@
 
 import { create } from 'zustand'
 
-export interface SelectedOption {
-  value: string
-  text: string
-}
+import type { SelectedOption } from '@/types/chat'
 
 interface SelectedOptionsStore {
   selectedOptions: SelectedOption[]

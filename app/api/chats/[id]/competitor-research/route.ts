@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client'
+import { ChatPhase, Prisma } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getSessionFromRequest } from '@/libs/auth/auth'
@@ -7,14 +7,14 @@ import { KeywordExtractionService } from '@/libs/services/keyword-extraction-ser
 import { getTavilyService } from '@/libs/services/tavily-service'
 import { prisma } from '@/libs/utils/prisma'
 
+import type { MyUIMessage } from '@/schema/chat'
 import type {
   CompetitorResearchRequest,
   CompetitorResearchResponse,
   KeywordExtractionResult,
   TavilySearchResponse,
   CompetitorAnalysis,
-} from '@/libs/types/competitor.types'
-import type { MyUIMessage } from '@/schema/chat'
+} from '@/types/competitor'
 
 async function processCompetitorResearch(researchId: string, searchQuery: string) {
   try {
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const response: CompetitorResearchResponse = {
       id: research.id,
       chatId: research.chatId,
-      phase: research.phase as 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT',
+      phase: research.phase as ChatPhase,
       query: research.query,
       results: { query: keywords.searchQuery, results: [], response_time: 0 },
       status: 'pending',
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const response = researches.map((r) => ({
       id: r.id,
       chatId: r.chatId,
-      phase: r.phase as 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT',
+      phase: r.phase as ChatPhase,
       query: r.query,
       results: r.results as unknown as TavilySearchResponse,
       analysis: r.analysis as unknown as CompetitorAnalysis | undefined,

@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import { useSelectedOptions } from '@/hooks/use-selected-options'
-import { parseAIResponse, ParsedResponse } from '@/libs/ai/xml-parser'
+import { parseAIResponse } from '@/libs/ai/xml-parser'
 import { MyUIMessage } from '@/schema/chat'
+
+import type { ParsedResponse } from '@/types/ai'
 
 interface AssistantMessageProps {
   content: string
