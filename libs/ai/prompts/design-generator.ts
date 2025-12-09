@@ -21,12 +21,13 @@ Use Mermaid **flowchart** syntax to show the main user flows and business proces
 - Focus on 2-3 core user journeys (registration, main feature usage, key workflows)
 - Include decision points (diamonds) for conditional logic
 - Show error handling and alternative paths
-- Use clear, concise node labels in Chinese
+- **Language Consistency**: Analyze the language used in the input documents (Requirement Document and PRD). Generate all node labels, descriptions, and text in the SAME language as the input documents. If input is in Chinese, use Chinese labels; if input is in English, use English labels.
+- Use clear, concise node labels
 - Limit to 15-25 nodes for clarity
 - **CRITICAL**: Do NOT use parentheses (), square brackets [], or curly braces {} inside node labels
 - Use simple, clean labels without special characters
 
-### Template:
+### Template Reference (Chinese example):
 
 <flowchart>
 \`\`\`mermaid
@@ -68,7 +69,7 @@ flowchart TD
 
 1. **Accuracy**: Base the diagram on the provided requirement and PRD documents. Do not invent features or flows not mentioned.
 2. **Simplicity**: Keep the diagram focused and uncluttered. Aim for clarity over completeness.
-3. **Chinese Labels**: Use Chinese for all node labels, descriptions, and text.
+3. **Language Consistency**: Use the SAME language as the input documents for all labels, descriptions, and text.
 4. **Mermaid Syntax**: Ensure the Mermaid code is syntactically correct and will render properly.
 5. **Completeness**: Generate a complete, valid Mermaid flowchart.
 
@@ -109,11 +110,11 @@ Use Mermaid **graph** syntax to show the page hierarchy and navigation structure
 - Show parent-child relationships between pages
 - Include all major pages and sections
 - Group related pages visually
-- Use Chinese labels
+- **Language Consistency**: Analyze the language used in the input documents (Requirement Document and PRD). Generate all node labels and page names in the SAME language as the input documents. If input is in Chinese, use Chinese labels; if input is in English, use English labels.
 - **CRITICAL**: Do NOT use parentheses (), square brackets [], or curly braces {} inside node labels
 - Use simple, clean labels without special characters
 
-### Template:
+### Template Reference (Chinese example):
 
 <sitemap>
 \`\`\`mermaid
@@ -155,7 +156,7 @@ graph TD
 
 1. **Accuracy**: Base the diagram on the provided requirement and PRD documents. Do not invent features or pages not mentioned.
 2. **Simplicity**: Keep the diagram focused and uncluttered. Aim for clarity over completeness.
-3. **Chinese Labels**: Use Chinese for all node labels and page names.
+3. **Language Consistency**: Use the SAME language as the input documents for all node labels and page names.
 4. **Mermaid Syntax**: Ensure the Mermaid code is syntactically correct and will render properly.
 5. **Completeness**: Generate a complete, valid Mermaid graph showing the site structure.
 
@@ -197,11 +198,12 @@ Use Mermaid **flowchart** with **subgraphs** to describe the layout structure of
 - Use nested subgraphs within each page to represent layout sections (Header, Sidebar, Main Content, Footer)
 - Describe component placement, not detailed UI elements
 - Keep each page layout simple and high-level
+- **Language Consistency**: Analyze the language used in the input documents (Requirement Document and PRD). Generate all component labels, section names, and text in the SAME language as the input documents. If input is in Chinese, use Chinese labels; if input is in English, use English labels.
 - **CRITICAL**: Do NOT use parentheses (), square brackets [], or curly braces {} inside node labels
 - Use line breaks &lt;br/&gt; to separate items in lists, NOT parentheses or brackets
 - Use hyphens or commas for additional descriptions instead of parentheses
 
-### Template:
+### Template Reference (Chinese example):
 
 <wireframe>
 \`\`\`mermaid
@@ -303,7 +305,7 @@ flowchart TB
 2. **Accuracy**: Base the diagram on the provided requirement and PRD documents. Do not invent features or layouts not mentioned.
 3. **Page Selection**: Choose the 3-4 most critical pages for the user journey (e.g., Landing/Login, Dashboard/Main, Core Feature Page, Settings/Profile).
 4. **Nested Structure**: Each page should contain nested subgraphs for layout sections (Header, Sidebar, Content, Footer, etc.).
-5. **Chinese Labels**: Use Chinese for all component and section labels.
+5. **Language Consistency**: Use the SAME language as the input documents for all component and section labels.
 6. **Mermaid Syntax**: Ensure the Mermaid code is syntactically correct and will render properly.
 7. **Completeness**: Generate a complete, valid Mermaid wireframe diagram with all pages.
 
