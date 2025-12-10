@@ -1,4 +1,5 @@
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Geist, Geist_Mono, Edu_QLD_Beginner } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 
@@ -120,6 +121,7 @@ export default function RootLayout({ children }: Props) {
           </ThemeProvider>
         </QueryProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
