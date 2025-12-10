@@ -58,7 +58,6 @@ export class DocumentGenerationService {
         model: this.model,
         prompt,
         temperature: 0.7,
-        maxTokens: 2000,
       })
 
       const parsed = parseAIResponse(text)
