@@ -16,7 +16,7 @@ interface CompetitorSearchButtonProps {
   disabled?: boolean
 }
 
-export function CompetitorSearchButton({ chatId, onSearchComplete, disabled }: CompetitorSearchButtonProps) {
+export function CompetitorSearchButton({ chatId, onSearchComplete }: CompetitorSearchButtonProps) {
   const [isSearching, setIsSearching] = useState(false)
   const [searchStatus, setSearchStatus] = useState<'idle' | 'pending' | 'processing' | 'completed' | 'failed'>('idle')
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null)

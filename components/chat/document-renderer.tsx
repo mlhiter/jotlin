@@ -1,7 +1,7 @@
 'use client'
 
-import { DocumentType } from '@/schema/chat'
 import { cn } from '@/libs/utils/utils'
+import { DocumentType } from '@/schema/chat'
 
 import { Markdown } from './markdown'
 import { MermaidChart } from './mermaid-chart'

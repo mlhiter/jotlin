@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { Copy, Download, Maximize2 } from 'lucide-react'
 import mermaid from 'mermaid'
 import { useTheme } from 'next-themes'
-import { Copy, Download, Maximize2 } from 'lucide-react'
-import DOMPurify from 'dompurify'
+import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+
 import { cn } from '@/libs/utils/utils'
 
 interface MermaidChartProps {
@@ -65,7 +65,7 @@ export function MermaidChart({ code, className }: MermaidChartProps) {
           return `[${content}]`
         })
 
-        console.log('[DEBUG] MermaidChart rendering:', {
+        console.info('[DEBUG] MermaidChart rendering:', {
           originalLength: code?.length || 0,
           cleanedLength: cleanCode?.length || 0,
           hasMarkers: code?.includes('```mermaid'),
@@ -83,7 +83,7 @@ export function MermaidChart({ code, className }: MermaidChartProps) {
         // Skip DOMPurify temporarily to debug text rendering issue
         // Mermaid is a trusted library and we control the input
         setSvgContent(svg)
-        console.log('[DEBUG] Mermaid diagram rendered successfully')
+        console.info('[DEBUG] Mermaid diagram rendered successfully')
       } catch (err) {
         console.error('[ERROR] Mermaid rendering error:', err)
         setError(err instanceof Error ? err.message : 'Failed to render diagram')

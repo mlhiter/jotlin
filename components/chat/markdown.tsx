@@ -1,6 +1,6 @@
 'use client'
 
-import { Copy, Check } from 'lucide-react'
+import { Check, Copy } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
@@ -11,6 +11,7 @@ import remarkGfm from 'remark-gfm'
 import { cn } from '@/libs/utils/utils'
 
 import { Button } from '../ui/button'
+
 import { MermaidChart } from './mermaid-chart'
 
 interface MarkdownProps {

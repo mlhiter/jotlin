@@ -4,6 +4,7 @@ import { Check, Loader2, FileText, FileCode, Workflow, Map, Layout } from 'lucid
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
+
 import { cn } from '@/libs/utils/utils'
 
 interface GenerationStep {

@@ -43,7 +43,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Requirement message not found' }, { status: 404 })
     }
 
-    const requirementParts = requirementMessage.parts as any[]
+    const requirementParts = requirementMessage.parts as Array<{ type: string; text?: string }>
     const requirementText = requirementParts.find((p) => p.type === 'text')?.text || ''
 
     if (!requirementText) {

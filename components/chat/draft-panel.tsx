@@ -12,7 +12,7 @@ import {
   Map,
   Layout,
 } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 
 import { CompetitorView } from '@/components/chat/competitor-view'
@@ -57,7 +57,6 @@ export function DraftPanel({
   liveContent,
   readOnly = false,
   competitorRefreshTrigger = 0,
-  onScrollToMessage,
   isGeneratingDocuments = false,
 }: DraftPanelProps) {
   const [internalActiveTab, setInternalActiveTab] = useState<string | null>(null)
