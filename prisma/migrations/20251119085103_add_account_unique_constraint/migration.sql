@@ -17,30 +17,68 @@
   - Added the required column `providerAccountId` to the `account` table without a default value. This is not possible if the table is not empty.
 
 */
--- DropForeignKey
-ALTER TABLE "public"."session" DROP CONSTRAINT "session_userId_fkey";
+-- DropForeignKey (safe - only if exists)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.table_constraints
+               WHERE constraint_name = 'session_userId_fkey'
+               AND table_schema = 'public'
+               AND table_name = 'session') THEN
+        ALTER TABLE "public"."session" DROP CONSTRAINT "session_userId_fkey";
+    END IF;
+END $$;
 
--- AlterTable
-ALTER TABLE "public"."account" DROP COLUMN "accessToken",
-DROP COLUMN "accessTokenExpiresAt",
-DROP COLUMN "accountId",
-DROP COLUMN "idToken",
-DROP COLUMN "password",
-DROP COLUMN "providerId",
-DROP COLUMN "refreshToken",
-DROP COLUMN "refreshTokenExpiresAt",
-DROP COLUMN "scope",
-ADD COLUMN     "provider" TEXT NOT NULL,
-ADD COLUMN     "providerAccountId" TEXT NOT NULL;
+-- AlterTable (safe - drop columns only if they exist)
+DO $$
+BEGIN
+    -- Drop columns if they exist
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'accessToken') THEN
+        ALTER TABLE "public"."account" DROP COLUMN "accessToken";
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'accessTokenExpiresAt') THEN
+        ALTER TABLE "public"."account" DROP COLUMN "accessTokenExpiresAt";
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'accountId') THEN
+        ALTER TABLE "public"."account" DROP COLUMN "accountId";
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'idToken') THEN
+        ALTER TABLE "public"."account" DROP COLUMN "idToken";
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'password') THEN
+        ALTER TABLE "public"."account" DROP COLUMN "password";
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'providerId') THEN
+        ALTER TABLE "public"."account" DROP COLUMN "providerId";
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'refreshToken') THEN
+        ALTER TABLE "public"."account" DROP COLUMN "refreshToken";
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'refreshTokenExpiresAt') THEN
+        ALTER TABLE "public"."account" DROP COLUMN "refreshTokenExpiresAt";
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'scope') THEN
+        ALTER TABLE "public"."account" DROP COLUMN "scope";
+    END IF;
+
+    -- Add columns if they don't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'provider') THEN
+        ALTER TABLE "public"."account" ADD COLUMN "provider" TEXT NOT NULL DEFAULT 'github';
+        ALTER TABLE "public"."account" ALTER COLUMN "provider" DROP DEFAULT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'account' AND column_name = 'providerAccountId') THEN
+        ALTER TABLE "public"."account" ADD COLUMN "providerAccountId" TEXT NOT NULL DEFAULT '';
+        ALTER TABLE "public"."account" ALTER COLUMN "providerAccountId" DROP DEFAULT;
+    END IF;
+END $$;
 
 -- AlterTable
 ALTER TABLE "public"."user" ALTER COLUMN "emailVerified" SET DEFAULT true;
 
--- DropTable
-DROP TABLE "public"."session";
+-- DropTable (safe - only if exists)
+DROP TABLE IF EXISTS "public"."session";
 
--- DropTable
-DROP TABLE "public"."verification";
+-- DropTable (safe - only if exists)
+DROP TABLE IF EXISTS "public"."verification";
 
 -- CreateTable
 CREATE TABLE "public"."competitor_research" (
@@ -63,11 +101,21 @@ CREATE INDEX "competitor_research_chatId_idx" ON "public"."competitor_research"(
 -- CreateIndex
 CREATE INDEX "competitor_research_chatId_phase_idx" ON "public"."competitor_research"("chatId", "phase");
 
--- CreateIndex
-CREATE INDEX "account_userId_idx" ON "public"."account"("userId");
+-- CreateIndex (safe - only if not exists)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND tablename = 'account' AND indexname = 'account_userId_idx') THEN
+        CREATE INDEX "account_userId_idx" ON "public"."account"("userId");
+    END IF;
+END $$;
 
--- CreateIndex
-CREATE UNIQUE INDEX "account_userId_provider_key" ON "public"."account"("userId", "provider");
+-- CreateIndex (safe - only if not exists)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND tablename = 'account' AND indexname = 'account_userId_provider_key') THEN
+        CREATE UNIQUE INDEX "account_userId_provider_key" ON "public"."account"("userId", "provider");
+    END IF;
+END $$;
 
 -- AddForeignKey
 ALTER TABLE "public"."competitor_research" ADD CONSTRAINT "competitor_research_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "public"."chat"("id") ON DELETE CASCADE ON UPDATE CASCADE;
