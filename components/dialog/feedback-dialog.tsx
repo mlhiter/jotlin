@@ -12,16 +12,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/use-auth'
 import apiClient from '@/libs/utils/axios'
 
+import type { FeedbackFormData } from '@/types/feedback'
+
 interface FeedbackDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-}
-
-interface FeedbackFormData {
-  type: string
-  title: string
-  content: string
-  email: string
 }
 
 export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {

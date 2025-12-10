@@ -15,7 +15,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id: chatId } = await params
     const { messages }: { messages: MyUIMessage[] } = await request.json()
 
-    // Verify chat ownership
+    // Verify chat ownership and get phase info
     const chat = await prisma.chat.findFirst({
       where: {
         id: chatId,
@@ -24,6 +24,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
       select: {
         id: true,
+        phase: true,
       },
     })
 

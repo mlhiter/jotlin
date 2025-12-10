@@ -261,3 +261,19 @@ h6 {
     @apply bg-background text-foreground;
   }
 }
+
+/* Version message highlight animation */
+@keyframes highlight-pulse {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgb(var(--color-primary) / 0.1);
+  }
+}
+
+.highlight-version-message {
+  animation: highlight-pulse 2s ease-in-out;
+  border-radius: 0.5rem;
+}

@@ -35,8 +35,8 @@ export function EmptyState({ onSendMessage }: EmptyStateProps) {
   return (
     <div className="px-4 py-20 text-center">
       <Avatar className="mx-auto mb-4 h-12 w-12">
-        <AvatarFallback className="bg-muted">
-          <Brain className="text-muted-foreground h-6 w-6" />
+        <AvatarFallback className="bg-muted/40">
+          <Brain className="text-muted-foreground h-6 w-6" strokeWidth={1.5} />
         </AvatarFallback>
       </Avatar>
 
@@ -53,10 +53,10 @@ export function EmptyState({ onSendMessage }: EmptyStateProps) {
             <Button
               key={index}
               variant="outline"
-              className="hover:bg-muted/50 h-auto w-full justify-start p-4 text-left"
+              className="hover:bg-accent/40 h-auto w-full justify-start border-border/40 p-4 text-left transition-all duration-150"
               onClick={() => onSendMessage({ text: prompt.text })}>
               <div className="flex w-full items-start gap-3">
-                <Icon className="text-muted-foreground mt-1 h-5 w-5 flex-shrink-0" />
+                <Icon className="text-muted-foreground mt-1 h-5 w-5 flex-shrink-0" strokeWidth={1.5} />
                 <div className="min-w-0 flex-1">
                   <div className="whitespace-normal break-words text-sm font-medium leading-relaxed">{prompt.text}</div>
                   <div className="text-muted-foreground mt-1 whitespace-normal break-words text-xs leading-relaxed">

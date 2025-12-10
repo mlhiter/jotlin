@@ -3,12 +3,7 @@ import { InputJsonValue } from '@prisma/client/runtime/library'
 import { streamText, convertToModelMessages, createIdGenerator, validateUIMessages } from 'ai'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { getModelForPhase } from '@/libs/ai/model-config'
-import {
-  requirementAnalysisPrompt,
-  technicalArchitectureAnalysisPrompt,
-  developmentPlanAnalysisPrompt,
-} from '@/libs/ai/prompt'
+import { requirementAnalysisPrompt } from '@/libs/ai/prompt'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
@@ -107,19 +102,55 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       }
     }
 
-    // Select system prompt based on chat phase
+    // Only one phase now - always use requirement prompt
     let systemPrompt = requirementAnalysisPrompt
 
-    if (targetChat.phase === 'ARCHITECTURE') {
-      systemPrompt = technicalArchitectureAnalysisPrompt
-    } else if (targetChat.phase === 'DEVELOPMENT') {
-      systemPrompt = developmentPlanAnalysisPrompt
-    } else if (targetChat.phase === 'REQUIREMENT') {
-      systemPrompt = requirementAnalysisPrompt
+    // Inject competitor research context for REQUIREMENT phase
+    if (targetChat.phase === 'REQUIREMENT') {
+      const latestResearch = await prisma.competitorResearch.findFirst({
+        where: {
+          chatId: targetChatId,
+          status: 'completed',
+        },
+        orderBy: { createdAt: 'desc' },
+      })
+
+      if (latestResearch) {
+        const results = latestResearch.results as {
+          results?: Array<{ title: string; url: string; content: string; score: number }>
+        }
+
+        if (results?.results && results.results.length > 0) {
+          const topResults = results.results.slice(0, 5)
+          const competitorContext = `
+
+---
+
+# Competitor Research Data (Auto-injected)
+
+Based on the search query "${latestResearch.query}", here are relevant competitor insights:
+
+${topResults
+  .map(
+    (r, i) => `
+### Competitor ${i + 1}: ${r.title}
+- **Source**: ${r.url}
+- **Key Info**: ${r.content.slice(0, 300)}...
+- **Relevance Score**: ${(r.score * 100).toFixed(0)}%
+`
+  )
+  .join('\n')}
+
+**IMPORTANT**: Use this competitor data to inform your feature recommendations in Phase Two. Reference specific competitors when discussing features. This data helps ensure we don't miss critical features that users expect.
+
+---
+`
+          systemPrompt = systemPrompt + competitorContext
+        }
+      }
     }
 
-    // Select model based on chat phase
-    const modelName = getModelForPhase(targetChat.phase)
+    const modelName = 'gemini-2.5-pro'
 
     const validatedMessages = await validateUIMessages({
       // append the new message to the previous messages

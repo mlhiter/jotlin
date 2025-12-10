@@ -9,7 +9,6 @@ export const dynamic = 'force-dynamic'
 
 import { MessageList } from '@/components/chat/message-list'
 import { TryButton } from '@/components/preview/try-button'
-import { PhaseProgress } from '@/components/project/phase-progress'
 
 import { parseAIResponse } from '@/libs/ai/xml-parser'
 import apiClient from '@/libs/utils/axios'
@@ -31,13 +30,11 @@ interface PublicChat {
   author: string
   documents?: {
     requirement?: { id: string; content: string; status: string } | null
-    architecture?: { id: string; content: string; status: string } | null
-    development?: { id: string; content: string; status: string } | null
   } | null
   phaseChats?: Array<{
     id: string
     title: string | null
-    phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+    phase: 'REQUIREMENT' | null
     createdAt: string
     messages: MyUIMessage[]
   }> | null
@@ -52,18 +49,9 @@ export default function ChatPreviewPage() {
   const [error, setError] = useState<string | null>(null)
   const [documents, setDocuments] = useState<{
     requirement?: { content: string; status: string }
-    architecture?: { content: string; status: string }
-    development?: { content: string; status: string }
   }>({})
   const [showDraftPanel, setShowDraftPanel] = useState(true)
-  const [phaseChats, setPhaseChats] = useState<Array<{
-    id: string
-    title: string | null
-    phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
-    createdAt: string
-    messages: MyUIMessage[]
-  }> | null>(null)
-  const [currentPhase, setCurrentPhase] = useState<'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null>(null)
+  const [currentPhase, setCurrentPhase] = useState<'REQUIREMENT' | null>(null)
   const [displayMessages, setDisplayMessages] = useState<MyUIMessage[]>([])
 
   useEffect(() => {
@@ -75,14 +63,11 @@ export default function ChatPreviewPage() {
         if (response.data.documents) {
           const docsData = {
             ...(response.data.documents.requirement && { requirement: response.data.documents.requirement }),
-            ...(response.data.documents.architecture && { architecture: response.data.documents.architecture }),
-            ...(response.data.documents.development && { development: response.data.documents.development }),
           }
           setDocuments(docsData)
         }
 
         if (response.data.phaseChats && response.data.phaseChats.length > 0) {
-          setPhaseChats(response.data.phaseChats)
           const lastPhase = response.data.phaseChats[response.data.phaseChats.length - 1]
           setCurrentPhase(lastPhase.phase)
           setDisplayMessages(lastPhase.messages || [])
@@ -109,15 +94,6 @@ export default function ChatPreviewPage() {
     }
   }, [chatId])
 
-  const handlePhaseSwitch = (phase: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT') => {
-    if (!phaseChats) return
-
-    const targetPhaseChat = phaseChats.find((pc) => pc.phase === phase)
-    if (targetPhaseChat) {
-      setCurrentPhase(phase)
-      setDisplayMessages(targetPhaseChat.messages || [])
-    }
-  }
 
   if (isLoading) {
     return (
@@ -169,41 +145,6 @@ export default function ChatPreviewPage() {
     return true
   })
 
-  // Calculate phase progress
-  const phaseProgress = phaseChats
-    ? [
-        {
-          phase: 'REQUIREMENT' as const,
-          status: documents.requirement
-            ? ('completed' as const)
-            : phaseChats.some((pc) => pc.phase === 'REQUIREMENT')
-              ? currentPhase === 'REQUIREMENT'
-                ? ('in-progress' as const)
-                : ('completed' as const)
-              : ('pending' as const),
-        },
-        {
-          phase: 'ARCHITECTURE' as const,
-          status: documents.architecture
-            ? ('completed' as const)
-            : phaseChats.some((pc) => pc.phase === 'ARCHITECTURE')
-              ? currentPhase === 'ARCHITECTURE'
-                ? ('in-progress' as const)
-                : ('completed' as const)
-              : ('pending' as const),
-        },
-        {
-          phase: 'DEVELOPMENT' as const,
-          status: documents.development
-            ? ('completed' as const)
-            : phaseChats.some((pc) => pc.phase === 'DEVELOPMENT')
-              ? currentPhase === 'DEVELOPMENT'
-                ? ('in-progress' as const)
-                : ('completed' as const)
-              : ('pending' as const),
-        },
-      ]
-    : []
 
   // Extract live draft/final content from messages
   const liveContent = filteredMessages.reduce(
@@ -226,13 +167,7 @@ export default function ChatPreviewPage() {
     { draft: undefined as string | undefined, final: undefined as string | undefined }
   )
 
-  const hasDocument = !!(
-    documents.requirement ||
-    documents.architecture ||
-    documents.development ||
-    liveContent.draft ||
-    liveContent.final
-  )
+  const hasDocument = !!(documents.requirement || liveContent.draft || liveContent.final)
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -256,15 +191,7 @@ export default function ChatPreviewPage() {
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Phase Progress Bar */}
-        {phaseProgress.length > 0 && (
-          <PhaseProgress
-            phases={phaseProgress}
-            currentPhase={currentPhase}
-            onPhaseClick={handlePhaseSwitch}
-            clickable={true}
-          />
-        )}
+        {/* No phase progress bar needed */}
 
         <div className="flex flex-1 items-stretch overflow-hidden">
           {filteredMessages.length === 0 ? (
@@ -296,15 +223,9 @@ export default function ChatPreviewPage() {
                   isVisible={showDraftPanel}
                   onToggle={() => setShowDraftPanel(!showDraftPanel)}
                   chatId={chatId}
-                  liveContent={
-                    currentPhase
-                      ? {
-                          requirement: currentPhase === 'REQUIREMENT' ? liveContent : undefined,
-                          architecture: currentPhase === 'ARCHITECTURE' ? liveContent : undefined,
-                          development: currentPhase === 'DEVELOPMENT' ? liveContent : undefined,
-                        }
-                      : undefined
-                  }
+                  liveContent={{
+                    requirement: liveContent,
+                  }}
                   readOnly={true}
                   currentPhase={currentPhase}
                 />

@@ -1,16 +1,27 @@
 import dedent from 'dedent'
 
-export interface ParsedResponse {
-  prose?: string[]
-  question?: string
-  options: { value: string; text: string }[]
-  optionType?: OptionType
-  draft?: string
-  final?: string
-  input?: { type: string; placeholder: string }
-  rawText: string
-}
-export type OptionType = 'single' | 'multiple'
+import type { ParsedResponse, OptionType } from '@/types/ai'
+
+export const DOCUMENT_TAGS = [
+  'draft',
+  'final',
+  'product-document',
+  'flowchart',
+  'sitemap',
+  'wireframe',
+  'prose',
+  'question',
+  'options',
+] as const
+
+export const TAG_TO_DOCUMENT_TYPE = {
+  draft: 'REQUIREMENT',
+  final: 'REQUIREMENT',
+  'product-document': 'PRODUCT_DOCUMENT',
+  flowchart: 'FLOWCHART',
+  sitemap: 'SITEMAP',
+  wireframe: 'WIREFRAME',
+} as const
 
 /**
  * Remove common leading indentation from all lines while preserving relative indentation.
@@ -52,7 +63,12 @@ export const parseAIResponse = (text: string): ParsedResponse => {
     rawText: text,
   }
 
-  const proseMatches = text.matchAll(/<prose>([\s\S]*?)<\/prose>/g)
+  // First, try to extract content from <response> wrapper if it exists
+  // This handles cases where AI wraps everything in <response>...</response>
+  const responseMatch = text.match(/<response>([\s\S]*?)<\/response>/)
+  const contentToProcess = responseMatch ? responseMatch[1] : text
+
+  const proseMatches = contentToProcess.matchAll(/<prose>([\s\S]*?)<\/prose>/g)
   const proseArray: string[] = []
   for (const match of proseMatches) {
     proseArray.push(dedent(match[1]))
@@ -61,12 +77,12 @@ export const parseAIResponse = (text: string): ParsedResponse => {
     result.prose = proseArray
   }
 
-  const questionMatch = text.match(/<question>([\s\S]*?)<\/question>/)
+  const questionMatch = contentToProcess.match(/<question>([\s\S]*?)<\/question>/)
   if (questionMatch) {
     result.question = dedent(questionMatch[1])
   }
 
-  const optionsMatch = text.match(/<options(?:\s+type="(single|multiple)")?>([\s\S]*?)<\/options>/)
+  const optionsMatch = contentToProcess.match(/<options(?:\s+type="(single|multiple)")?>([\s\S]*?)<\/options>/)
   if (optionsMatch) {
     result.optionType = (optionsMatch[1] as OptionType) || 'single'
     const optionsText = optionsMatch[2]
@@ -80,24 +96,79 @@ export const parseAIResponse = (text: string): ParsedResponse => {
     }
   }
 
-  const draftMatch = text.match(/<draft>([\s\S]*?)<\/draft>/)
+  // Try to find draft in both the processed content and original text for robustness
+  // Support both complete tags and incomplete tags (for streaming)
+  let draftMatch = contentToProcess.match(/<draft>([\s\S]*?)<\/draft>/) || text.match(/<draft>([\s\S]*?)<\/draft>/)
+  if (!draftMatch) {
+    // Try to match incomplete draft tag (streaming case)
+    draftMatch = contentToProcess.match(/<draft>([\s\S]*)$/) || text.match(/<draft>([\s\S]*)$/)
+  }
   if (draftMatch) {
     // Use custom function to preserve markdown list indentation
     result.draft = preserveMarkdownIndent(draftMatch[1])
   }
 
-  const finalMatch = text.match(/<final>([\s\S]*?)<\/final>/)
+  // Try to find final in both the processed content and original text for robustness
+  // Support both complete tags and incomplete tags (for streaming)
+  let finalMatch = contentToProcess.match(/<final>([\s\S]*?)<\/final>/) || text.match(/<final>([\s\S]*?)<\/final>/)
+  if (!finalMatch) {
+    // Try to match incomplete final tag (streaming case)
+    finalMatch = contentToProcess.match(/<final>([\s\S]*)$/) || text.match(/<final>([\s\S]*)$/)
+  }
   if (finalMatch) {
     // Use custom function to preserve markdown list indentation
     result.final = preserveMarkdownIndent(finalMatch[1])
   }
 
-  const inputMatch = text.match(/<input\s+type="([^"]*)"(?:\s+placeholder="([^"]*)")?\s*\/>/)
+  const inputMatch = contentToProcess.match(/<input\s+type="([^"]*)"(?:\s+placeholder="([^"]*)")?\s*\/>/)
   if (inputMatch) {
     result.input = {
       type: inputMatch[1],
       placeholder: inputMatch[2] || '',
     }
   }
+
+  // Parse Product Document
+  let productDocMatch =
+    contentToProcess.match(/<product-document>([\s\S]*?)<\/product-document>/) ||
+    text.match(/<product-document>([\s\S]*?)<\/product-document>/)
+  if (!productDocMatch) {
+    productDocMatch =
+      contentToProcess.match(/<product-document>([\s\S]*)$/) || text.match(/<product-document>([\s\S]*)$/)
+  }
+  if (productDocMatch) {
+    result.productDocument = preserveMarkdownIndent(productDocMatch[1])
+  }
+
+  // Parse Flowchart (Mermaid)
+  let flowchartMatch =
+    contentToProcess.match(/<flowchart>([\s\S]*?)<\/flowchart>/) || text.match(/<flowchart>([\s\S]*?)<\/flowchart>/)
+  if (!flowchartMatch) {
+    flowchartMatch = contentToProcess.match(/<flowchart>([\s\S]*)$/) || text.match(/<flowchart>([\s\S]*)$/)
+  }
+  if (flowchartMatch) {
+    result.flowchart = preserveMarkdownIndent(flowchartMatch[1])
+  }
+
+  // Parse Sitemap (Mermaid)
+  let sitemapMatch =
+    contentToProcess.match(/<sitemap>([\s\S]*?)<\/sitemap>/) || text.match(/<sitemap>([\s\S]*?)<\/sitemap>/)
+  if (!sitemapMatch) {
+    sitemapMatch = contentToProcess.match(/<sitemap>([\s\S]*)$/) || text.match(/<sitemap>([\s\S]*)$/)
+  }
+  if (sitemapMatch) {
+    result.sitemap = preserveMarkdownIndent(sitemapMatch[1])
+  }
+
+  // Parse Wireframe (Mermaid)
+  let wireframeMatch =
+    contentToProcess.match(/<wireframe>([\s\S]*?)<\/wireframe>/) || text.match(/<wireframe>([\s\S]*?)<\/wireframe>/)
+  if (!wireframeMatch) {
+    wireframeMatch = contentToProcess.match(/<wireframe>([\s\S]*)$/) || text.match(/<wireframe>([\s\S]*)$/)
+  }
+  if (wireframeMatch) {
+    result.wireframe = preserveMarkdownIndent(wireframeMatch[1])
+  }
+
   return result
 }

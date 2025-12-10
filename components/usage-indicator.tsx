@@ -7,25 +7,25 @@ export function UsageIndicator() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-950/20">
+      <div className="bg-muted/20 rounded-lg border border-border/40 p-3 transition-all duration-150">
         <div className="flex items-center justify-between text-sm">
-          <span className="font-medium text-red-700 dark:text-red-300">Usage Error</span>
+          <span className="text-muted-foreground font-medium">Usage Error</span>
           <button
             onClick={refreshUsage}
-            className="text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200">
+            className="text-muted-foreground hover:text-foreground text-xs transition-colors duration-150">
             Retry
           </button>
         </div>
-        <p className="mt-1 text-xs text-red-600 dark:text-red-400">Failed to load usage data</p>
+        <p className="text-muted-foreground/70 mt-1 text-xs">Failed to load usage data</p>
       </div>
     )
   }
 
   if (isLoading || !usage) {
     return (
-      <div className="bg-muted/50 animate-pulse rounded-lg p-3">
-        <div className="bg-muted mb-2 h-4 w-24 rounded"></div>
-        <div className="bg-muted h-2 w-full rounded"></div>
+      <div className="bg-muted/20 animate-pulse rounded-lg border border-border/40 p-3">
+        <div className="bg-muted/40 mb-2 h-4 w-24 rounded"></div>
+        <div className="bg-muted/40 h-2 w-full rounded"></div>
       </div>
     )
   }
@@ -36,42 +36,27 @@ export function UsageIndicator() {
 
   return (
     <div
-      className={`rounded-lg border p-3 ${
-        isAtLimit
-          ? 'border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20'
-          : isNearLimit
-            ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-950/20'
-            : 'border-border bg-muted/30'
+      className={`rounded-lg border p-3 transition-all duration-150 ${
+        isAtLimit || isNearLimit ? 'border-border/40 bg-muted/40' : 'border-border/40 bg-muted/20'
       }`}>
       <div className="mb-2 flex items-center justify-between text-sm">
         <span className="text-foreground font-medium">Message Limits</span>
-        <span
-          className={`font-mono text-xs ${
-            isAtLimit
-              ? 'text-red-600 dark:text-red-400'
-              : isNearLimit
-                ? 'text-yellow-600 dark:text-yellow-400'
-                : 'text-muted-foreground'
-          }`}>
+        <span className="text-muted-foreground font-mono text-xs">
           {usage.currentCount.toLocaleString()}/{usage.limit.toLocaleString()}
         </span>
       </div>
 
-      <div className="bg-muted h-1.5 w-full rounded-full">
+      <div className="bg-muted/40 h-1.5 w-full rounded-full">
         <div
-          className={`h-1.5 rounded-full transition-all duration-300 ${
-            isAtLimit ? 'bg-red-500 dark:bg-red-600' : isNearLimit ? 'bg-yellow-500 dark:bg-yellow-600' : 'bg-primary'
-          }`}
+          className="bg-primary h-1.5 rounded-full transition-all duration-300"
           style={{ width: `${Math.min(percentage, 100)}%` }}
         />
       </div>
 
       {isAtLimit && (
-        <p className="mt-2 text-xs text-red-600 dark:text-red-400">Limit reached. Contact support for more quota.</p>
+        <p className="text-muted-foreground/70 mt-2 text-xs">Limit reached. Contact support for more quota.</p>
       )}
-      {isNearLimit && !isAtLimit && (
-        <p className="mt-2 text-xs text-yellow-600 dark:text-yellow-400">Approaching limit.</p>
-      )}
+      {isNearLimit && !isAtLimit && <p className="text-muted-foreground/70 mt-2 text-xs">Approaching limit.</p>}
     </div>
   )
 }

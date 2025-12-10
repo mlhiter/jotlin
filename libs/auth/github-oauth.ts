@@ -1,18 +1,6 @@
 import axios from 'axios'
 
-export interface GitHubUser {
-  id: number
-  login: string
-  name: string | null
-  email: string | null
-  avatar_url: string
-}
-
-export interface GitHubOAuthConfig {
-  clientId: string
-  clientSecret: string
-  redirectUri: string
-}
+import type { GitHubUser, GitHubOAuthConfig } from '@/types/auth'
 
 export class GitHubOAuth {
   private config: GitHubOAuthConfig

@@ -1,193 +1,156 @@
 'use client'
 
-import { ChevronsLeft, ChevronsRight, Copy, FileText, Eye, Code, Maximize2, Minimize2, Files } from 'lucide-react'
-import dynamic from 'next/dynamic'
-import { useState, useEffect } from 'react'
+import {
+  ChevronsLeft,
+  ChevronsRight,
+  Copy,
+  FileText,
+  Files,
+  Search,
+  FileCode,
+  Workflow,
+  Map,
+  Layout,
+} from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
-import { Markdown } from '@/components/chat/markdown'
+import { CompetitorView } from '@/components/chat/competitor-view'
+import { DocumentRenderer } from '@/components/chat/document-renderer'
 import { TextSelectionMenu } from '@/components/chat/text-selection-menu'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
-import apiClient from '@/libs/utils/axios'
-
-// NOTE: turbopack will cause dev refresh error,so I do not use turbopack to solve this problem
-const PreviewLoader = () => {
-  return (
-    <div className="flex h-full items-center justify-center">
-      <div className="text-muted-foreground text-sm">Loading preview...</div>
-    </div>
-  )
-}
-
-const Preview = dynamic(() => import('@/components/mvp/preview').then((mod) => ({ default: mod.Preview })), {
-  ssr: false,
-  loading: PreviewLoader,
-})
-
-const CodeViewerLoader = () => {
-  return (
-    <div className="flex h-full items-center justify-center">
-      <div className="text-muted-foreground text-sm">Loading code viewer...</div>
-    </div>
-  )
-}
-
-const CodeViewer = dynamic(() => import('@/components/mvp/code-viewer').then((mod) => ({ default: mod.CodeViewer })), {
-  ssr: false,
-  loading: CodeViewerLoader,
-})
+type DocumentTabValue = 'REQUIREMENT' | 'PRODUCT_DOCUMENT' | 'FLOWCHART' | 'SITEMAP' | 'WIREFRAME'
 
 interface DraftPanelProps {
   isVisible?: boolean
   onToggle?: () => void
   onQuote?: (selectedText: string) => void
   chatId?: string
+  currentPhaseChatId?: string
   activeTab?: string
   onActiveTabChange?: (tab: string) => void
-  currentPhase?: 'REQUIREMENT' | 'ARCHITECTURE' | 'DEVELOPMENT' | null
+  currentPhase?: 'REQUIREMENT' | null
   liveContent?: {
     requirement?: { draft?: string; final?: string }
-    architecture?: { draft?: string; final?: string }
-    development?: { draft?: string; final?: string }
+    productDocument?: string
+    flowchart?: string
+    sitemap?: string
+    wireframe?: string
   }
   readOnly?: boolean
+  competitorRefreshTrigger?: number
+  onScrollToMessage?: (messageId: string) => void
+  isGeneratingDocuments?: boolean
 }
 
 export function DraftPanel({
   isVisible = true,
   onToggle,
   onQuote,
-  chatId,
+  currentPhaseChatId,
   activeTab: externalActiveTab,
   onActiveTabChange,
-  currentPhase,
   liveContent,
   readOnly = false,
+  competitorRefreshTrigger = 0,
+  onScrollToMessage,
+  isGeneratingDocuments = false,
 }: DraftPanelProps) {
-  const [mvpData, setMvpData] = useState<{
-    files: Record<string, string>
-  } | null>(null)
-  const [isFullscreen, setIsFullscreen] = useState(false)
   const [internalActiveTab, setInternalActiveTab] = useState<string | null>(null)
-  const [activeDocumentTab, setActiveDocumentTab] = useState<'requirement' | 'architecture' | 'development'>(
-    'requirement'
-  )
+  const [activeDocumentTab, setActiveDocumentTab] = useState<DocumentTabValue>('REQUIREMENT')
+  const [isNavCollapsed, setIsNavCollapsed] = useState(false)
 
-  // Check if any live content exists
   const hasAnyLiveContent = !!(
     liveContent?.requirement?.draft ||
     liveContent?.requirement?.final ||
-    liveContent?.architecture?.draft ||
-    liveContent?.architecture?.final ||
-    liveContent?.development?.draft ||
-    liveContent?.development?.final
+    liveContent?.productDocument ||
+    liveContent?.flowchart ||
+    liveContent?.sitemap ||
+    liveContent?.wireframe
   )
 
-  // Compute effective active tab - include live content in the check
-  const hasAnyDocument = hasAnyLiveContent
-  const effectiveActiveTab =
-    externalActiveTab ?? internalActiveTab ?? (hasAnyDocument ? 'documents' : mvpData ? 'preview' : 'documents')
+  const hasAnyDocument = hasAnyLiveContent || isGeneratingDocuments
+  const effectiveActiveTab = externalActiveTab ?? internalActiveTab ?? (hasAnyDocument ? 'documents' : 'documents')
 
   const setActiveTab = onActiveTabChange ?? setInternalActiveTab
 
-  // Determine which document content to show - directly from live content
-  const getDocumentContent = (phase: 'requirement' | 'architecture' | 'development'): string | undefined => {
-    // Priority 1: Live final content for this phase
-    if (liveContent?.[phase]?.final) {
-      return liveContent[phase].final
+  const getDocumentContent = (docType: DocumentTabValue): string | undefined => {
+    switch (docType) {
+      case 'REQUIREMENT':
+        return liveContent?.requirement?.final || liveContent?.requirement?.draft
+      case 'PRODUCT_DOCUMENT':
+        return liveContent?.productDocument
+      case 'FLOWCHART':
+        return liveContent?.flowchart
+      case 'SITEMAP':
+        return liveContent?.sitemap
+      case 'WIREFRAME':
+        return liveContent?.wireframe
+      default:
+        return undefined
     }
-
-    // Priority 2: Live draft content for this phase (preview only)
-    if (liveContent?.[phase]?.draft) {
-      return liveContent[phase].draft
-    }
-
-    return undefined
   }
 
-  // Dynamic tab list based on available documents
   const documentTabs = [
     {
-      value: 'requirement',
+      value: 'REQUIREMENT' as DocumentTabValue,
       label: 'Requirements',
-      content: getDocumentContent('requirement'),
+      content: getDocumentContent('REQUIREMENT'),
       available: !!(liveContent?.requirement?.draft || liveContent?.requirement?.final),
       icon: FileText,
     },
     {
-      value: 'architecture',
-      label: 'Architecture',
-      content: getDocumentContent('architecture'),
-      available: !!(liveContent?.architecture?.draft || liveContent?.architecture?.final),
-      icon: FileText,
+      value: 'PRODUCT_DOCUMENT' as DocumentTabValue,
+      label: 'Product Doc',
+      content: getDocumentContent('PRODUCT_DOCUMENT'),
+      available: !!liveContent?.productDocument || isGeneratingDocuments,
+      icon: FileCode,
     },
     {
-      value: 'development',
-      label: 'Development',
-      content: getDocumentContent('development'),
-      available: !!(liveContent?.development?.draft || liveContent?.development?.final),
-      icon: FileText,
+      value: 'FLOWCHART' as DocumentTabValue,
+      label: 'Flowchart',
+      content: getDocumentContent('FLOWCHART'),
+      available: !!liveContent?.flowchart || isGeneratingDocuments,
+      icon: Workflow,
+    },
+    {
+      value: 'SITEMAP' as DocumentTabValue,
+      label: 'Sitemap',
+      content: getDocumentContent('SITEMAP'),
+      available: !!liveContent?.sitemap || isGeneratingDocuments,
+      icon: Map,
+    },
+    {
+      value: 'WIREFRAME' as DocumentTabValue,
+      label: 'Wireframe',
+      content: getDocumentContent('WIREFRAME'),
+      available: !!liveContent?.wireframe || isGeneratingDocuments,
+      icon: Layout,
     },
   ]
 
-  // Outer level tabs (with Documents as a single tab)
-  const hasDevelopmentContent = !!(liveContent?.development?.draft || liveContent?.development?.final)
-
   const availableTabs = [
     { value: 'documents', label: 'Documents', available: hasAnyDocument, icon: FileText },
-    { value: 'preview', label: 'Preview', available: !readOnly && hasDevelopmentContent, icon: Eye },
-    { value: 'code', label: 'Code', available: !readOnly && hasDevelopmentContent, icon: Code },
+    {
+      value: 'competitors',
+      label: 'Competitors',
+      available: !readOnly,
+      icon: Search,
+    },
   ].filter((t) => t.available)
 
-  // Inner document tabs (for the nested tabs inside Documents)
   const availableDocumentTabs = documentTabs.filter((t) => t.available)
 
-  // Compute effective document sub-tab based on current phase
-  const effectiveDocumentTab = (() => {
-    // Priority 1: Current phase with content
-    if (currentPhase === 'DEVELOPMENT' && hasDevelopmentContent) return 'development'
-    if (currentPhase === 'ARCHITECTURE' && (liveContent?.architecture?.draft || liveContent?.architecture?.final))
-      return 'architecture'
-    if (currentPhase === 'REQUIREMENT' && (liveContent?.requirement?.draft || liveContent?.requirement?.final))
-      return 'requirement'
-
-    // Priority 2: Any available content (reverse order to show latest)
-    if (hasDevelopmentContent) return 'development'
-    if (liveContent?.architecture?.draft || liveContent?.architecture?.final) return 'architecture'
-    if (liveContent?.requirement?.draft || liveContent?.requirement?.final) return 'requirement'
-
-    // Default to requirement
-    return 'requirement'
-  })()
-
-  // Update activeDocumentTab when computed value changes
   useEffect(() => {
-    if (effectiveDocumentTab !== activeDocumentTab) {
-      setActiveDocumentTab(effectiveDocumentTab)
+    if (availableDocumentTabs.length > 0 && !availableDocumentTabs.find((t) => t.value === activeDocumentTab)) {
+      setActiveDocumentTab(availableDocumentTabs[0].value)
     }
-  }, [effectiveDocumentTab])
+  }, [availableDocumentTabs, activeDocumentTab])
 
-  // Fetch MVP data only when user switches to preview or code tab
-  useEffect(() => {
-    if (chatId && hasDevelopmentContent && (effectiveActiveTab === 'preview' || effectiveActiveTab === 'code')) {
-      apiClient
-        .get(`/api/mvp/${chatId}`)
-        .then((res) => {
-          if (res.data && res.data.files) {
-            setMvpData({
-              files: res.data.files,
-            })
-          }
-        })
-        .catch(() => {})
-    }
-  }, [chatId, hasDevelopmentContent, effectiveActiveTab])
-
-  // If no tabs available, don't render
   if (availableTabs.length === 0) {
     return null
   }
@@ -196,20 +159,14 @@ export function DraftPanel({
     let content = ''
 
     if (type === 'current') {
-      // When in documents tab, copy the active document sub-tab
       if (effectiveActiveTab === 'documents') {
         const currentDoc = documentTabs.find((t) => t.value === activeDocumentTab)
         content = currentDoc?.content || ''
       }
     } else {
-      // Copy all three documents from live content
-      const allDocs = [
-        getDocumentContent('requirement') && `# Requirements Analysis Document\n\n${getDocumentContent('requirement')}`,
-        getDocumentContent('architecture') &&
-          `# Technical Architecture Document\n\n${getDocumentContent('architecture')}`,
-        getDocumentContent('development') && `# Development Plan Document\n\n${getDocumentContent('development')}`,
-      ]
-        .filter(Boolean)
+      const allDocs = documentTabs
+        .filter((doc) => doc.content)
+        .map((doc) => `# ${doc.label}\n\n${doc.content}`)
         .join('\n\n---\n\n')
       content = allDocs
     }
@@ -225,122 +182,7 @@ export function DraftPanel({
     }
   }
 
-  const panelWidth = effectiveActiveTab === 'documents' ? 'w-[min(40vw,600px)]' : 'w-[min(65vw,1200px)]'
-
-  const canFullscreen = effectiveActiveTab === 'preview' || effectiveActiveTab === 'code'
-
-  if (isFullscreen) {
-    return (
-      <div className="bg-background fixed inset-0 z-50 flex flex-col">
-        <Tabs value={effectiveActiveTab} onValueChange={setActiveTab} className="flex h-full flex-col">
-          <div className="border-border bg-card flex items-center justify-between border-b px-4 py-2">
-            <TabsList>
-              {availableTabs.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
-                  <tab.icon className="h-3 w-3" />
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            <div className="flex items-center gap-2">
-              {effectiveActiveTab === 'documents' && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button size="icon" variant="ghost" className="h-8 w-8" title="Copy document">
-                      <Copy className="text-muted-foreground h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-56 p-2" align="end">
-                    <div className="flex flex-col gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="justify-start gap-2"
-                        onClick={() => handleCopy('current')}>
-                        <FileText className="h-4 w-4" />
-                        Copy current document
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="justify-start gap-2"
-                        onClick={() => handleCopy('all')}>
-                        <Files className="h-4 w-4" />
-                        Copy all documents
-                      </Button>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              )}
-              {canFullscreen && (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => setIsFullscreen(false)}
-                  className="h-8 w-8"
-                  title="Exit fullscreen">
-                  <Minimize2 className="text-muted-foreground h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <TabsContent value="documents" className="mt-0 flex h-full flex-col overflow-hidden">
-            {/* Nested document tabs */}
-            {availableDocumentTabs.length > 1 && (
-              <div className="border-border flex items-center gap-1 border-b px-4">
-                {availableDocumentTabs.map((tab) => (
-                  <button
-                    key={tab.value}
-                    onClick={() => setActiveDocumentTab(tab.value as 'requirement' | 'architecture' | 'development')}
-                    className={`relative flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
-                      activeDocumentTab === tab.value
-                        ? 'text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}>
-                    {tab.label}
-                    {activeDocumentTab === tab.value && (
-                      <div className="bg-primary absolute bottom-0 left-0 right-0 h-0.5" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-            {/* Document content */}
-            <div className="relative flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
-                <div className="relative p-4" data-selection-container>
-                  <Markdown content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''} />
-                  <TextSelectionMenu onQuote={onQuote} />
-                </div>
-              </ScrollArea>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="preview" className="mt-0 flex-1 overflow-hidden">
-            {mvpData ? (
-              <Preview files={mvpData.files} />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-muted-foreground text-sm">No preview available</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="code" className="mt-0 flex-1 overflow-hidden">
-            {mvpData ? (
-              <CodeViewer files={mvpData.files} />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-muted-foreground text-sm">No code available</p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-    )
-  }
+  const panelWidth = 'w-[min(55vw,900px)]'
 
   return (
     <>
@@ -348,19 +190,17 @@ export function DraftPanel({
         className={`relative flex h-full shrink-0 transition-all duration-700 ease-in-out ${
           isVisible ? panelWidth : 'w-12 min-w-12'
         }`}>
-        {onToggle && (
+        {onToggle && !isVisible && (
           <Button
             size="icon"
             variant="ghost"
-            onClick={onToggle}
-            className={`top-4.5 absolute z-20 h-8 w-8 transition-all duration-500 ease-in-out ${
-              isVisible ? 'right-4' : 'left-2'
-            }`}>
-            {isVisible ? (
-              <ChevronsRight className="text-muted-foreground h-4 w-4" />
-            ) : (
-              <ChevronsLeft className="text-muted-foreground h-4 w-4" />
-            )}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onToggle()
+            }}
+            className="absolute left-2 top-4 z-50 h-8 w-8 transition-all duration-500 ease-in-out">
+            <ChevronsLeft className="text-muted-foreground h-4 w-4" />
           </Button>
         )}
 
@@ -369,115 +209,192 @@ export function DraftPanel({
             isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
           }`}>
           <Tabs value={effectiveActiveTab} onValueChange={setActiveTab} className="flex h-full flex-col">
-            <div className="border-border flex items-center justify-between border-b px-4 py-2">
-              <TabsList>
+            <div className="border-border/40 flex items-center justify-between border-b px-4 py-2">
+              <TabsList className="bg-muted/40 h-8 gap-1 rounded-md p-0.5">
                 {availableTabs.map((tab) => (
-                  <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
-                    <tab.icon className="h-3 w-3" />
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="data-[state=active]:bg-background h-7 gap-1.5 rounded-sm px-2.5 text-xs font-medium data-[state=active]:shadow-sm">
+                    <tab.icon className="h-3.5 w-3.5" strokeWidth={1.5} />
                     {tab.label}
                   </TabsTrigger>
                 ))}
               </TabsList>
 
-              <div className="mr-6 flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 {effectiveActiveTab === 'documents' && (
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button size="icon" variant="ghost" className="h-8 w-8" title="Copy document">
-                        <Copy className="text-muted-foreground h-4 w-4" />
+                      <Button size="icon" variant="ghost" className="h-7 w-7" title="Copy document">
+                        <Copy className="text-muted-foreground h-3.5 w-3.5" strokeWidth={1.5} />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-56 p-2" align="end">
-                      <div className="flex flex-col gap-1">
+                    <PopoverContent className="w-48 p-1" align="end">
+                      <div className="flex flex-col gap-0.5">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="justify-start gap-2"
+                          className="h-8 justify-start gap-2 rounded-sm px-2 text-xs font-medium"
                           onClick={() => handleCopy('current')}>
-                          <FileText className="h-4 w-4" />
-                          Copy current document
+                          <FileText className="h-3.5 w-3.5" strokeWidth={1.5} />
+                          Copy current
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="justify-start gap-2"
+                          className="h-8 justify-start gap-2 rounded-sm px-2 text-xs font-medium"
                           onClick={() => handleCopy('all')}>
-                          <Files className="h-4 w-4" />
-                          Copy all documents
+                          <Files className="h-3.5 w-3.5" strokeWidth={1.5} />
+                          Copy all
                         </Button>
                       </div>
                     </PopoverContent>
                   </Popover>
                 )}
-                {canFullscreen && (
+                {onToggle && isVisible && (
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() => setIsFullscreen(true)}
-                    className="h-8 w-8"
-                    title="Fullscreen">
-                    <Maximize2 className="text-muted-foreground h-4 w-4" />
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      onToggle()
+                    }}
+                    className="h-7 w-7"
+                    title="Hide panel">
+                    <ChevronsRight className="text-muted-foreground h-3.5 w-3.5" strokeWidth={1.5} />
                   </Button>
                 )}
               </div>
             </div>
 
-            <TabsContent value="documents" className="mt-0 flex h-full flex-col overflow-hidden">
-              {/* Nested document tabs */}
-              {availableDocumentTabs.length > 1 && (
-                <div className="border-border flex items-center gap-1 border-b px-4">
-                  {availableDocumentTabs.map((tab) => (
-                    <button
-                      key={tab.value}
-                      onClick={() => setActiveDocumentTab(tab.value as 'requirement' | 'architecture' | 'development')}
-                      className={`relative flex items-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
-                        activeDocumentTab === tab.value
-                          ? 'text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}>
-                      {tab.label}
-                      {activeDocumentTab === tab.value && (
-                        <div className="bg-primary absolute bottom-0 left-0 right-0 h-0.5" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {/* Document content */}
-              <div className="relative flex-1 overflow-hidden">
-                <ScrollArea className="h-full">
-                  <div className="relative p-4" data-selection-container>
-                    <Markdown content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''} />
-                    <TextSelectionMenu onQuote={onQuote} />
+            <TabsContent value="documents" className="mt-0 flex h-full overflow-hidden">
+              <div
+                className={`border-border/40 relative flex shrink-0 flex-col border-r transition-all duration-300 ${
+                  isNavCollapsed ? 'w-14' : 'w-48'
+                }`}>
+                <button
+                  onClick={() => setIsNavCollapsed(!isNavCollapsed)}
+                  className="border-border/60 bg-background/95 hover:border-border hover:bg-accent absolute -right-2.5 top-3 z-10 flex h-5 w-5 items-center justify-center rounded-md border shadow-sm backdrop-blur-sm transition-all hover:shadow">
+                  <ChevronsLeft
+                    className={`text-muted-foreground/70 h-3 w-3 transition-transform duration-300 ${
+                      isNavCollapsed ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                <div className="flex-1 overflow-y-auto px-2 py-3">
+                  {!isNavCollapsed && (
+                    <div className="mb-1.5 px-2">
+                      <div className="text-muted-foreground/60 text-[10px] font-medium uppercase tracking-wider">
+                        Documents
+                      </div>
+                    </div>
+                  )}
+                  <div className="space-y-0.5">
+                    {availableDocumentTabs.map((tab, index) => (
+                      <button
+                        key={tab.value}
+                        onClick={() => setActiveDocumentTab(tab.value)}
+                        style={{ animationDelay: `${index * 30}ms` }}
+                        title={isNavCollapsed ? tab.label : undefined}
+                        className={`group relative flex w-full items-center rounded-md transition-all duration-150 ${
+                          isNavCollapsed ? 'justify-center px-2 py-2.5' : 'gap-2.5 px-2 py-2 text-left'
+                        } ${
+                          activeDocumentTab === tab.value
+                            ? 'bg-accent/80 text-foreground'
+                            : 'text-muted-foreground hover:bg-accent/40 hover:text-foreground'
+                        }`}>
+                        <div
+                          className={`flex shrink-0 items-center justify-center transition-all duration-150 ${
+                            isNavCollapsed ? 'h-5 w-5' : 'h-5 w-5'
+                          } ${
+                            activeDocumentTab === tab.value
+                              ? 'text-foreground'
+                              : 'text-muted-foreground/70 group-hover:text-foreground/90'
+                          }`}>
+                          <tab.icon className="h-4 w-4" strokeWidth={1.5} />
+                        </div>
+                        {!isNavCollapsed && (
+                          <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
+                            <span className="truncate text-[13px] font-medium">{tab.label}</span>
+                            <div
+                              className={`h-1 w-1 shrink-0 rounded-full transition-colors ${
+                                tab.content
+                                  ? 'bg-green-500/80'
+                                  : isGeneratingDocuments && tab.value !== 'REQUIREMENT'
+                                    ? 'animate-pulse bg-amber-400/80'
+                                    : 'bg-muted-foreground/30'
+                              }`}
+                            />
+                          </div>
+                        )}
+                        {activeDocumentTab === tab.value && !isNavCollapsed && (
+                          <div className="bg-foreground absolute left-0 top-0 h-full w-0.5 rounded-r-full" />
+                        )}
+                      </button>
+                    ))}
                   </div>
-                </ScrollArea>
+                </div>
+              </div>
+
+              <div className="flex flex-1 flex-col overflow-hidden">
+                <div className="border-border/40 flex items-center justify-between border-b px-5 py-2.5">
+                  <div className="flex items-center gap-2.5">
+                    {(() => {
+                      const currentTab = availableDocumentTabs.find((t) => t.value === activeDocumentTab)
+                      return (
+                        <>
+                          {currentTab && (
+                            <>
+                              <currentTab.icon className="text-muted-foreground/70 h-4 w-4" strokeWidth={1.5} />
+                              <span className="text-foreground text-sm font-medium">{currentTab.label}</span>
+                              {currentTab.content ? (
+                                <div className="ml-1 flex items-center gap-1 rounded-full bg-green-500/10 px-1.5 py-0.5">
+                                  <div className="h-1 w-1 rounded-full bg-green-500" />
+                                  <span className="text-[10px] font-medium text-green-700 dark:text-green-400">
+                                    Ready
+                                  </span>
+                                </div>
+                              ) : isGeneratingDocuments && currentTab.value !== 'REQUIREMENT' ? (
+                                <div className="ml-1 flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5">
+                                  <div className="h-1 w-1 animate-pulse rounded-full bg-amber-500" />
+                                  <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">
+                                    Generating
+                                  </span>
+                                </div>
+                              ) : null}
+                            </>
+                          )}
+                        </>
+                      )
+                    })()}
+                  </div>
+                </div>
+                <div className="bg-background relative flex-1 overflow-hidden">
+                  <ScrollArea className="h-full">
+                    <div
+                      className="animate-in fade-in slide-in-from-bottom-2 relative px-6 py-8 duration-300"
+                      data-selection-container>
+                      <DocumentRenderer
+                        key={activeDocumentTab}
+                        content={documentTabs.find((tab) => tab.value === activeDocumentTab)?.content || ''}
+                        documentType={activeDocumentTab}
+                      />
+                      <TextSelectionMenu onQuote={onQuote} />
+                    </div>
+                  </ScrollArea>
+                </div>
               </div>
             </TabsContent>
 
-            <TabsContent
-              value="preview"
-              className="mt-0 flex-1 overflow-hidden"
-              forceMount
-              hidden={effectiveActiveTab !== 'preview'}>
-              {mvpData ? (
-                <Preview files={mvpData.files} />
+            <TabsContent value="competitors" className="mt-0 flex-1 overflow-hidden">
+              {currentPhaseChatId ? (
+                <CompetitorView chatId={currentPhaseChatId} refreshTrigger={competitorRefreshTrigger} />
               ) : (
                 <div className="flex h-full items-center justify-center">
-                  <p className="text-muted-foreground text-sm">No preview available</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent
-              value="code"
-              className="mt-0 flex-1 overflow-hidden"
-              forceMount
-              hidden={effectiveActiveTab !== 'code'}>
-              {mvpData ? (
-                <CodeViewer files={mvpData.files} />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <p className="text-muted-foreground text-sm">No code available</p>
+                  <p className="text-muted-foreground text-sm">No chat selected</p>
                 </div>
               )}
             </TabsContent>

@@ -40,21 +40,21 @@ model Account {
 }
 
 model Chat {
-  id        String     @id @default(cuid())
-  title     String?
-  userId    String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  deletedAt DateTime?
-  isDeleted Boolean    @default(false)
-  isPublic  Boolean    @default(false)
-  parentId  String?
-  phase     ChatPhase?
-  parent    Chat?      @relation("ProjectPhases", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Chat[]     @relation("ProjectPhases")
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
-  mvp       Mvp?
+  id                   String               @id @default(cuid())
+  title                String?
+  userId               String
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  deletedAt            DateTime?
+  isDeleted            Boolean              @default(false)
+  isPublic             Boolean              @default(false)
+  parentId             String?
+  phase                ChatPhase?
+  parent               Chat?                @relation("ProjectPhases", fields: [parentId], references: [id], onDelete: Cascade)
+  children             Chat[]               @relation("ProjectPhases")
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages             Message[]
+  competitorResearches CompetitorResearch[]
 
   @@map("chat")
 }
@@ -69,27 +69,8 @@ model Message {
   order     Int      @default(0)
   chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
+  @@index([chatId, createdAt])
   @@map("message")
-}
-
-model Mvp {
-  id                  String   @id @default(cuid())
-  chatId              String   @unique
-  sandboxId           String?  @unique
-  previewUrl          String?
-  files               Json
-  requirementSnapshot String
-  status              String   @default("running")
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  vercelDeploymentId  String?  @unique
-  vercelUrl           String?
-  chat                Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-
-  @@index([chatId])
-  @@index([sandboxId])
-  @@index([vercelDeploymentId])
-  @@map("mvp")
 }
 
 model Feedback {
@@ -123,6 +104,22 @@ enum FeedbackType {
 
 enum ChatPhase {
   REQUIREMENT
-  ARCHITECTURE
-  DEVELOPMENT
+}
+
+model CompetitorResearch {
+  id           String    @id @default(cuid())
+  chatId       String
+  phase        ChatPhase @default(REQUIREMENT)
+  query        String
+  results      Json
+  analysis     Json?
+  status       String    @default("pending")
+  errorMessage String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  chat         Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([chatId, phase])
+  @@map("competitor_research")
 }

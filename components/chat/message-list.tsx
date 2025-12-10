@@ -6,13 +6,15 @@ import { useRef, useEffect, useState } from 'react'
 
 import { AssistantMessage } from '@/components/chat/assistant-message'
 import { EmptyState } from '@/components/chat/empty-state'
-import { UserMessage, MessagePart } from '@/components/chat/user-message'
+import { UserMessage } from '@/components/chat/user-message'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 import { cn } from '@/libs/utils/utils'
 import { MyUIMessage } from '@/schema/chat'
+
+import type { MessagePart } from '@/types/chat'
 
 interface MessageListProps {
   messages: MyUIMessage[]
@@ -21,6 +23,7 @@ interface MessageListProps {
   onSendMessage: (message: { text: string }) => void
   onUpdateMessage?: (messageId: string, metadata: MyUIMessage['metadata']) => void
   onRollback: (messageId: string) => void
+  messageRefs?: React.MutableRefObject<Map<string, HTMLElement>>
 }
 
 export function MessageList({
@@ -30,6 +33,7 @@ export function MessageList({
   onSendMessage,
   onUpdateMessage,
   onRollback,
+  messageRefs,
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -85,7 +89,15 @@ export function MessageList({
               .map((message) => (
                 <div
                   key={message.id}
-                  className={cn('group flex gap-4', message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                  ref={(el) => {
+                    if (el && messageRefs) {
+                      messageRefs.current.set(message.id, el)
+                    }
+                  }}
+                  className={cn(
+                    'group flex gap-4 transition-colors',
+                    message.role === 'user' ? 'justify-end' : 'justify-start'
+                  )}>
                   {message.role === 'user' ? (
                     <UserMessage
                       key={message.id}
@@ -117,7 +129,7 @@ export function MessageList({
           {(status === 'submitted' || status === 'streaming') && (
             <div className="flex justify-start gap-4">
               <div className="flex animate-pulse items-center gap-2">
-                <Brain className="text-muted-foreground h-4 w-4" />
+                <Brain className="text-muted-foreground h-4 w-4" strokeWidth={1.5} />
                 <span className="text-muted-foreground text-xs">{'Thinking...'}</span>
               </div>
             </div>
@@ -125,17 +137,17 @@ export function MessageList({
 
           {status === 'error' && (
             <div className="flex justify-start gap-4">
-              <Card className="mr-12 border-red-200 bg-red-50 p-2.5 shadow-none dark:border-red-800 dark:bg-red-950">
+              <Card className="border-border/40 bg-muted/20 mr-12 p-2.5 shadow-none">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-red-600 dark:text-red-400">Failed to get response</span>
+                    <span className="text-muted-foreground text-sm">Failed to get response</span>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={onRetry}
-                    className="h-7 px-2 text-xs text-red-600 hover:bg-transparent hover:text-red-600 dark:text-red-400">
-                    <RefreshCw className="mr-1 h-3 w-3" />
+                    className="text-muted-foreground hover:text-foreground h-7 px-2 text-xs transition-all duration-150">
+                    <RefreshCw className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} />
                     Retry
                   </Button>
                 </div>
@@ -154,8 +166,8 @@ export function MessageList({
             onClick={scrollToBottom}
             size="sm"
             variant="secondary"
-            className="bg-background hover:bg-muted h-8 w-8 rounded-full border p-0 shadow-lg">
-            <ChevronDown className="h-4 w-4" />
+            className="bg-background/95 hover:bg-accent border-border/40 h-8 w-8 rounded-full border p-0 shadow-sm backdrop-blur-sm transition-all duration-150">
+            <ChevronDown className="h-4 w-4" strokeWidth={1.5} />
           </Button>
         </div>
       )}

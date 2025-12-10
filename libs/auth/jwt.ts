@@ -1,13 +1,6 @@
 import jwt from 'jsonwebtoken'
 
-export interface JWTPayload {
-  userId: string
-  email: string
-  name: string
-  image?: string | null
-  iat?: number
-  exp?: number
-}
+import type { JWTPayload } from '@/types/auth'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 const JWT_EXPIRES_IN = '7d'

@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import { useSelectedOptions } from '@/hooks/use-selected-options'
-import { parseAIResponse, ParsedResponse } from '@/libs/ai/xml-parser'
+import { parseAIResponse } from '@/libs/ai/xml-parser'
 import { MyUIMessage } from '@/schema/chat'
+
+import type { ParsedResponse } from '@/types/ai'
 
 interface AssistantMessageProps {
   content: string
@@ -100,14 +102,20 @@ export function AssistantMessage({
     }
   }
 
+  // Don't render document content in chat messages
+  const hasDocumentContent = parsed.productDocument || parsed.flowchart || parsed.sitemap || parsed.wireframe
+  if (hasDocumentContent && !parsed.prose && !parsed.question && parsed.options.length === 0) {
+    return null
+  }
+
   return (
     <div className="flex max-w-[85%] flex-col items-end">
-      <div className="bg-background space-y-4 rounded-xl border-none p-2.5 shadow-none">
+      <div className="space-y-4 rounded-lg p-2.5">
         {/* Prose */}
         {parsed.prose && parsed.prose.length > 0 && (
           <div className="text-muted-foreground space-y-2 text-sm">
             {parsed.prose.map((prose, index) => (
-              <Markdown key={index} content={prose} />
+              <Markdown key={index} content={prose} hideMermaid={true} />
             ))}
           </div>
         )}
@@ -115,7 +123,7 @@ export function AssistantMessage({
         {/* Question */}
         {parsed.question && (
           <div className="text-sm font-medium">
-            <Markdown content={parsed.question} />
+            <Markdown content={parsed.question} hideMermaid={true} />
           </div>
         )}
 
@@ -135,8 +143,8 @@ export function AssistantMessage({
                   <Button
                     key={`${option.value}-${index}`}
                     variant="outline"
-                    className={`h-auto justify-start whitespace-pre-wrap px-4 py-3 text-left ${
-                      isSelected && 'bg-accent'
+                    className={`h-auto justify-start whitespace-pre-wrap border-border/40 px-4 py-3 text-left transition-all duration-150 ${
+                      isSelected && 'bg-accent/80'
                     }`}
                     disabled={answered}
                     onClick={() => {
@@ -145,7 +153,7 @@ export function AssistantMessage({
                     <span className="text-muted-foreground mr-2 text-xs font-medium">{option.value}.</span>
                     <Markdown content={option.text} inline />
                     <div className="flex h-4 w-4 items-center justify-center">
-                      {isSelected && <Check className="h-4 w-4" />}
+                      {isSelected && <Check className="h-4 w-4" strokeWidth={1.5} />}
                     </div>
                   </Button>
                 )
@@ -184,7 +192,11 @@ export function AssistantMessage({
           parsed.options.length === 0 &&
           !parsed.draft &&
           !parsed.final &&
-          !parsed.input && <Markdown content={parsed.rawText} className="text-sm" />}
+          !parsed.productDocument &&
+          !parsed.flowchart &&
+          !parsed.sitemap &&
+          !parsed.wireframe &&
+          !parsed.input && <Markdown content={parsed.rawText} className="text-sm" hideMermaid={true} />}
       </div>
       <div className="mt-1 flex w-full items-center justify-between gap-1 px-2.5">
         {answered && (
@@ -197,9 +209,9 @@ export function AssistantMessage({
           variant="ghost"
           size="sm"
           onClick={() => onRollback()}
-          className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+          className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs opacity-0 transition-opacity duration-150 group-hover:opacity-100"
           title="Rollback to this message">
-          <RotateCcw className="mr-1 h-4 w-4" />
+          <RotateCcw className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} />
           Rollback
         </Button>
       </div>

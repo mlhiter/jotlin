@@ -1,21 +1,22 @@
 'use client'
 
+import { ChatPhase } from '@prisma/client'
 import { ChatStatus } from 'ai'
-import { ArrowUp, Square, X, TextAlignStart, Image as ImageIcon } from 'lucide-react'
+import { ArrowUp, Square, X, TextAlignStart, Image as ImageIcon, Target, Loader2 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import { toast } from 'sonner'
 
 import { FilePreview } from '@/components/chat/file-preview'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
-import { SelectedOption, useSelectedOptions } from '@/hooks/use-selected-options'
+import { useSelectedOptions } from '@/hooks/use-selected-options'
+import apiClient from '@/libs/utils/axios'
 import { validateFile, extractFileContent, isImageFile } from '@/libs/utils/file-utils'
 
-interface Quote {
-  id: string
-  text: string
-}
+import type { Quote, SelectedOption } from '@/types/chat'
+import type { CompetitorResearchResponse } from '@/types/competitor'
 
 interface ChatInputProps {
   onSendMessage: (message: { text: string }) => void
@@ -27,6 +28,9 @@ interface ChatInputProps {
   onRemoveQuote?: (id: string) => void
   onMarkMessageAnswered?: (messageId: string, selectedOptions: SelectedOption[]) => void
   autoFocus?: boolean
+  chatId?: string
+  phase?: ChatPhase | null
+  onCompetitorSearchComplete?: () => void
 }
 
 export function ChatInput({
@@ -38,13 +42,26 @@ export function ChatInput({
   onRemoveQuote,
   onMarkMessageAnswered,
   autoFocus = false,
+  chatId,
+  phase,
+  onCompetitorSearchComplete,
 }: ChatInputProps) {
   const [input, setInput] = useState('')
   const [files, setFiles] = useState<FileList | undefined>(undefined)
+  const [isSearchingCompetitors, setIsSearchingCompetitors] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const { selectedOptions, clearOptions, removeOption, currentAssistantMessageId } = useSelectedOptions()
+
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
@@ -179,6 +196,57 @@ export function ChatInput({
     }
   }
 
+  const handleCompetitorSearch = async () => {
+    if (!chatId) return
+
+    setIsSearchingCompetitors(true)
+    try {
+      const response = await apiClient.post(`/api/chats/${chatId}/competitor-research`)
+      const researchId = response.data.id
+
+      pollIntervalRef.current = setInterval(async () => {
+        try {
+          const pollResponse = await apiClient.get<CompetitorResearchResponse[]>(
+            `/api/chats/${chatId}/competitor-research`
+          )
+          const research = pollResponse.data.find((r) => r.id === researchId)
+
+          if (!research) return
+
+          if (research.status === 'completed' && research.analysis) {
+            if (pollIntervalRef.current) {
+              clearInterval(pollIntervalRef.current)
+              pollIntervalRef.current = null
+            }
+            setIsSearchingCompetitors(false)
+
+            const competitorCount = research.analysis?.competitors?.length || 0
+            if (competitorCount > 0) {
+              toast.success(`Found ${competitorCount} competitors`)
+            } else {
+              toast.success('Research completed')
+            }
+
+            onCompetitorSearchComplete?.()
+          } else if (research.status === 'failed') {
+            if (pollIntervalRef.current) {
+              clearInterval(pollIntervalRef.current)
+              pollIntervalRef.current = null
+            }
+            setIsSearchingCompetitors(false)
+            toast.error(research.errorMessage || 'Search failed')
+          }
+        } catch (error) {
+          console.error('Poll failed:', error)
+        }
+      }, 2000)
+    } catch (error) {
+      console.error('Competitor search failed:', error)
+      setIsSearchingCompetitors(false)
+      toast.error('Failed to start search')
+    }
+  }
+
   return (
     <div className="mb-2 mt-1 px-4">
       <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
@@ -195,8 +263,8 @@ export function ChatInput({
             {quotes.map((quote) => (
               <div
                 key={quote.id}
-                className="border-1 border-border bg-muted/30 flex w-48 items-center gap-1 rounded px-2 py-1">
-                <TextAlignStart className="text-accent-foreground/70 h-3 w-3 flex-shrink-0" />
+                className="bg-muted/20 border-border/40 flex w-48 items-center gap-1 rounded-md border px-2 py-1 transition-all duration-150">
+                <TextAlignStart className="text-accent-foreground/70 h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.5} />
                 <div className="text-muted-foreground flex-1 truncate text-xs">{quote.text}</div>
                 {onRemoveQuote && (
                   <Button
@@ -205,7 +273,7 @@ export function ChatInput({
                     variant="ghost"
                     onClick={() => onRemoveQuote(quote.id)}
                     className="h-4 w-4 p-0">
-                    <X className="h-2 w-2 text-neutral-500" />
+                    <X className="h-3 w-3 text-neutral-500" strokeWidth={1.5} />
                   </Button>
                 )}
               </div>
@@ -221,7 +289,7 @@ export function ChatInput({
                 {selectedOptions.map((option, index) => (
                   <div
                     key={`${option.value}-${index}`}
-                    className="border-border bg-accent/30 flex items-center gap-2 rounded border px-2 py-1 text-sm">
+                    className="bg-accent/40 border-border/40 flex items-center gap-2 rounded-md border px-2 py-1 text-sm transition-all duration-150">
                     <span className="text-muted-foreground text-xs font-medium">{option.value}</span>
                     <Button
                       type="button"
@@ -229,7 +297,7 @@ export function ChatInput({
                       variant="ghost"
                       onClick={() => removeOption(option.value)}
                       className="h-4 w-4 p-0">
-                      <X className="h-2 w-2 text-neutral-500" />
+                      <X className="h-3 w-3 text-neutral-500" strokeWidth={1.5} />
                     </Button>
                   </div>
                 ))}
@@ -271,19 +339,61 @@ export function ChatInput({
           />
 
           <div className="flex items-center justify-between px-2 py-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation()
-                fileInputRef.current?.click()
-              }}
-              disabled={status === 'submitted' || status === 'streaming' || disabled || (files && files.length >= 3)}
-              className="h-8 w-8 p-0"
-              aria-label="Upload image">
-              <ImageIcon className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        fileInputRef.current?.click()
+                      }}
+                      disabled={
+                        status === 'submitted' || status === 'streaming' || disabled || (files && files.length >= 3)
+                      }
+                      className="h-8 w-8 p-0"
+                      aria-label="Upload image">
+                      <ImageIcon className="h-4 w-4" strokeWidth={1.5} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="text-xs">Upload Image</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {chatId && phase === 'REQUIREMENT' && (
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleCompetitorSearch()
+                        }}
+                        disabled={isSearchingCompetitors}
+                        className="h-8 w-8 p-0"
+                        aria-label="Search competitors">
+                        {isSearchingCompetitors ? (
+                          <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
+                        ) : (
+                          <Target className="h-4 w-4" strokeWidth={1.5} />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p className="text-xs">Search Competitors</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
 
             <Button
               type={status === 'streaming' ? 'button' : 'submit'}
@@ -296,7 +406,11 @@ export function ChatInput({
               disabled={status !== 'streaming' && !input.trim() && selectedOptions.length === 0 && !files}
               size="sm"
               className="h-8 w-8 p-0">
-              {status === 'streaming' ? <Square className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
+              {status === 'streaming' ? (
+                <Square className="h-4 w-4" strokeWidth={1.5} />
+              ) : (
+                <ArrowUp className="h-4 w-4" strokeWidth={1.5} />
+              )}
             </Button>
           </div>
         </div>
