@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthStore>()(
       isInitialized: false,
       error: null,
       _hasHydrated: false,
-
+      isSealosUser: false,
       setAuth: (session: AuthSession) => {
         set({
           user: session.user,
