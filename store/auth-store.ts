@@ -14,9 +14,10 @@ interface AuthStore {
   isInitialized: boolean
   error: string | null
   _hasHydrated: boolean
+  isSealosUser: boolean
 
   // Actions
-  setAuth: (session: AuthSession) => void
+  setAuth: (session: AuthSession, isSealos?: boolean) => void
   clearAuth: () => void
   fetchSession: () => Promise<void>
   signOut: () => Promise<void>
