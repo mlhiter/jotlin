@@ -33,9 +33,9 @@ interface CreateDocumentInput {
   content?: string
 }
 
-export function useDocuments(params: { projectId?: string; workspaceId?: string }) {
+export function useDocuments(params: { projectId?: string; workspaceId?: string; enabled?: boolean }) {
   const queryClient = useQueryClient()
-  const { projectId, workspaceId } = params
+  const { projectId, workspaceId, enabled = true } = params
 
   const fetchDocumentsRequest = async (): Promise<Document[]> => {
     if (!projectId && !workspaceId) return []
@@ -59,7 +59,7 @@ export function useDocuments(params: { projectId?: string; workspaceId?: string 
   } = useQuery({
     queryKey,
     queryFn: fetchDocumentsRequest,
-    enabled: !!(projectId || workspaceId),
+    enabled: enabled && !!(projectId || workspaceId),
   })
 
   const createDocumentMutation = useMutation({

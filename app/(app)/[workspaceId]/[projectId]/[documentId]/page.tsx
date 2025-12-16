@@ -1,4 +1,9 @@
-import { Metadata } from 'next'
+'use client'
+
+import { use } from 'react'
+import { useDocument } from '@/hooks/use-document'
+import { DocumentView } from '@/components/document/document-view'
+import { Loader2 } from 'lucide-react'
 
 interface DocumentPageProps {
   params: Promise<{
@@ -7,26 +12,26 @@ interface DocumentPageProps {
   }>
 }
 
-export const metadata: Metadata = {
-  title: 'Document | Jotlin',
-}
+export default function DocumentPage({ params }: DocumentPageProps) {
+  const { documentId } = use(params)
 
-export default async function DocumentPage({ params }: DocumentPageProps) {
-  const { projectId, documentId } = await params
+  const { document, isLoading } = useDocument(documentId)
 
-  return (
-    <div className="flex h-full flex-col">
-      <div className="border-b p-4">
-        <h1 className="text-xl font-semibold">Document Editor</h1>
-        <p className="text-sm text-muted-foreground">
-          Project: {projectId} | Document: {documentId}
-        </p>
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-      <div className="flex-1 p-4">
-        <div className="flex h-full items-center justify-center">
-          <p className="text-muted-foreground">Document Editor interface coming soon</p>
-        </div>
+    )
+  }
+
+  if (!document) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-muted-foreground">Document not found</p>
       </div>
-    </div>
-  )
+    )
+  }
+
+  return <DocumentView document={document} />
 }

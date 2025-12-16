@@ -3,7 +3,7 @@
 import { Bot, ChevronRight, File, Folder, FolderPlus, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -23,6 +23,7 @@ import { useDocuments } from '@/hooks/use-documents'
 import { useProjects } from '@/hooks/use-projects'
 import { useWorkspace } from '@/hooks/use-workspace'
 import { cn } from '@/libs/utils/utils'
+import { DocumentListItem } from './document-list-item'
 
 export function WorkspaceSidebar() {
   const { workspace, isLoading: isLoadingWorkspace } = useWorkspace()
@@ -32,6 +33,21 @@ export function WorkspaceSidebar() {
   const pathname = usePathname()
 
   const isLoading = isLoadingWorkspace || isLoadingProjects
+
+  // Auto-expand project based on current path
+  useEffect(() => {
+    if (pathname && projects.length > 0) {
+      // Path format: /{workspaceId}/{projectId}/{documentId}
+      const pathParts = pathname.split('/').filter(Boolean)
+      if (pathParts.length >= 2) {
+        const projectId = pathParts[1]
+        // Check if this projectId exists in our projects
+        if (projects.some((p) => p.id === projectId)) {
+          setExpandedProjects((prev) => new Set(prev).add(projectId))
+        }
+      }
+    }
+  }, [pathname, projects])
 
   const toggleProject = (projectId: string) => {
     setExpandedProjects((prev) => {
@@ -132,7 +148,11 @@ interface ProjectTreeItemProps {
 }
 
 function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, isActive, onExpand }: ProjectTreeItemProps & { onExpand: (projectId: string) => void }) {
-  const { documents, createDocument, isCreating } = useDocuments({ projectId: project.id })
+  // Only load documents when expanded
+  const { documents, createDocument, isCreating, isLoading } = useDocuments({
+    projectId: project.id,
+    enabled: isExpanded,
+  })
   const [creatingDoc, setCreatingDoc] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
@@ -157,7 +177,7 @@ function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, isActive,
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
-        <div className="group flex w-full items-center gap-2">
+        <div className="group/project flex w-full items-center gap-2">
           <button onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-2">
             <ChevronRight
               className={cn('h-4 w-4 shrink-0 transition-transform', isExpanded && 'rotate-90')}
@@ -173,7 +193,7 @@ function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, isActive,
           <Button
             variant="ghost"
             size="icon"
-            className="h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100"
+            className="h-5 w-5 opacity-0 transition-opacity group-hover/project:opacity-100"
             onClick={handleCreateDocument}
             disabled={isCreating || creatingDoc}
           >
@@ -182,30 +202,44 @@ function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, isActive,
         </div>
       </SidebarMenuButton>
 
-      {isExpanded && documents.length > 0 && (
+      {isExpanded && isLoading && (
+        <SidebarMenuSub>
+          <SidebarMenuSubItem>
+            <div className="flex items-center gap-1.5 px-2 py-1.5">
+              <Skeleton className="h-4 w-4 shrink-0" />
+              <Skeleton className="h-4 flex-1" />
+            </div>
+          </SidebarMenuSubItem>
+          <SidebarMenuSubItem>
+            <div className="flex items-center gap-1.5 px-2 py-1.5">
+              <Skeleton className="h-4 w-4 shrink-0" />
+              <Skeleton className="h-4 flex-1" />
+            </div>
+          </SidebarMenuSubItem>
+          <SidebarMenuSubItem>
+            <div className="flex items-center gap-1.5 px-2 py-1.5">
+              <Skeleton className="h-4 w-4 shrink-0" />
+              <Skeleton className="h-4 flex-1" />
+            </div>
+          </SidebarMenuSubItem>
+        </SidebarMenuSub>
+      )}
+
+      {isExpanded && !isLoading && documents.length > 0 && (
         <SidebarMenuSub>
           {documents.map((doc) => (
-            <SidebarMenuSubItem key={doc.id}>
-              <SidebarMenuSubButton
-                asChild
-                isActive={pathname === `/${workspaceId}/${project.id}/${doc.id}`}
-              >
-                <Link href={`/${workspaceId}/${project.id}/${doc.id}`}>
-                  {doc.icon && doc.icon !== '📄' ? (
-                    <span className="text-sm">{doc.icon}</span>
-                  ) : (
-                    <File className="h-4 w-4" />
-                  )}
-                  <span className="truncate">{doc.title}</span>
-                  {doc.isAIGenerated && <Bot className="h-3 w-3" />}
-                </Link>
-              </SidebarMenuSubButton>
-            </SidebarMenuSubItem>
+            <DocumentListItem
+              key={doc.id}
+              doc={doc}
+              workspaceId={workspaceId}
+              projectId={project.id}
+              isActive={pathname === `/${workspaceId}/${project.id}/${doc.id}`}
+            />
           ))}
         </SidebarMenuSub>
       )}
 
-      {isExpanded && documents.length === 0 && (
+      {isExpanded && !isLoading && documents.length === 0 && (
         <SidebarMenuSub>
           <div className="px-2 py-2 text-xs text-muted-foreground">No documents</div>
         </SidebarMenuSub>
