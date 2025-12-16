@@ -9,18 +9,19 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(uuid())
-  name          String
-  email         String     @unique
-  emailVerified Boolean    @default(true)
-  image         String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @default(now()) @updatedAt
-  messageLimit  Int        @default(200)
-  role          UserRole   @default(USER)
-  accounts      Account[]
-  chats         Chat[]
-  feedbacks     Feedback[]
+  id               String            @id @default(uuid())
+  name             String
+  email            String            @unique
+  emailVerified    Boolean           @default(true)
+  image            String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @default(now()) @updatedAt
+  messageLimit     Int               @default(200)
+  role             UserRole          @default(USER)
+  accounts         Account[]
+  feedbacks        Feedback[]
+  workspaces       Workspace[]
+  workspaceMembers WorkspaceMember[]
 
   @@map("user")
 }
@@ -37,40 +38,6 @@ model Account {
   @@unique([userId, provider])
   @@index([userId])
   @@map("account")
-}
-
-model Chat {
-  id                   String               @id @default(cuid())
-  title                String?
-  userId               String
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-  deletedAt            DateTime?
-  isDeleted            Boolean              @default(false)
-  isPublic             Boolean              @default(false)
-  parentId             String?
-  phase                ChatPhase?
-  parent               Chat?                @relation("ProjectPhases", fields: [parentId], references: [id], onDelete: Cascade)
-  children             Chat[]               @relation("ProjectPhases")
-  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages             Message[]
-  competitorResearches CompetitorResearch[]
-
-  @@map("chat")
-}
-
-model Message {
-  id        String   @id @default(cuid())
-  role      String
-  chatId    String
-  createdAt DateTime @default(now())
-  metadata  Json?
-  parts     Json
-  order     Int      @default(0)
-  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-
-  @@index([chatId, createdAt])
-  @@map("message")
 }
 
 model Feedback {
@@ -102,24 +69,151 @@ enum FeedbackType {
   COMPLIMENT
 }
 
-enum ChatPhase {
-  REQUIREMENT
+enum ChatType {
+  PROJECT
+  DOCUMENT
 }
 
-model CompetitorResearch {
-  id           String    @id @default(cuid())
-  chatId       String
-  phase        ChatPhase @default(REQUIREMENT)
-  query        String
-  results      Json
-  analysis     Json?
-  status       String    @default("pending")
-  errorMessage String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  chat         Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+enum MemberRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
 
-  @@index([chatId])
-  @@index([chatId, phase])
-  @@map("competitor_research")
+// ============================================
+// Workspace Architecture Models
+// ============================================
+
+model Workspace {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String    @default("My Workspace")
+  icon      String?   @default("💼")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects  Project[]
+  documents Document[]
+  members   WorkspaceMember[]
+
+  @@index([userId, isDeleted])
+  @@map("workspace")
+}
+
+model Project {
+  id          String      @id @default(cuid())
+  workspaceId String
+  title       String
+  icon        String?     @default("📁")
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  isDeleted   Boolean     @default(false)
+  deletedAt   DateTime?
+  order       Int         @default(0)
+  isPublic    Boolean     @default(false)
+  shareToken  String?     @unique
+  shareConfig Json?
+
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  documents   Document[]
+  chatThreads ChatThread[]
+
+  @@index([workspaceId, isDeleted])
+  @@index([shareToken])
+  @@map("project")
+}
+
+model Document {
+  id               String       @id @default(cuid())
+  projectId        String?
+  workspaceId      String
+  title            String
+  content          String       @default("") @db.Text
+  documentType     String       @default("Custom")
+  icon             String?      @default("📄")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  lastEditedAt     DateTime     @default(now())
+  isDeleted        Boolean      @default(false)
+  deletedAt        DateTime?
+  order            Int          @default(0)
+  isAIGenerated    Boolean      @default(false)
+  sourceMessageId  String?
+  generationPrompt String?      @db.Text
+  isPublic         Boolean      @default(false)
+  shareToken       String?      @unique
+  shareConfig      Json?
+
+  project     Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  chatThreads ChatThread[]
+
+  @@index([projectId, isDeleted])
+  @@index([workspaceId, isDeleted])
+  @@index([shareToken])
+  @@index([isAIGenerated])
+  @@map("document")
+}
+
+model ChatThread {
+  id         String        @id @default(cuid())
+  projectId  String?
+  documentId String?
+  title      String?       @default("New Conversation")
+  type       ChatType      @default(PROJECT)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  isDeleted  Boolean       @default(false)
+  order      Int           @default(0)
+
+  project  Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  document Document?     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@index([projectId, isDeleted])
+  @@index([documentId, isDeleted])
+  @@map("chat_thread")
+}
+
+model ChatMessage {
+  id           String     @id @default(cuid())
+  chatThreadId String
+  role         String
+  content      Json
+  metadata     Json?
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+
+  chatThread ChatThread @relation(fields: [chatThreadId], references: [id], onDelete: Cascade)
+
+  @@index([chatThreadId, order])
+  @@map("chat_message")
+}
+
+model DocumentTag {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  color    String  @default("#808080")
+  icon     String?
+  isPreset Boolean @default(false)
+
+  @@map("document_tag")
+}
+
+model WorkspaceMember {
+  id          String     @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        MemberRole @default(VIEWER)
+  createdAt   DateTime   @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_member")
 }
