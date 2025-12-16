@@ -62,12 +62,41 @@ export async function getUserMessageUsage(userId: string): Promise<{
     throw new Error('User not found')
   }
 
-  // all message(include deleted chat)
-  const currentCount = await prisma.message.count({
+  const workspace = await prisma.workspace.findFirst({
+    where: { userId },
+    select: { id: true },
+  })
+
+  if (!workspace) {
+    return {
+      currentCount: 0,
+      limit: user.messageLimit,
+      canSendMessage: true,
+    }
+  }
+
+  const projectIds = await prisma.project.findMany({
+    where: { workspaceId: workspace.id },
+    select: { id: true },
+  })
+
+  const threadIds = await prisma.chatThread.findMany({
     where: {
-      chat: {
-        userId: userId,
-      },
+      OR: [
+        { projectId: { in: projectIds.map((p) => p.id) } },
+        {
+          document: {
+            workspaceId: workspace.id,
+          },
+        },
+      ],
+    },
+    select: { id: true },
+  })
+
+  const currentCount = await prisma.chatMessage.count({
+    where: {
+      chatThreadId: { in: threadIds.map((t) => t.id) },
     },
   })
 

@@ -1,11 +1,10 @@
 'use client'
 
-import { BookOpen, Bot, MessageSquare, PieChart, Send, Settings2, SquareTerminal, Shield } from 'lucide-react'
+import { BookOpen, Bot, MessageSquare, PieChart, Send, Settings2, SquareTerminal, Shield, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { ComponentProps, useState } from 'react'
 
 import { FeedbackDialog } from '@/components/dialog/feedback-dialog'
-import { NavChats } from '@/components/nav-chats'
 import { NavSecondary } from '@/components/nav-secondary'
 import { NavUser } from '@/components/nav-user'
 import {
@@ -18,12 +17,15 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { UsageIndicator } from '@/components/usage-indicator'
+import { WorkspaceSidebar } from '@/components/workspace/workspace-sidebar'
 
 import { useAuth } from '@/hooks/use-auth'
+import { useWorkspace } from '@/hooks/use-workspace'
 import { useAuthStore } from '@/store/auth-store'
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { user, isAdmin } = useAuth()
+  const { workspace } = useWorkspace()
   const isSealosUser = useAuthStore((state) => state.isSealosUser)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
 
@@ -106,6 +108,11 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
     ],
     navSecondary: [
       {
+        title: 'Trash',
+        url: workspace?.id ? `/${workspace.id}/trash` : '#',
+        icon: Trash2,
+      },
+      {
         title: 'Feedback',
         url: '#',
         icon: Send,
@@ -155,9 +162,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {/* <NavMain items={data.navMain} /> */}
-        <NavChats />
-        {/* <NavProjects projects={data.projects} /> */}
+        <WorkspaceSidebar />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

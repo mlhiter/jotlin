@@ -40,7 +40,7 @@ export function useChats() {
 
   const {
     data: chats = [],
-    isLoading,
+    isPending,
     error,
     refetch: fetchChats,
   } = useQuery({
@@ -64,7 +64,7 @@ export function useChats() {
 
   return {
     chats,
-    isLoading,
+    isLoading: isPending,
     error: error?.message || null,
     fetchChats,
     createChat: createChatMutation.mutateAsync,
