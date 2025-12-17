@@ -1,11 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { DocumentHeader } from './document-header'
+
+import { ChatArea } from '@/components/chat/chat-area'
+import { useProjects } from '@/hooks/use-projects'
+
 import { useAutoSave } from '@/hooks/use-auto-save'
+
+import { DocumentHeader } from './document-header'
 
 interface Document {
   id: string
+  projectId: string | null
+  workspaceId: string
   title: string
   content: string
   documentType: string
@@ -29,6 +36,10 @@ export function DocumentView({ document }: DocumentViewProps) {
     initialLastSavedAt: document.lastEditedAt ? new Date(document.lastEditedAt) : null,
   })
 
+  // Get project info for Chat tab
+  const { projects } = useProjects(document.workspaceId)
+  const project = projects?.find((p) => p.id === document.projectId)
+
   return (
     <div className="flex h-full flex-col">
       <DocumentHeader
@@ -41,6 +52,14 @@ export function DocumentView({ document }: DocumentViewProps) {
         lastSavedAt={lastSavedAt}
         currentTab={currentTab}
         onTabChange={setCurrentTab}
+        projectInfo={
+          currentTab === 'chat' && project
+            ? {
+                title: project.title,
+                icon: project.icon || undefined,
+              }
+            : undefined
+        }
       />
 
       <div className="flex-1 overflow-hidden">
@@ -53,9 +72,13 @@ export function DocumentView({ document }: DocumentViewProps) {
           />
         )}
 
-        {currentTab === 'chat' && (
+        {currentTab === 'chat' && document.projectId && (
+          <ChatArea type="PROJECT" entityId={document.projectId} workspaceId={document.workspaceId} />
+        )}
+
+        {currentTab === 'chat' && !document.projectId && (
           <div className="flex h-full items-center justify-center">
-            <p className="text-muted-foreground">Document Chat coming soon</p>
+            <p className="text-muted-foreground">This document is not associated with a project</p>
           </div>
         )}
       </div>

@@ -32,6 +32,7 @@ export function EmptyState({ onSendMessage }: EmptyStateProps) {
       description: 'Help me understand what features I really need',
     },
   ]
+
   return (
     <div className="px-4 py-20 text-center">
       <Avatar className="mx-auto mb-4 h-12 w-12">

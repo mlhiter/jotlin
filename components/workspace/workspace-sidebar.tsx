@@ -116,7 +116,6 @@ export function WorkspaceSidebar() {
                 isExpanded={expandedProjects.has(project.id)}
                 onToggle={() => toggleProject(project.id)}
                 onExpand={expandProject}
-                isActive={pathname?.includes(project.id)}
               />
             ))
           ) : (
@@ -144,10 +143,10 @@ interface ProjectTreeItemProps {
   workspaceId: string
   isExpanded: boolean
   onToggle: () => void
-  isActive: boolean
+  onExpand: (projectId: string) => void
 }
 
-function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, isActive, onExpand }: ProjectTreeItemProps & { onExpand: (projectId: string) => void }) {
+function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, onExpand }: ProjectTreeItemProps) {
   // Only load documents when expanded
   const { documents, createDocument, isCreating, isLoading } = useDocuments({
     projectId: project.id,
@@ -174,14 +173,24 @@ function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, isActive,
     }
   }
 
+  const isProjectChatActive = pathname === `/${workspaceId}/${project.id}`
+
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive}>
-        <div className="group/project flex w-full items-center gap-2">
-          <button onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-2">
-            <ChevronRight
-              className={cn('h-4 w-4 shrink-0 transition-transform', isExpanded && 'rotate-90')}
-            />
+      <div className="group/project flex w-full items-center gap-1">
+        {/* Chevron button - toggle expand/collapse */}
+        <button
+          onClick={onToggle}
+          className="flex h-8 w-6 shrink-0 items-center justify-center rounded-md hover:bg-accent"
+        >
+          <ChevronRight
+            className={cn('h-4 w-4 transition-transform', isExpanded && 'rotate-90')}
+          />
+        </button>
+
+        {/* Project name - navigate to project chat */}
+        <SidebarMenuButton asChild isActive={isProjectChatActive} className="flex-1">
+          <Link href={`/${workspaceId}/${project.id}`} className="flex min-w-0 items-center gap-2">
             {project.icon && project.icon !== '📁' ? (
               <span className="shrink-0 text-base">{project.icon}</span>
             ) : (
@@ -189,18 +198,20 @@ function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, isActive,
             )}
             <span className="min-w-0 flex-1 truncate text-left">{project.title}</span>
             <span className="shrink-0 text-xs text-muted-foreground">{project._count.documents}</span>
-          </button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-5 w-5 opacity-0 transition-opacity group-hover/project:opacity-100"
-            onClick={handleCreateDocument}
-            disabled={isCreating || creatingDoc}
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
-        </div>
-      </SidebarMenuButton>
+          </Link>
+        </SidebarMenuButton>
+
+        {/* Create document button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-5 w-5 shrink-0 opacity-0 transition-opacity group-hover/project:opacity-100"
+          onClick={handleCreateDocument}
+          disabled={isCreating || creatingDoc}
+        >
+          <Plus className="h-3 w-3" />
+        </Button>
+      </div>
 
       {isExpanded && isLoading && (
         <SidebarMenuSub>

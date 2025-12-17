@@ -1,29 +1,44 @@
-import { Metadata } from 'next'
+'use client'
+
+import { Loader2 } from 'lucide-react'
+import { use } from 'react'
+
+import { ChatArea } from '@/components/chat/chat-area'
+
+import { useProjects } from '@/hooks/use-projects'
 
 interface ProjectPageProps {
   params: Promise<{
+    workspaceId: string
     projectId: string
   }>
 }
 
-export const metadata: Metadata = {
-  title: 'Project | Jotlin',
-}
+export default function ProjectPage({ params }: ProjectPageProps) {
+  const { workspaceId, projectId } = use(params)
+  const { projects, isLoading } = useProjects(workspaceId)
 
-export default async function ProjectPage({ params }: ProjectPageProps) {
-  const { projectId } = await params
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  const project = projects?.find((p) => p.id === projectId)
+
+  if (!project) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-muted-foreground">Project not found</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b p-4">
-        <h1 className="text-xl font-semibold">Project Chat</h1>
-        <p className="text-sm text-muted-foreground">Project ID: {projectId}</p>
-      </div>
-      <div className="flex-1 p-4">
-        <div className="flex h-full items-center justify-center">
-          <p className="text-muted-foreground">Project Chat interface coming soon</p>
-        </div>
-      </div>
+      <ChatArea type="PROJECT" entityId={projectId} workspaceId={workspaceId} />
     </div>
   )
 }

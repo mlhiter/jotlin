@@ -29,6 +29,10 @@ interface DocumentHeaderProps {
   lastSavedAt: Date | null
   currentTab?: string
   onTabChange?: (tab: string) => void
+  projectInfo?: {
+    title: string
+    icon?: string
+  }
 }
 
 const BUILT_IN_TYPES = ['PRD', 'PAR', 'User Stories', 'Flows', 'Wireframe', 'Sitemap']
@@ -43,6 +47,7 @@ export function DocumentHeader({
   lastSavedAt,
   currentTab,
   onTabChange,
+  projectInfo,
 }: DocumentHeaderProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState(propTitle)
@@ -180,89 +185,110 @@ export function DocumentHeader({
 
   const isBuiltInType = BUILT_IN_TYPES.includes(localDocumentType)
 
+  // Show project info in Chat tab, document info in Editor tab
+  const displayIcon = projectInfo ? projectInfo.icon || '📁' : localIcon || '📄'
+  const displayTitle = projectInfo ? projectInfo.title : localTitle
+  const showDocumentBadges = !projectInfo
+
   return (
     <div className="flex items-center justify-between border-b px-6 py-4">
       <div className="flex items-center gap-3">
-        <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-          <PopoverTrigger asChild>
-            <button className="text-2xl transition-transform hover:scale-110">
-              {localIcon || '📄'}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" side="bottom" align="start">
-            <EmojiPicker onEmojiClick={handleEmojiClick} />
-          </PopoverContent>
-        </Popover>
+        {projectInfo ? (
+          // Non-editable icon for project
+          <div className="text-2xl">{displayIcon}</div>
+        ) : (
+          // Editable icon for document
+          <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+            <PopoverTrigger asChild>
+              <button className="text-2xl transition-transform hover:scale-110">{displayIcon}</button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" side="bottom" align="start">
+              <EmojiPicker onEmojiClick={handleEmojiClick} />
+            </PopoverContent>
+          </Popover>
+        )}
 
         <div>
           <div className="flex items-center gap-2">
-            {isEditingTitle ? (
-              <Input
-                ref={titleInputRef}
-                value={editedTitle}
-                onChange={(e) => setEditedTitle(e.target.value)}
-                onBlur={handleTitleSave}
-                onKeyDown={handleTitleKeyDown}
-                className="h-8 w-64 text-xl font-semibold"
-              />
+            {projectInfo ? (
+              // Non-editable title for project
+              <h1 className="text-xl font-semibold">{displayTitle}</h1>
             ) : (
-              <h1
-                className="cursor-pointer text-xl font-semibold hover:text-muted-foreground"
-                onClick={handleTitleClick}
-              >
-                {localTitle}
-              </h1>
-            )}
-
-            {isBuiltInType ? (
-              <Badge variant="secondary" className="text-xs">
-                {localDocumentType}
-              </Badge>
-            ) : (
+              // Editable title for document
               <>
-                {isEditingLabel ? (
+                {isEditingTitle ? (
                   <Input
-                    ref={labelInputRef}
-                    value={editedLabel}
-                    onChange={(e) => setEditedLabel(e.target.value)}
-                    onBlur={handleLabelSave}
-                    onKeyDown={handleLabelKeyDown}
-                    className="h-6 w-32 text-xs"
+                    ref={titleInputRef}
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    onBlur={handleTitleSave}
+                    onKeyDown={handleTitleKeyDown}
+                    className="h-8 w-64 text-xl font-semibold"
                   />
                 ) : (
-                  <>
-                    {localDocumentType === 'Custom' ? (
-                      <button
-                        onClick={() => {
-                          setEditedLabel('')
-                          setIsEditingLabel(true)
-                        }}
-                        className="flex h-6 w-6 items-center justify-center rounded border border-dashed transition-colors hover:bg-accent"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
-                    ) : (
-                      <Badge
-                        variant="secondary"
-                        className="cursor-pointer text-xs hover:bg-secondary/80"
-                        onClick={() => setIsEditingLabel(true)}
-                      >
-                        {localDocumentType}
-                      </Badge>
-                    )}
-                  </>
+                  <h1
+                    className="cursor-pointer text-xl font-semibold hover:text-muted-foreground"
+                    onClick={handleTitleClick}
+                  >
+                    {displayTitle}
+                  </h1>
                 )}
               </>
             )}
 
-            {isAIGenerated && (
-              <Badge variant="outline" className="gap-1 text-xs">
-                <Bot className="h-3 w-3" />
-                AI Generated
-              </Badge>
+            {showDocumentBadges && (
+              <>
+                {isBuiltInType ? (
+                  <Badge variant="secondary" className="text-xs">
+                    {localDocumentType}
+                  </Badge>
+                ) : (
+                  <>
+                    {isEditingLabel ? (
+                      <Input
+                        ref={labelInputRef}
+                        value={editedLabel}
+                        onChange={(e) => setEditedLabel(e.target.value)}
+                        onBlur={handleLabelSave}
+                        onKeyDown={handleLabelKeyDown}
+                        className="h-6 w-32 text-xs"
+                      />
+                    ) : (
+                      <>
+                        {localDocumentType === 'Custom' ? (
+                          <button
+                            onClick={() => {
+                              setEditedLabel('')
+                              setIsEditingLabel(true)
+                            }}
+                            className="flex h-6 w-6 items-center justify-center rounded border border-dashed transition-colors hover:bg-accent"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        ) : (
+                          <Badge
+                            variant="secondary"
+                            className="cursor-pointer text-xs hover:bg-secondary/80"
+                            onClick={() => setIsEditingLabel(true)}
+                          >
+                            {localDocumentType}
+                          </Badge>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+
+                {isAIGenerated && (
+                  <Badge variant="outline" className="gap-1 text-xs">
+                    <Bot className="h-3 w-3" />
+                    AI Generated
+                  </Badge>
+                )}
+              </>
             )}
           </div>
-          <AutoSaveIndicator status={saveStatus} lastSavedAt={lastSavedAt} className="mt-1" />
+          {!projectInfo && <AutoSaveIndicator status={saveStatus} lastSavedAt={lastSavedAt} className="mt-1" />}
         </div>
       </div>
 
