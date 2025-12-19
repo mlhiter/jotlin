@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { use } from 'react'
 
 import { ChatArea } from '@/components/chat/chat-area'
+import { ProjectHeader } from '@/components/workspace/project-header'
 
 import { useProjects } from '@/hooks/use-projects'
 
@@ -38,6 +39,13 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
   return (
     <div className="flex h-full flex-col">
+      <ProjectHeader
+        projectId={project.id}
+        workspaceId={workspaceId}
+        title={project.title}
+        icon={project.icon}
+        description={project.description}
+      />
       <ChatArea type="PROJECT" entityId={projectId} workspaceId={workspaceId} />
     </div>
   )

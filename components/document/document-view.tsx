@@ -3,9 +3,9 @@
 import { useState } from 'react'
 
 import { ChatArea } from '@/components/chat/chat-area'
-import { useProjects } from '@/hooks/use-projects'
 
 import { useAutoSave } from '@/hooks/use-auto-save'
+import { useProjects } from '@/hooks/use-projects'
 
 import { DocumentHeader } from './document-header'
 

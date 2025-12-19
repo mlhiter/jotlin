@@ -1,12 +1,21 @@
 'use client'
 
-import { Bot, ChevronRight, File, Folder, FolderPlus, Plus } from 'lucide-react'
+import { Bot, ChevronRight, File, Folder, FolderPlus, Plus, MoreHorizontal, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -23,6 +32,7 @@ import { useDocuments } from '@/hooks/use-documents'
 import { useProjects } from '@/hooks/use-projects'
 import { useWorkspace } from '@/hooks/use-workspace'
 import { cn } from '@/libs/utils/utils'
+import apiClient from '@/libs/utils/axios'
 import { DocumentListItem } from './document-list-item'
 
 export function WorkspaceSidebar() {
@@ -30,7 +40,9 @@ export function WorkspaceSidebar() {
   const { projects, createProject, isCreating, isLoading: isLoadingProjects } = useProjects(workspace?.id)
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set())
   const [creatingProject, setCreatingProject] = useState(false)
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1)
   const pathname = usePathname()
+  const router = useRouter()
 
   const isLoading = isLoadingWorkspace || isLoadingProjects
 
@@ -48,6 +60,57 @@ export function WorkspaceSidebar() {
       }
     }
   }, [pathname, projects])
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (projects.length === 0) return
+
+      // Only handle arrow keys when not in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return
+      }
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault()
+          setFocusedIndex((prev) => Math.min(prev + 1, projects.length - 1))
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          setFocusedIndex((prev) => Math.max(prev - 1, 0))
+          break
+        case 'ArrowRight':
+          e.preventDefault()
+          if (focusedIndex >= 0 && focusedIndex < projects.length) {
+            const project = projects[focusedIndex]
+            setExpandedProjects((prev) => new Set(prev).add(project.id))
+          }
+          break
+        case 'ArrowLeft':
+          e.preventDefault()
+          if (focusedIndex >= 0 && focusedIndex < projects.length) {
+            const project = projects[focusedIndex]
+            setExpandedProjects((prev) => {
+              const newSet = new Set(prev)
+              newSet.delete(project.id)
+              return newSet
+            })
+          }
+          break
+        case 'Enter':
+          e.preventDefault()
+          if (focusedIndex >= 0 && focusedIndex < projects.length && workspace?.id) {
+            const project = projects[focusedIndex]
+            router.push(`/${workspace.id}/${project.id}`)
+          }
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [projects, focusedIndex, workspace?.id, router])
 
   const toggleProject = (projectId: string) => {
     setExpandedProjects((prev) => {
@@ -103,17 +166,18 @@ export function WorkspaceSidebar() {
         <SidebarMenu>
           {isLoading ? (
             <>
-              <ProjectSkeleton />
-              <ProjectSkeleton />
-              <ProjectSkeleton />
+              <ProjectSkeleton key="skeleton-1" />
+              <ProjectSkeleton key="skeleton-2" />
+              <ProjectSkeleton key="skeleton-3" />
             </>
           ) : projects.length > 0 ? (
-            projects.map((project) => (
-              <ProjectTreeItem
+            projects.map((project, index) => (
+              <ProjectTreeItemWrapper
                 key={project.id}
                 project={project}
                 workspaceId={workspace?.id || ''}
                 isExpanded={expandedProjects.has(project.id)}
+                isFocused={focusedIndex === index}
                 onToggle={() => toggleProject(project.id)}
                 onExpand={expandProject}
               />
@@ -136,17 +200,19 @@ interface ProjectTreeItemProps {
     id: string
     title: string
     icon: string | null
+    description: string | null
     _count: {
       documents: number
     }
   }
   workspaceId: string
   isExpanded: boolean
+  isFocused: boolean
   onToggle: () => void
   onExpand: (projectId: string) => void
 }
 
-function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, onExpand }: ProjectTreeItemProps) {
+const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspaceId, isExpanded, isFocused, onToggle, onExpand }: ProjectTreeItemProps) {
   // Only load documents when expanded
   const { documents, createDocument, isCreating, isLoading } = useDocuments({
     projectId: project.id,
@@ -155,6 +221,43 @@ function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, onExpand 
   const [creatingDoc, setCreatingDoc] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
+  const queryClient = useQueryClient()
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      await apiClient.delete(`/api/projects/${project.id}`)
+    },
+    onMutate: async () => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['projects'] })
+
+      // Snapshot previous value
+      const previousProjects = queryClient.getQueryData(['projects'])
+
+      // Optimistically remove the project from the list
+      queryClient.setQueryData(['projects'], (old: any) => {
+        if (!old || !Array.isArray(old)) return old
+        return old.filter((p: any) => p.id !== project.id)
+      })
+
+      // Redirect to workspace home if we're viewing this project
+      if (pathname?.startsWith(`/${workspaceId}/${project.id}`)) {
+        router.push(`/${workspaceId}`)
+      }
+
+      return { previousProjects }
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousProjects) {
+        queryClient.setQueryData(['projects'], context.previousProjects)
+      }
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    },
+  })
 
   const handleCreateDocument = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -173,61 +276,131 @@ function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, onExpand 
     }
   }
 
+  const handleDelete = () => {
+    // Store the snapshot before deletion
+    const previousProjects = queryClient.getQueryData(['projects'])
+
+    // Optimistically remove from UI immediately
+    queryClient.setQueryData(['projects'], (old: any) => {
+      if (!old || !Array.isArray(old)) return old
+      return old.filter((p: any) => p.id !== project.id)
+    })
+
+    // Redirect if viewing this project
+    if (pathname?.startsWith(`/${workspaceId}/${project.id}`)) {
+      router.push(`/${workspaceId}`)
+    }
+
+    // Show toast with undo action
+    toast(`Moved "${project.title}" to trash`, {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          // Restore the project
+          queryClient.setQueryData(['projects'], previousProjects)
+          toast.dismiss()
+        },
+      },
+      duration: 5000,
+    })
+
+    // Execute delete after a short delay (allows undo)
+    setTimeout(() => {
+      deleteMutation.mutate()
+    }, 100)
+  }
+
   const isProjectChatActive = pathname === `/${workspaceId}/${project.id}`
 
   return (
     <SidebarMenuItem>
-      <div className="group/project flex w-full items-center gap-1">
-        {/* Chevron button - toggle expand/collapse */}
-        <button
-          onClick={onToggle}
-          className="flex h-8 w-6 shrink-0 items-center justify-center rounded-md hover:bg-accent"
-        >
-          <ChevronRight
-            className={cn('h-4 w-4 transition-transform', isExpanded && 'rotate-90')}
-          />
-        </button>
+      <div className={cn(
+        "group/project relative flex w-full items-center rounded-md transition-colors",
+        isFocused && "bg-sidebar-accent ring-1 ring-sidebar-border/50"
+      )}>
+        {/* Project link - flexible width */}
+        <SidebarMenuButton asChild isActive={isProjectChatActive} className="flex-1 min-w-0 pr-0">
+          <Link href={`/${workspaceId}/${project.id}`} className="flex min-w-0 items-center gap-2 pl-2">
+            {/* Icon/Chevron container - icon by default, chevron on hover */}
+            <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+              {/* Chevron - only shown on hover, replaces icon */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onToggle()
+                }}
+                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/project:opacity-100 transition-opacity z-10"
+              >
+                <ChevronRight
+                  className={cn('h-3.5 w-3.5 text-muted-foreground transition-transform', isExpanded && 'rotate-90')}
+                />
+              </button>
 
-        {/* Project name - navigate to project chat */}
-        <SidebarMenuButton asChild isActive={isProjectChatActive} className="flex-1">
-          <Link href={`/${workspaceId}/${project.id}`} className="flex min-w-0 items-center gap-2">
-            {project.icon && project.icon !== '📁' ? (
-              <span className="shrink-0 text-base">{project.icon}</span>
-            ) : (
-              <Folder className="h-4 w-4 shrink-0" />
-            )}
-            <span className="min-w-0 flex-1 truncate text-left">{project.title}</span>
-            <span className="shrink-0 text-xs text-muted-foreground">{project._count.documents}</span>
+              {/* Icon - hidden on hover */}
+              <div className="absolute inset-0 flex items-center justify-center group-hover/project:opacity-0 transition-opacity">
+                {project.icon && project.icon !== '📁' ? (
+                  <span className="text-base leading-none">{project.icon}</span>
+                ) : (
+                  <Folder className="h-4 w-4" />
+                )}
+              </div>
+            </div>
+
+            {/* Title - extends to full width when buttons are hidden */}
+            <span className="min-w-0 flex-1 truncate text-left group-hover/project:pr-14">
+              {project.title}
+            </span>
           </Link>
         </SidebarMenuButton>
 
-        {/* Create document button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-5 w-5 shrink-0 opacity-0 transition-opacity group-hover/project:opacity-100"
-          onClick={handleCreateDocument}
-          disabled={isCreating || creatingDoc}
-        >
-          <Plus className="h-3 w-3" />
-        </Button>
+        {/* Action buttons - absolute positioned, only shown on hover */}
+        <div className="absolute right-1 flex items-center gap-0.5 opacity-0 group-hover/project:opacity-100 transition-opacity pointer-events-none group-hover/project:pointer-events-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={handleCreateDocument}
+            disabled={isCreating || creatingDoc}
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                <MoreHorizontal className="h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="bottom" className="w-48">
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                className="text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Project
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {isExpanded && isLoading && (
         <SidebarMenuSub>
-          <SidebarMenuSubItem>
+          <SidebarMenuSubItem key={`${project.id}-doc-skeleton-1`}>
             <div className="flex items-center gap-1.5 px-2 py-1.5">
               <Skeleton className="h-4 w-4 shrink-0" />
               <Skeleton className="h-4 flex-1" />
             </div>
           </SidebarMenuSubItem>
-          <SidebarMenuSubItem>
+          <SidebarMenuSubItem key={`${project.id}-doc-skeleton-2`}>
             <div className="flex items-center gap-1.5 px-2 py-1.5">
               <Skeleton className="h-4 w-4 shrink-0" />
               <Skeleton className="h-4 flex-1" />
             </div>
           </SidebarMenuSubItem>
-          <SidebarMenuSubItem>
+          <SidebarMenuSubItem key={`${project.id}-doc-skeleton-3`}>
             <div className="flex items-center gap-1.5 px-2 py-1.5">
               <Skeleton className="h-4 w-4 shrink-0" />
               <Skeleton className="h-4 flex-1" />
@@ -257,7 +430,7 @@ function ProjectTreeItem({ project, workspaceId, isExpanded, onToggle, onExpand 
       )}
     </SidebarMenuItem>
   )
-}
+})
 
 function ProjectSkeleton() {
   return (
