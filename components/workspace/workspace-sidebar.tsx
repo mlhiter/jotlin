@@ -3,7 +3,7 @@
 import { Bot, ChevronRight, File, Folder, FolderPlus, Plus, MoreHorizontal, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect, memo } from 'react'
+import { useState, useEffect, memo, useCallback, useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -35,7 +35,7 @@ import { cn } from '@/libs/utils/utils'
 import apiClient from '@/libs/utils/axios'
 import { DocumentListItem } from './document-list-item'
 
-export function WorkspaceSidebar() {
+export const WorkspaceSidebar = memo(function WorkspaceSidebar() {
   const { workspace, isLoading: isLoadingWorkspace } = useWorkspace()
   const { projects, createProject, isCreating, isLoading: isLoadingProjects } = useProjects(workspace?.id)
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set())
@@ -44,7 +44,7 @@ export function WorkspaceSidebar() {
   const pathname = usePathname()
   const router = useRouter()
 
-  const isLoading = isLoadingWorkspace || isLoadingProjects
+  const isLoading = useMemo(() => isLoadingWorkspace || isLoadingProjects, [isLoadingWorkspace, isLoadingProjects])
 
   // Auto-expand project based on current path
   useEffect(() => {
@@ -60,6 +60,36 @@ export function WorkspaceSidebar() {
       }
     }
   }, [pathname, projects])
+
+  const toggleProject = useCallback((projectId: string) => {
+    setExpandedProjects((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(projectId)) {
+        newSet.delete(projectId)
+      } else {
+        newSet.add(projectId)
+      }
+      return newSet
+    })
+  }, [])
+
+  const expandProject = useCallback((projectId: string) => {
+    setExpandedProjects((prev) => new Set(prev).add(projectId))
+  }, [])
+
+  const handleCreateProject = useCallback(async () => {
+    if (!workspace?.id || creatingProject) return
+    setCreatingProject(true)
+    try {
+      const project = await createProject({
+        workspaceId: workspace.id,
+        title: 'New Project',
+      })
+      setExpandedProjects((prev) => new Set(prev).add(project.id))
+    } finally {
+      setCreatingProject(false)
+    }
+  }, [workspace?.id, creatingProject, createProject])
 
   // Keyboard navigation
   useEffect(() => {
@@ -112,36 +142,6 @@ export function WorkspaceSidebar() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [projects, focusedIndex, workspace?.id, router])
 
-  const toggleProject = (projectId: string) => {
-    setExpandedProjects((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(projectId)) {
-        newSet.delete(projectId)
-      } else {
-        newSet.add(projectId)
-      }
-      return newSet
-    })
-  }
-
-  const expandProject = (projectId: string) => {
-    setExpandedProjects((prev) => new Set(prev).add(projectId))
-  }
-
-  const handleCreateProject = async () => {
-    if (!workspace?.id || creatingProject) return
-    setCreatingProject(true)
-    try {
-      const project = await createProject({
-        workspaceId: workspace.id,
-        title: 'New Project',
-      })
-      setExpandedProjects((prev) => new Set(prev).add(project.id))
-    } finally {
-      setCreatingProject(false)
-    }
-  }
-
   return (
     <SidebarGroup>
       <div className="flex items-center justify-between px-2">
@@ -193,7 +193,7 @@ export function WorkspaceSidebar() {
       </SidebarGroupContent>
     </SidebarGroup>
   )
-}
+})
 
 interface ProjectTreeItemProps {
   project: {
@@ -259,7 +259,7 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspac
     },
   })
 
-  const handleCreateDocument = async (e: React.MouseEvent) => {
+  const handleCreateDocument = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (creatingDoc || !workspaceId) return
     setCreatingDoc(true)
@@ -274,9 +274,9 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspac
     } finally {
       setCreatingDoc(false)
     }
-  }
+  }, [creatingDoc, workspaceId, createDocument, project.id, onExpand, router])
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     // Store the snapshot before deletion
     const previousProjects = queryClient.getQueryData(['projects'])
 
@@ -308,9 +308,9 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspac
     setTimeout(() => {
       deleteMutation.mutate()
     }, 100)
-  }
+  }, [queryClient, project.id, project.title, pathname, workspaceId, router, deleteMutation])
 
-  const isProjectChatActive = pathname === `/${workspaceId}/${project.id}`
+  const isProjectChatActive = useMemo(() => pathname === `/${workspaceId}/${project.id}`, [pathname, workspaceId, project.id])
 
   return (
     <SidebarMenuItem>

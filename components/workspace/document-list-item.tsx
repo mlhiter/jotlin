@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { File, Bot } from 'lucide-react'
 import Link from 'next/link'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo, useCallback, useMemo } from 'react'
 
 import { Input } from '@/components/ui/input'
 import { SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar'
@@ -25,7 +25,7 @@ interface DocumentListItemProps {
 
 const BUILT_IN_TYPES = ['PRD', 'PAR', 'User Stories', 'Flows', 'Wireframe', 'Sitemap']
 
-export function DocumentListItem({ doc, workspaceId, projectId, isActive }: DocumentListItemProps) {
+export const DocumentListItem = memo(function DocumentListItem({ doc, workspaceId, projectId, isActive }: DocumentListItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedTitle, setEditedTitle] = useState(doc.title)
   const [localTitle, setLocalTitle] = useState(doc.title)
@@ -91,30 +91,30 @@ export function DocumentListItem({ doc, workspaceId, projectId, isActive }: Docu
     }
   }, [isEditing])
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
+  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     setEditedTitle(localTitle)
     setIsEditing(true)
-  }
+  }, [localTitle])
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (editedTitle.trim() && editedTitle !== localTitle) {
       setLocalTitle(editedTitle.trim()) // Immediate local update
       updateMutation.mutate(editedTitle.trim())
     }
     setIsEditing(false)
-  }
+  }, [editedTitle, localTitle, updateMutation])
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSave()
     } else if (e.key === 'Escape') {
       setEditedTitle(localTitle)
       setIsEditing(false)
     }
-  }
+  }, [handleSave, localTitle])
 
-  const showBadge = BUILT_IN_TYPES.includes(doc.documentType)
+  const showBadge = useMemo(() => BUILT_IN_TYPES.includes(doc.documentType), [doc.documentType])
 
   if (isEditing) {
     return (
@@ -154,4 +154,4 @@ export function DocumentListItem({ doc, workspaceId, projectId, isActive }: Docu
       </SidebarMenuSubButton>
     </SidebarMenuSubItem>
   )
-}
+})
