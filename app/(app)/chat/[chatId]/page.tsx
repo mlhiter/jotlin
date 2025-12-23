@@ -171,6 +171,7 @@ export default function ChatIdPage() {
   const [competitorRefreshTrigger, setCompetitorRefreshTrigger] = useState(0)
   const [isGeneratingDocuments, setIsGeneratingDocuments] = useState(false)
   const [forceCheckGeneration, setForceCheckGeneration] = useState(0)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const hasTriggeredAutoGeneration = useRef(false)
   const prevSidebarOpenRef = useRef<boolean | null>(null)
   const autoCollapsedRef = useRef(false)
@@ -273,14 +274,48 @@ export default function ChatIdPage() {
     }
   }, [initialMessage, hasAutoSent, isLoading, status, chatReady, sendMessage])
 
-  // Filter empty assistant messages
-  const filteredMessages = messages.filter((message) => {
-    if (message.role === 'assistant') {
-      const hasContent = message.parts.some((part) => part.type === 'text' && part.text.trim().length > 0)
-      return hasContent
-    }
-    return true
-  })
+  // Filter empty assistant messages and deduplicate document messages
+  const filteredMessages = messages
+    .filter((message) => {
+      if (message.role === 'assistant') {
+        const hasContent = message.parts.some((part) => part.type === 'text' && part.text.trim().length > 0)
+        return hasContent
+      }
+      return true
+    })
+    .reduce((acc, message) => {
+      // Deduplicate document messages by checking if we've already seen this document type
+      if (message.role === 'assistant') {
+        const textPart = message.parts.find((p) => p.type === 'text')
+        const text = textPart?.text || ''
+
+        // Check if this is a document message
+        const isProductDoc = text.includes('<product-document>')
+        const isFlowchart = text.includes('<flowchart>')
+        const isSitemap = text.includes('<sitemap>')
+        const isWireframe = text.includes('<wireframe>')
+
+        if (isProductDoc || isFlowchart || isSitemap || isWireframe) {
+          // Check if we've already added this type of document
+          const alreadyHasDoc = acc.some((m) => {
+            const existingText = m.parts.find((p) => p.type === 'text')?.text || ''
+            return (
+              (isProductDoc && existingText.includes('<product-document>')) ||
+              (isFlowchart && existingText.includes('<flowchart>')) ||
+              (isSitemap && existingText.includes('<sitemap>')) ||
+              (isWireframe && existingText.includes('<wireframe>'))
+            )
+          })
+
+          if (alreadyHasDoc) {
+            return acc // Skip duplicate
+          }
+        }
+      }
+
+      acc.push(message)
+      return acc
+    }, [] as MyUIMessage[])
 
   // Extract all document content from messages
   const extractContent = (msgs: MyUIMessage[]) => {
@@ -399,13 +434,21 @@ export default function ChatIdPage() {
         )
 
         if (response.status === 200) {
-          // Refresh messages to load new document messages
-          queryClient.invalidateQueries({ queryKey: ['versions', actualChatId] })
-          window.location.reload()
+          // Reload chat data to get new document messages
+          try {
+            const chatResponse = await apiClient.get(`/api/chats/${actualChatId}`)
+            if (chatResponse.status === 200 && chatResponse.data.messages) {
+              setMessages(chatResponse.data.messages)
+              queryClient.invalidateQueries({ queryKey: ['versions', actualChatId] })
+            }
+          } catch (error) {
+            console.error('Failed to reload chat data:', error)
+          }
         }
       } catch (error) {
         console.error('Failed to auto-generate documents:', error)
-        hasTriggeredAutoGeneration.current = false
+        // Don't reset the flag - prevent infinite retry loop
+        // hasTriggeredAutoGeneration.current = false
       } finally {
         setIsGeneratingDocuments(false)
       }
@@ -415,7 +458,7 @@ export default function ChatIdPage() {
   }, [
     lastRequirementMessageId,
     hasGeneratedDocuments,
-    isGeneratingDocuments,
+    // isGeneratingDocuments,  // ← 移除！这会导致循环
     status,
     actualChatId,
     queryClient,
@@ -698,6 +741,8 @@ export default function ChatIdPage() {
           competitorRefreshTrigger={competitorRefreshTrigger}
           onScrollToMessage={handleScrollToMessage}
           isGeneratingDocuments={isGeneratingDocuments}
+          isFullscreen={isFullscreen}
+          onFullscreenChange={setIsFullscreen}
         />
       </div>
     </div>

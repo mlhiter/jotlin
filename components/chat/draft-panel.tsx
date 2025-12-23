@@ -11,8 +11,10 @@ import {
   Workflow,
   Map,
   Layout,
+  Maximize,
+  Minimize,
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
 import { CompetitorView } from '@/components/chat/competitor-view'
@@ -45,6 +47,8 @@ interface DraftPanelProps {
   competitorRefreshTrigger?: number
   onScrollToMessage?: (messageId: string) => void
   isGeneratingDocuments?: boolean
+  isFullscreen?: boolean
+  onFullscreenChange?: (isFullscreen: boolean) => void
 }
 
 export function DraftPanel({
@@ -58,10 +62,13 @@ export function DraftPanel({
   readOnly = false,
   competitorRefreshTrigger = 0,
   isGeneratingDocuments = false,
+  isFullscreen = false,
+  onFullscreenChange,
 }: DraftPanelProps) {
   const [internalActiveTab, setInternalActiveTab] = useState<string | null>(null)
   const [activeDocumentTab, setActiveDocumentTab] = useState<DocumentTabValue>('REQUIREMENT')
   const [isNavCollapsed, setIsNavCollapsed] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   const hasAnyLiveContent = !!(
     liveContent?.requirement?.draft ||
@@ -150,6 +157,34 @@ export function DraftPanel({
     }
   }, [availableDocumentTabs, activeDocumentTab])
 
+  const handleFullscreenToggle = async () => {
+    if (!panelRef.current || !onFullscreenChange) return
+
+    try {
+      if (!document.fullscreenElement) {
+        await panelRef.current.requestFullscreen()
+        onFullscreenChange(true)
+      } else {
+        await document.exitFullscreen()
+        onFullscreenChange(false)
+      }
+    } catch (error) {
+      console.error('Fullscreen error:', error)
+      toast.error('Failed to toggle fullscreen')
+    }
+  }
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && onFullscreenChange) {
+        onFullscreenChange(false)
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [onFullscreenChange])
+
   if (availableTabs.length === 0) {
     return null
   }
@@ -186,6 +221,7 @@ export function DraftPanel({
   return (
     <>
       <div
+        ref={panelRef}
         className={`relative flex h-full shrink-0 transition-all duration-700 ease-in-out ${
           isVisible ? panelWidth : 'w-12 min-w-12'
         }`}>
@@ -250,6 +286,20 @@ export function DraftPanel({
                       </div>
                     </PopoverContent>
                   </Popover>
+                )}
+                {onFullscreenChange && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={handleFullscreenToggle}
+                    className="h-7 w-7"
+                    title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
+                    {isFullscreen ? (
+                      <Minimize className="text-muted-foreground h-3.5 w-3.5" strokeWidth={1.5} />
+                    ) : (
+                      <Maximize className="text-muted-foreground h-3.5 w-3.5" strokeWidth={1.5} />
+                    )}
+                  </Button>
                 )}
                 {onToggle && isVisible && (
                   <Button

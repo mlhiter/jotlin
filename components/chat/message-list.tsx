@@ -39,9 +39,10 @@ export function MessageList({
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
+  const prevMessagesLength = useRef(0)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const scrollToBottom = (instant = false) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: instant ? 'instant' : 'smooth' })
   }
 
   const handleScroll = () => {
@@ -58,9 +59,25 @@ export function MessageList({
   }
 
   useEffect(() => {
-    if (shouldAutoScroll) {
-      scrollToBottom()
+    // Force scroll to bottom when messages are bulk loaded (e.g., after document generation)
+    const currentLength = messages.length
+    const prevLength = prevMessagesLength.current
+
+    // If messages increased significantly (3+ new messages), likely a bulk load, force scroll
+    const isBulkLoad = currentLength - prevLength >= 3
+
+    if (shouldAutoScroll || isBulkLoad) {
+      // Use setTimeout to ensure DOM is updated before scrolling
+      // Increased delay for bulk loads to ensure DOM is fully rendered
+      setTimeout(() => {
+        scrollToBottom(isBulkLoad)
+        if (isBulkLoad) {
+          setShouldAutoScroll(true)
+        }
+      }, isBulkLoad ? 300 : 100)
     }
+
+    prevMessagesLength.current = currentLength
   }, [messages, shouldAutoScroll])
 
   useEffect(() => {
@@ -80,12 +97,22 @@ export function MessageList({
       <div className="from-background pointer-events-none absolute bottom-0 left-0 right-3 z-10 h-8 bg-gradient-to-t to-transparent" />
 
       <ScrollArea ref={scrollAreaRef} className="h-full px-4">
-        <div className="mx-auto max-w-3xl space-y-6 py-6">
+        <div className="mx-auto max-w-3xl space-y-6 pb-4 pt-6">
           {messages.filter((m) => m.role !== 'system').length === 0 ? (
             <EmptyState onSendMessage={onSendMessage} />
           ) : (
             messages
-              .filter((m) => m.role !== 'system')
+              .filter((m) => {
+                // Filter out system messages
+                if (m.role === 'system') return false
+
+                // For assistant messages, only keep those with non-empty text content
+                if (m.role === 'assistant') {
+                  return m.parts.some((part) => part.type === 'text' && part.text && part.text.trim().length > 0)
+                }
+
+                return true
+              })
               .map((message) => (
                 <div
                   key={message.id}
@@ -105,22 +132,19 @@ export function MessageList({
                       onRollback={() => onRollback(message.id)}
                     />
                   ) : (
-                    message.parts.map((part, i) => {
-                      if (part.type === 'text') {
-                        return (
-                          <AssistantMessage
-                            key={`${message.id}-${i}`}
-                            content={part.text}
-                            messageId={message.id}
-                            metadata={message.metadata}
-                            onOptionSelect={(value) => onSendMessage({ text: value })}
-                            onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
-                            onRollback={() => onRollback(message.id)}
-                          />
-                        )
-                      }
-                      return null
-                    })
+                    message.parts
+                      .filter((part) => part.type === 'text' && part.text && part.text.trim().length > 0)
+                      .map((part, i) => (
+                        <AssistantMessage
+                          key={`${message.id}-${i}`}
+                          content={part.text}
+                          messageId={message.id}
+                          metadata={message.metadata}
+                          onOptionSelect={(value) => onSendMessage({ text: value })}
+                          onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
+                          onRollback={() => onRollback(message.id)}
+                        />
+                      ))
                   )}
                 </div>
               ))

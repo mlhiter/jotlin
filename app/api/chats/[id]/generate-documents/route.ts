@@ -50,6 +50,39 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Requirement message has no text content' }, { status: 400 })
     }
 
+    // Check if documents have already been generated for this chat
+    // Get all assistant messages and check their content in code
+    const existingMessages = await prisma.message.findMany({
+      where: {
+        chatId,
+        role: 'assistant',
+      },
+      take: 100, // Only check recent messages for performance
+    })
+
+    // Check if any message contains document tags or has documentType in metadata
+    const hasDocuments = existingMessages.some((msg) => {
+      const parts = msg.parts as Array<{ type: string; text?: string }>
+      const text = parts.find((p) => p.type === 'text')?.text || ''
+      const metadata = msg.metadata as { documentType?: string } | null
+
+      return (
+        metadata?.documentType ||
+        text.includes('<product-document>') ||
+        text.includes('<flowchart>') ||
+        text.includes('<sitemap>') ||
+        text.includes('<wireframe>')
+      )
+    })
+
+    if (hasDocuments) {
+      return NextResponse.json({
+        success: true,
+        documentsGenerated: 0,
+        message: 'Documents already generated',
+      })
+    }
+
     const documents = await documentGenerationService.generateAllDocuments(requirementText)
 
     const now = new Date()
@@ -70,6 +103,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         metadata: {
           answered: true,
           answeredAt: now.toISOString(),
+          documentType: 'PRODUCT_DOCUMENT',
         },
         order: nextOrder++,
         createdAt: now,
@@ -81,6 +115,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         metadata: {
           answered: true,
           answeredAt: now.toISOString(),
+          documentType: 'FLOWCHART',
         },
         order: nextOrder++,
         createdAt: now,
@@ -92,6 +127,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         metadata: {
           answered: true,
           answeredAt: now.toISOString(),
+          documentType: 'SITEMAP',
         },
         order: nextOrder++,
         createdAt: now,
@@ -103,6 +139,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         metadata: {
           answered: true,
           answeredAt: now.toISOString(),
+          documentType: 'WIREFRAME',
         },
         order: nextOrder++,
         createdAt: now,

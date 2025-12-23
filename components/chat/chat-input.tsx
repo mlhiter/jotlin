@@ -248,7 +248,7 @@ export function ChatInput({
   }
 
   return (
-    <div className="mb-2 mt-1 px-4">
+    <div className="px-4 pb-4">
       <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
         {files && files.length > 0 && (
           <div className="mb-2 flex flex-col gap-2">
