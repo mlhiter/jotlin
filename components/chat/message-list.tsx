@@ -108,7 +108,13 @@ export function MessageList({
 
                 // For assistant messages, only keep those with non-empty text content
                 if (m.role === 'assistant') {
-                  return m.parts.some((part) => part.type === 'text' && part.text && part.text.trim().length > 0)
+                  return m.parts.some((part) => {
+                    if (part.type === 'text') {
+                      const text = 'text' in part ? part.text : undefined
+                      return text && text.trim().length > 0
+                    }
+                    return false
+                  })
                 }
 
                 return true
@@ -134,17 +140,21 @@ export function MessageList({
                   ) : (
                     message.parts
                       .filter((part) => part.type === 'text' && part.text && part.text.trim().length > 0)
-                      .map((part, i) => (
-                        <AssistantMessage
-                          key={`${message.id}-${i}`}
-                          content={part.text}
-                          messageId={message.id}
-                          metadata={message.metadata}
-                          onOptionSelect={(value) => onSendMessage({ text: value })}
-                          onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
-                          onRollback={() => onRollback(message.id)}
-                        />
-                      ))
+                      .map((part, i) => {
+                        // Type guard: we've already filtered for type === 'text'
+                        const textContent = part.type === 'text' ? part.text : ''
+                        return (
+                          <AssistantMessage
+                            key={`${message.id}-${i}`}
+                            content={textContent || ''}
+                            messageId={message.id}
+                            metadata={message.metadata}
+                            onOptionSelect={(value) => onSendMessage({ text: value })}
+                            onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
+                            onRollback={() => onRollback(message.id)}
+                          />
+                        )
+                      })
                   )}
                 </div>
               ))
@@ -187,7 +197,7 @@ export function MessageList({
       {showScrollButton && (
         <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 transform">
           <Button
-            onClick={scrollToBottom}
+            onClick={() => scrollToBottom()}
             size="sm"
             variant="secondary"
             className="bg-background/95 hover:bg-accent border-border/40 h-8 w-8 rounded-full border p-0 shadow-sm backdrop-blur-sm transition-all duration-150">
