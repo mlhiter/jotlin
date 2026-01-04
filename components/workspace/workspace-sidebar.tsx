@@ -96,8 +96,21 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (projects.length === 0) return
 
-      // Only handle arrow keys when not in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      // Only handle keyboard shortcuts when not in an input, textarea, or editor
+      const target = e.target as HTMLElement
+
+      // Check if user is in any input element
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        return
+      }
+
+      // Check if user is in a contenteditable element (Tiptap editor)
+      if (target.isContentEditable) {
+        return
+      }
+
+      // Check if user is in the Tiptap editor wrapper
+      if (target.closest('.ProseMirror') || target.closest('.simple-editor-wrapper')) {
         return
       }
 
