@@ -61,18 +61,18 @@
   --tt-gray-dark-800: rgba(224, 224, 225, 1);
   --tt-gray-dark-900: rgba(245, 245, 245, 1);
 
-  /* Brand colors */
-  --tt-brand-color-50: rgba(239, 238, 255, 1);
-  --tt-brand-color-100: rgba(222, 219, 255, 1);
-  --tt-brand-color-200: rgba(195, 189, 255, 1);
-  --tt-brand-color-300: rgba(157, 138, 255, 1);
-  --tt-brand-color-400: rgba(122, 82, 255, 1);
-  --tt-brand-color-500: rgba(98, 41, 255, 1);
-  --tt-brand-color-600: rgba(84, 0, 229, 1);
-  --tt-brand-color-700: rgba(75, 0, 204, 1);
-  --tt-brand-color-800: rgba(56, 0, 153, 1);
-  --tt-brand-color-900: rgba(43, 25, 102, 1);
-  --tt-brand-color-950: hsla(257, 100%, 9%, 1);
+  /* Brand colors - Neutral gray for Jotlin theme */
+  --tt-brand-color-50: rgba(250, 250, 250, 1);
+  --tt-brand-color-100: rgba(244, 244, 245, 1);
+  --tt-brand-color-200: rgba(228, 228, 231, 1);
+  --tt-brand-color-300: rgba(212, 212, 216, 1);
+  --tt-brand-color-400: rgba(161, 161, 170, 1);
+  --tt-brand-color-500: rgba(113, 113, 122, 1);
+  --tt-brand-color-600: rgba(82, 82, 91, 1);
+  --tt-brand-color-700: rgba(63, 63, 70, 1);
+  --tt-brand-color-800: rgba(39, 39, 42, 1);
+  --tt-brand-color-900: rgba(24, 24, 27, 1);
+  --tt-brand-color-950: rgba(9, 9, 11, 1);
 
   /* Green */
   --tt-color-green-inc-5: hsla(129, 100%, 97%, 1);
@@ -182,8 +182,8 @@
   --tt-border-color-tint: var(--tt-gray-light-a-100);
   --tt-sidebar-bg-color: var(--tt-gray-light-100);
   --tt-scrollbar-color: var(--tt-gray-light-a-200);
-  --tt-cursor-color: var(--tt-brand-color-500);
-  --tt-selection-color: rgba(157, 138, 255, 0.2);
+  --tt-cursor-color: var(--tt-brand-color-600);
+  --tt-selection-color: rgba(161, 161, 170, 0.2);
   --tt-card-bg-color: var(--white);
   --tt-card-border-color: var(--tt-gray-light-a-100);
 }
@@ -195,8 +195,8 @@
   --tt-border-color-tint: var(--tt-gray-dark-a-100);
   --tt-sidebar-bg-color: var(--tt-gray-dark-100);
   --tt-scrollbar-color: var(--tt-gray-dark-a-200);
-  --tt-cursor-color: var(--tt-brand-color-400);
-  --tt-selection-color: rgba(122, 82, 255, 0.2);
+  --tt-cursor-color: var(--tt-brand-color-600);
+  --tt-selection-color: rgba(161, 161, 170, 0.25);
   --tt-card-bg-color: var(--tt-gray-dark-50);
   --tt-card-border-color: var(--tt-gray-dark-a-50);
 
