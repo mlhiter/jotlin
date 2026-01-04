@@ -2,12 +2,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
-import { Bot, MoreVertical, Plus } from 'lucide-react'
+import { Bot, Plus } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -300,19 +298,6 @@ export function DocumentHeader({
             </TabsTrigger>
           </TabsList>
         </Tabs>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem disabled>Share</DropdownMenuItem>
-            <DropdownMenuItem disabled>Export</DropdownMenuItem>
-            <DropdownMenuItem disabled>Delete</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </div>
   )
