@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+
 import { getSessionFromRequest } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 
@@ -35,10 +36,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getSessionFromRequest(request)
     if (!session?.user?.id) {
@@ -48,8 +46,6 @@ export async function PATCH(
 
     const { id } = await params
     const body = await request.json()
-
-    console.log('PATCH /api/documents/[id]:', { id, userId: session.user.id, body })
 
     const existingDocument = await prisma.document.findFirst({
       where: {
@@ -83,21 +79,20 @@ export async function PATCH(
       },
     })
 
-    console.log('PATCH /api/documents/[id]: Success', { id })
     return NextResponse.json(updatedDocument)
   } catch (error) {
     console.error('Error updating document:', error)
-    return NextResponse.json({
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    )
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getSessionFromRequest(request)
     if (!session?.user?.id) {

@@ -8,6 +8,7 @@ import { useAutoSave } from '@/hooks/use-auto-save'
 import { useProjects } from '@/hooks/use-projects'
 
 import { DocumentHeader } from './document-header'
+import { MarkdownEditor } from './markdown-editor'
 
 interface Document {
   id: string
@@ -63,14 +64,7 @@ export function DocumentView({ document }: DocumentViewProps) {
       />
 
       <div className="flex-1 overflow-hidden">
-        {currentTab === 'editor' && (
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Start writing your document in Markdown..."
-            className="h-full w-full resize-none border-0 p-6 font-mono text-sm outline-none focus:outline-none focus-visible:ring-0"
-          />
-        )}
+        {currentTab === 'editor' && <MarkdownEditor key={document.id} initialContent={content} onChange={setContent} />}
 
         {currentTab === 'chat' && document.projectId && (
           <ChatArea type="PROJECT" entityId={document.projectId} workspaceId={document.workspaceId} />
