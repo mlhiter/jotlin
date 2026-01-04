@@ -1,9 +1,10 @@
 import { createOpenAI } from '@ai-sdk/openai'
 import { InputJsonValue } from '@prisma/client/runtime/library'
-import { streamText, convertToModelMessages, createIdGenerator, validateUIMessages } from 'ai'
+import { streamText, convertToModelMessages, validateUIMessages, stepCountIs, createIdGenerator } from 'ai'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { requirementAnalysisPrompt } from '@/libs/ai/prompt'
+import { createDocumentTools, DocumentToolContext } from '@/libs/ai/tools'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
@@ -82,12 +83,28 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       metadataSchema,
     })
 
-    const modelMessages = convertToModelMessages(validatedMessages)
+    const modelMessages = await convertToModelMessages(validatedMessages)
+
+    const workspaceId = thread.project?.workspaceId || thread.document?.workspaceId
+    if (!workspaceId) {
+      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 })
+    }
+
+    const toolContext: DocumentToolContext = {
+      chatThreadId: threadId,
+      projectId: thread.projectId || undefined,
+      workspaceId,
+      userId: session.user.id,
+      messageId: '',
+    }
 
     const result = streamText({
       model: openai.chat(modelName),
       system: systemPrompt,
       messages: modelMessages,
+      stopWhen: stepCountIs(5),
+      tools: createDocumentTools(toolContext),
+      experimental_context: toolContext,
     })
 
     return result.toUIMessageStreamResponse({

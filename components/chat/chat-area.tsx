@@ -76,10 +76,6 @@ export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
           }),
         })
       : undefined,
-    onFinish: () => {
-      // Save messages after completion
-      console.log('Chat finished')
-    },
     onError: (error) => {
       console.error('Chat error:', error)
     },
@@ -107,13 +103,33 @@ export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
     const messageIndex = messages.findIndex((msg) => msg.id === messageId)
     if (messageIndex === -1) return
 
-    const rollbackMessages = messages.slice(0, messageIndex + 1)
+    let rollbackMessages = messages.slice(0, messageIndex + 1)
+
+    // Reset answered state for the last message if it's an assistant message
+    const lastMessage = rollbackMessages[rollbackMessages.length - 1]
+    if (lastMessage.role === 'assistant' && lastMessage.metadata?.answered) {
+      rollbackMessages = rollbackMessages.map((msg, idx) =>
+        idx === rollbackMessages.length - 1
+          ? {
+              ...msg,
+              metadata: {
+                ...msg.metadata,
+                answered: false,
+                selectedOptions: undefined,
+                inputValue: undefined,
+                answeredAt: undefined,
+              },
+            }
+          : msg
+      ) as MyUIMessage[]
+    }
+
     setMessages(rollbackMessages)
 
     // Save rollback to server
     if (chatThreadId) {
       try {
-        await apiClient.post(`/api/chat-threads/${chatThreadId}/messages/rollback`, {
+        await apiClient.patch(`/api/chat-threads/${chatThreadId}/messages`, {
           messages: rollbackMessages,
         })
       } catch (error) {
@@ -154,8 +170,9 @@ export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
   // Filter empty assistant messages
   const filteredMessages = messages.filter((message) => {
     if (message.role === 'assistant') {
-      const hasContent = message.parts.some((part) => part.type === 'text' && part.text.trim().length > 0)
-      return hasContent
+      const hasTextContent = message.parts.some((part: any) => part.type === 'text' && part.text.trim().length > 0)
+      const hasToolCall = message.parts.some((part: any) => part.type?.startsWith('tool-'))
+      return hasTextContent || hasToolCall
     }
     return true
   })
@@ -170,6 +187,8 @@ export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
         onUpdateMessage={handleUpdateMessage}
         onRollback={handleRollback}
         messageRefs={messageRefs}
+        workspaceId={workspaceId}
+        projectId={entityId}
       />
 
       <ChatInput

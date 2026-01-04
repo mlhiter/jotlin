@@ -147,16 +147,33 @@ model Document {
   isPublic         Boolean      @default(false)
   shareToken       String?      @unique
   shareConfig      Json?
+  currentVersion   Int          @default(1)
 
-  project     Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  project     Project?           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   chatThreads ChatThread[]
+  versions    DocumentVersion[]
 
   @@index([projectId, isDeleted])
   @@index([workspaceId, isDeleted])
   @@index([shareToken])
   @@index([isAIGenerated])
   @@map("document")
+}
+
+model DocumentVersion {
+  id            String   @id @default(cuid())
+  documentId    String
+  content       String   @db.Text
+  versionNumber Int
+  createdBy     String
+  createdAt     DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId, versionNumber])
+  @@map("document_version")
 }
 
 model ChatThread {

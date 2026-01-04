@@ -17,6 +17,7 @@ const eslintConfig = [
   },
   {
     rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
       'import/no-anonymous-default-export': 'off',
       'react-hooks/exhaustive-deps': 'off',
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],

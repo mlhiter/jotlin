@@ -1,23 +1,23 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { Bot, MoreVertical, FileEdit, MessageSquare, Plus } from 'lucide-react'
-import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { AutoSaveIndicator } from './auto-save-indicator'
-import { SaveStatus } from '@/hooks/use-auto-save'
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
+import { Bot, MoreVertical, Plus } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
+import { SaveStatus } from '@/hooks/use-auto-save'
 import apiClient from '@/libs/utils/axios'
+
+import { AutoSaveIndicator } from './auto-save-indicator'
+
+import type { Document } from '@/types/document'
 
 interface DocumentHeaderProps {
   documentId: string
@@ -92,16 +92,16 @@ export function DocumentHeader({
       const previousDocuments = queryClient.getQueryData(['documents'])
 
       // Optimistically update document
-      queryClient.setQueryData(['document', documentId], (old: any) => {
+      queryClient.setQueryData(['document', documentId], (old: Document[] | undefined) => {
         if (!old) return old
         return { ...old, ...newData }
       })
 
       // Optimistically update documents list
-      queryClient.setQueriesData({ queryKey: ['documents'] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ['documents'] }, (old: Document[]) => {
         if (!old) return old
         if (Array.isArray(old)) {
-          return old.map((doc: any) => (doc.id === documentId ? { ...doc, ...newData } : doc))
+          return old.map((doc: Document) => (doc.id === documentId ? { ...doc, ...newData } : doc))
         }
         return old
       })
@@ -227,9 +227,8 @@ export function DocumentHeader({
                   />
                 ) : (
                   <h1
-                    className="cursor-pointer text-xl font-semibold hover:text-muted-foreground"
-                    onClick={handleTitleClick}
-                  >
+                    className="hover:text-muted-foreground cursor-pointer text-xl font-semibold"
+                    onClick={handleTitleClick}>
                     {displayTitle}
                   </h1>
                 )}
@@ -261,16 +260,14 @@ export function DocumentHeader({
                               setEditedLabel('')
                               setIsEditingLabel(true)
                             }}
-                            className="flex h-6 w-6 items-center justify-center rounded border border-dashed transition-colors hover:bg-accent"
-                          >
+                            className="hover:bg-accent flex h-6 w-6 items-center justify-center rounded border border-dashed transition-colors">
                             <Plus className="h-3 w-3" />
                           </button>
                         ) : (
                           <Badge
                             variant="secondary"
-                            className="cursor-pointer text-xs hover:bg-secondary/80"
-                            onClick={() => setIsEditingLabel(true)}
-                          >
+                            className="hover:bg-secondary/80 cursor-pointer text-xs"
+                            onClick={() => setIsEditingLabel(true)}>
                             {localDocumentType}
                           </Badge>
                         )}
@@ -296,11 +293,9 @@ export function DocumentHeader({
         <Tabs value={currentTab} onValueChange={onTabChange}>
           <TabsList className="h-9">
             <TabsTrigger value="editor" className="gap-1.5">
-              <FileEdit className="h-3.5 w-3.5" />
               Editor
             </TabsTrigger>
             <TabsTrigger value="chat" className="gap-1.5">
-              <MessageSquare className="h-3.5 w-3.5" />
               Chat
             </TabsTrigger>
           </TabsList>

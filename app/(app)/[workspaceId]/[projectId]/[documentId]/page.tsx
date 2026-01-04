@@ -1,9 +1,11 @@
 'use client'
 
-import { use } from 'react'
-import { useDocument } from '@/hooks/use-document'
-import { DocumentView } from '@/components/document/document-view'
 import { Loader2 } from 'lucide-react'
+import { use } from 'react'
+
+import { DocumentView } from '@/components/document/document-view'
+
+import { useDocument } from '@/hooks/use-document'
 
 interface DocumentPageProps {
   params: Promise<{
@@ -20,7 +22,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     )
   }

@@ -6,6 +6,7 @@ import { useRef, useEffect, useState } from 'react'
 
 import { AssistantMessage } from '@/components/chat/assistant-message'
 import { EmptyState } from '@/components/chat/empty-state'
+import { ToolCallCard } from '@/components/chat/tool-call-card'
 import { UserMessage } from '@/components/chat/user-message'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -24,6 +25,8 @@ interface MessageListProps {
   onUpdateMessage?: (messageId: string, metadata: MyUIMessage['metadata']) => void
   onRollback: (messageId: string) => void
   messageRefs?: React.MutableRefObject<Map<string, HTMLElement>>
+  workspaceId?: string
+  projectId?: string
 }
 
 export function MessageList({
@@ -34,6 +37,8 @@ export function MessageList({
   onUpdateMessage,
   onRollback,
   messageRefs,
+  workspaceId,
+  projectId,
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -104,24 +109,58 @@ export function MessageList({
                       parts={message.parts as MessagePart[]}
                       onRollback={() => onRollback(message.id)}
                     />
-                  ) : (
-                    message.parts.map((part, i) => {
-                      if (part.type === 'text') {
-                        return (
-                          <AssistantMessage
-                            key={`${message.id}-${i}`}
-                            content={part.text}
-                            messageId={message.id}
-                            metadata={message.metadata}
-                            onOptionSelect={(value) => onSendMessage({ text: value })}
-                            onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
-                            onRollback={() => onRollback(message.id)}
-                          />
-                        )
-                      }
-                      return null
-                    })
-                  )}
+                  ) : message.role === 'assistant' ? (
+                    <div className="flex-1 space-y-2">
+                      {/* Render text content first */}
+                      {(() => {
+                        const textParts = message.parts.filter((part) => part.type === 'text')
+                        const hasToolCalls = message.parts.some((part: any) => part.type?.startsWith('tool-'))
+
+                        // If there are tool calls, only render the last text part (after tool execution)
+                        // Otherwise, render all text parts
+                        const partsToRender = hasToolCalls && textParts.length > 1 ? [textParts[textParts.length - 1]] : textParts
+
+                        return partsToRender.map((part, i) => {
+                          if (part.type === 'text') {
+                            return (
+                              <AssistantMessage
+                                key={`${message.id}-${i}`}
+                                content={part.text}
+                                messageId={message.id}
+                                metadata={message.metadata}
+                                onOptionSelect={(value) => onSendMessage({ text: value })}
+                                onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
+                                onRollback={() => onRollback(message.id)}
+                              />
+                            )
+                          }
+                          return null
+                        })
+                      })()}
+
+                      {/* Render tool-calls after text content */}
+                      {message.parts
+                        .filter((part: any) => part.type?.startsWith('tool-'))
+                        .map((part: any) => {
+                          // Extract tool name from type (e.g., 'tool-create_document' -> 'create_document')
+                          const toolName = part.type.replace('tool-', '')
+
+                          return (
+                            <ToolCallCard
+                              key={part.toolCallId}
+                              toolName={toolName}
+                              toolCallId={part.toolCallId}
+                              args={part.input}
+                              result={part.output}
+                              isExecuting={part.state !== 'output-available' && part.state !== 'output-error'}
+                              defaultCollapsed={message.metadata?.isCollapsed ?? true}
+                              workspaceId={workspaceId}
+                              projectId={projectId}
+                            />
+                          )
+                        })}
+                    </div>
+                  ) : null}
                 </div>
               ))
           )}

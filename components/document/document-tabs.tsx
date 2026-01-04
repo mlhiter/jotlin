@@ -1,6 +1,7 @@
 'use client'
 
 import { FileEdit, MessageSquare } from 'lucide-react'
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface DocumentTabsProps {
@@ -9,11 +10,7 @@ interface DocumentTabsProps {
   defaultTab?: 'editor' | 'chat'
 }
 
-export function DocumentTabs({
-  editorContent,
-  chatContent,
-  defaultTab = 'editor',
-}: DocumentTabsProps) {
+export function DocumentTabs({ editorContent, chatContent, defaultTab = 'editor' }: DocumentTabsProps) {
   return (
     <Tabs defaultValue={defaultTab} className="flex h-full flex-col">
       <div className="border-b px-6">
