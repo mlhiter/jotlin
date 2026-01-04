@@ -8,6 +8,7 @@ import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
 
+// TODO: implement this competitor research tool later
 const openai = createOpenAI({
   baseURL: process.env.OPENAI_API_BASE_URL,
   apiKey: process.env.OPENAI_API_KEY,
@@ -160,7 +161,7 @@ ${topResults
       // tools, // if using tools
     })
 
-    const modelMessages = convertToModelMessages(validatedMessages)
+    const modelMessages = await convertToModelMessages(validatedMessages)
 
     const result = streamText({
       model: openai.chat(modelName),

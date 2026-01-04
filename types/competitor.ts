@@ -1,5 +1,3 @@
-import { ChatPhase } from '@prisma/client'
-
 export interface TavilySearchOptions {
   query: string
   searchDepth?: 'basic' | 'advanced'
@@ -58,7 +56,6 @@ export interface CompetitorAnalysis {
 export interface CompetitorResearchResponse {
   id: string
   chatId: string
-  phase: ChatPhase
   query: string
   results: TavilySearchResponse
   analysis?: CompetitorAnalysis
