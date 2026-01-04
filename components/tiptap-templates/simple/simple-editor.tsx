@@ -236,6 +236,12 @@ export function SimpleEditor({ initialContent = '', onChange }: SimpleEditorProp
   return (
     <div className="simple-editor-wrapper">
       <EditorContext.Provider value={{ editor }}>
+        <EditorContent
+          editor={editor}
+          role="presentation"
+          className="simple-editor-content"
+        />
+
         <Toolbar ref={toolbarRef}>
           {mobileView === "main" ? (
             <MainToolbarContent
@@ -250,12 +256,6 @@ export function SimpleEditor({ initialContent = '', onChange }: SimpleEditorProp
             />
           )}
         </Toolbar>
-
-        <EditorContent
-          editor={editor}
-          role="presentation"
-          className="simple-editor-content"
-        />
       </EditorContext.Provider>
     </div>
   )

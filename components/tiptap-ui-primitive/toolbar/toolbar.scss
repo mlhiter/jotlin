@@ -1,13 +1,13 @@
 :root {
   --tt-toolbar-height: 2.75rem;
   --tt-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --tt-toolbar-bg-color: var(--white);
-  --tt-toolbar-border-color: var(--tt-gray-light-a-100);
+  --tt-toolbar-bg-color: var(--background);
+  --tt-toolbar-border-color: oklch(0.922 0 0 / 0.4);
 }
 
 .dark {
-  --tt-toolbar-bg-color: var(--black);
-  --tt-toolbar-border-color: var(--tt-gray-dark-a-50);
+  --tt-toolbar-bg-color: var(--background);
+  --tt-toolbar-border-color: oklch(1 0 0 / 0.1);
 }
 
 .tiptap-toolbar {
@@ -31,13 +31,12 @@
   }
 
   &[data-variant="fixed"] {
-    position: sticky;
-    top: 0;
+    flex-shrink: 0;
     z-index: 10;
     width: 100%;
     min-height: var(--tt-toolbar-height);
     background: var(--tt-toolbar-bg-color);
-    border-bottom: 1px solid var(--tt-toolbar-border-color);
+    border-top: 1px solid var(--tt-toolbar-border-color);
     padding: 0 0.5rem;
     overflow-x: auto;
     overscroll-behavior-x: contain;
@@ -50,11 +49,8 @@
     }
 
     @media (max-width: 480px) {
-      position: absolute;
-      top: auto;
       height: calc(var(--tt-toolbar-height) + var(--tt-safe-area-bottom));
       border-top: 1px solid var(--tt-toolbar-border-color);
-      border-bottom: none;
       padding: 0 0.5rem var(--tt-safe-area-bottom);
       flex-wrap: nowrap;
       justify-content: flex-start;

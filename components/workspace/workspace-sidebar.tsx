@@ -1,21 +1,14 @@
 'use client'
 
-import { Bot, ChevronRight, File, Folder, FolderPlus, Plus, MoreHorizontal, Trash2 } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { ChevronRight, Folder, FolderPlus, Plus, MoreHorizontal, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, memo, useCallback, useMemo } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -25,14 +18,15 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubItem,
-  SidebarMenuSubButton,
 } from '@/components/ui/sidebar'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import { useDocuments } from '@/hooks/use-documents'
 import { useProjects } from '@/hooks/use-projects'
 import { useWorkspace } from '@/hooks/use-workspace'
-import { cn } from '@/libs/utils/utils'
 import apiClient from '@/libs/utils/axios'
+import { cn } from '@/libs/utils/utils'
+
 import { DocumentListItem } from './document-list-item'
 
 export const WorkspaceSidebar = memo(function WorkspaceSidebar() {
@@ -168,8 +162,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar() {
           size="icon"
           className="h-6 w-6"
           onClick={handleCreateProject}
-          disabled={!workspace?.id || isCreating || creatingProject}
-        >
+          disabled={!workspace?.id || isCreating || creatingProject}>
           <Plus className="h-3.5 w-3.5" />
           <span className="sr-only">New Project</span>
         </Button>
@@ -196,7 +189,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar() {
               />
             ))
           ) : (
-            <div className="px-2 py-8 text-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground px-2 py-8 text-center text-sm">
               <FolderPlus className="mx-auto mb-2 h-8 w-8 opacity-50" />
               <p>No projects yet</p>
               <p className="mt-1 text-xs">Click + to create one</p>
@@ -225,7 +218,14 @@ interface ProjectTreeItemProps {
   onExpand: (projectId: string) => void
 }
 
-const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspaceId, isExpanded, isFocused, onToggle, onExpand }: ProjectTreeItemProps) {
+const ProjectTreeItemWrapper = memo(function ProjectTreeItem({
+  project,
+  workspaceId,
+  isExpanded,
+  isFocused,
+  onToggle,
+  onExpand,
+}: ProjectTreeItemProps) {
   // Only load documents when expanded
   const { documents, createDocument, isCreating, isLoading } = useDocuments({
     projectId: project.id,
@@ -272,22 +272,25 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspac
     },
   })
 
-  const handleCreateDocument = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (creatingDoc || !workspaceId) return
-    setCreatingDoc(true)
-    try {
-      const newDocument = await createDocument({
-        workspaceId,
-        projectId: project.id,
-        title: 'New Document',
-      })
-      onExpand(project.id)
-      router.push(`/${workspaceId}/${project.id}/${newDocument.id}`)
-    } finally {
-      setCreatingDoc(false)
-    }
-  }, [creatingDoc, workspaceId, createDocument, project.id, onExpand, router])
+  const handleCreateDocument = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (creatingDoc || !workspaceId) return
+      setCreatingDoc(true)
+      try {
+        const newDocument = await createDocument({
+          workspaceId,
+          projectId: project.id,
+          title: 'New Document',
+        })
+        onExpand(project.id)
+        router.push(`/${workspaceId}/${project.id}/${newDocument.id}`)
+      } finally {
+        setCreatingDoc(false)
+      }
+    },
+    [creatingDoc, workspaceId, createDocument, project.id, onExpand, router]
+  )
 
   const handleDelete = useCallback(() => {
     // Store the snapshot before deletion
@@ -323,16 +326,20 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspac
     }, 100)
   }, [queryClient, project.id, project.title, pathname, workspaceId, router, deleteMutation])
 
-  const isProjectChatActive = useMemo(() => pathname === `/${workspaceId}/${project.id}`, [pathname, workspaceId, project.id])
+  const isProjectChatActive = useMemo(
+    () => pathname === `/${workspaceId}/${project.id}`,
+    [pathname, workspaceId, project.id]
+  )
 
   return (
     <SidebarMenuItem>
-      <div className={cn(
-        "group/project relative flex w-full items-center rounded-md transition-colors",
-        isFocused && "bg-sidebar-accent ring-1 ring-sidebar-border/50"
-      )}>
+      <div
+        className={cn(
+          'group/project relative flex w-full items-center rounded-md transition-colors',
+          isFocused && 'bg-sidebar-accent ring-sidebar-border/50 ring-1'
+        )}>
         {/* Project link - flexible width */}
-        <SidebarMenuButton asChild isActive={isProjectChatActive} className="flex-1 min-w-0 pr-0">
+        <SidebarMenuButton asChild isActive={isProjectChatActive} className="min-w-0 flex-1 pr-0">
           <Link href={`/${workspaceId}/${project.id}`} className="flex min-w-0 items-center gap-2 pl-2">
             {/* Icon/Chevron container - icon by default, chevron on hover */}
             <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
@@ -343,15 +350,14 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspac
                   e.stopPropagation()
                   onToggle()
                 }}
-                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/project:opacity-100 transition-opacity z-10"
-              >
+                className="absolute inset-0 z-10 flex items-center justify-center opacity-0 transition-opacity group-hover/project:opacity-100">
                 <ChevronRight
-                  className={cn('h-3.5 w-3.5 text-muted-foreground transition-transform', isExpanded && 'rotate-90')}
+                  className={cn('text-muted-foreground h-3.5 w-3.5 transition-transform', isExpanded && 'rotate-90')}
                 />
               </button>
 
               {/* Icon - hidden on hover */}
-              <div className="absolute inset-0 flex items-center justify-center group-hover/project:opacity-0 transition-opacity">
+              <div className="absolute inset-0 flex items-center justify-center transition-opacity group-hover/project:opacity-0">
                 {project.icon && project.icon !== '📁' ? (
                   <span className="text-base leading-none">{project.icon}</span>
                 ) : (
@@ -361,21 +367,18 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspac
             </div>
 
             {/* Title - extends to full width when buttons are hidden */}
-            <span className="min-w-0 flex-1 truncate text-left group-hover/project:pr-14">
-              {project.title}
-            </span>
+            <span className="min-w-0 flex-1 truncate text-left group-hover/project:pr-14">{project.title}</span>
           </Link>
         </SidebarMenuButton>
 
         {/* Action buttons - absolute positioned, only shown on hover */}
-        <div className="absolute right-1 flex items-center gap-0.5 opacity-0 group-hover/project:opacity-100 transition-opacity pointer-events-none group-hover/project:pointer-events-auto">
+        <div className="pointer-events-none absolute right-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/project:pointer-events-auto group-hover/project:opacity-100">
           <Button
             variant="ghost"
             size="icon"
             className="h-6 w-6"
             onClick={handleCreateDocument}
-            disabled={isCreating || creatingDoc}
-          >
+            disabled={isCreating || creatingDoc}>
             <Plus className="h-3.5 w-3.5" />
           </Button>
 
@@ -386,11 +389,7 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspac
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="bottom" className="w-48">
-              <DropdownMenuItem
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending}
-                className="text-destructive"
-              >
+              <DropdownMenuItem onClick={handleDelete} disabled={deleteMutation.isPending}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete Project
               </DropdownMenuItem>
@@ -438,7 +437,7 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({ project, workspac
 
       {isExpanded && !isLoading && documents.length === 0 && (
         <SidebarMenuSub>
-          <div className="px-2 py-2 text-xs text-muted-foreground">No documents</div>
+          <div className="text-muted-foreground px-2 py-2 text-xs">No documents</div>
         </SidebarMenuSub>
       )}
     </SidebarMenuItem>

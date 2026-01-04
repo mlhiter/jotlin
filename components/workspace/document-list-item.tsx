@@ -251,8 +251,8 @@ export const DocumentListItem = memo(function DocumentListItem({
 
   return (
     <SidebarMenuSubItem>
-      <div className="group/document relative -mr-2.5 flex w-full items-center rounded-md transition-colors">
-        <SidebarMenuSubButton asChild isActive={isActive} className="min-w-0 flex-1 pr-0">
+      <div className="group/document relative flex w-full items-center rounded-md pl-2 transition-colors">
+        <SidebarMenuSubButton asChild isActive={isActive} className="min-w-0 flex-1">
           <Link
             href={`/${workspaceId}/${projectId}/${doc.id}`}
             className="flex min-w-0 items-center gap-1.5"
@@ -271,7 +271,7 @@ export const DocumentListItem = memo(function DocumentListItem({
         </SidebarMenuSubButton>
 
         {/* Action buttons - absolute positioned, only shown on hover */}
-        <div className="pointer-events-none absolute right-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/document:pointer-events-auto group-hover/document:opacity-100">
+        <div className="pointer-events-none absolute right-2 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/document:pointer-events-auto group-hover/document:opacity-100">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-6 w-6">
