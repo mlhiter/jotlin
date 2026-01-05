@@ -62,17 +62,19 @@ body,
 }
 
 .simple-editor-content {
-  max-width: 900px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
   flex: 1;
   overflow: auto;
   display: flex;
+  align-items: center;
   flex-direction: column;
 }
 
 .simple-editor-content .tiptap.ProseMirror.simple-editor {
   flex: 1;
+  width: 60%;
   padding: 3rem 3rem 30vh;
 }
 
