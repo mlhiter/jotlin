@@ -280,3 +280,38 @@ h6 {
   animation: highlight-pulse 2s ease-in-out;
   border-radius: 0.5rem;
 }
+
+/* Thread Switcher */
+[data-radix-popper-content-wrapper] {
+  --tw-shadow: 0 10px 40px -10px rgb(0 0 0 / 0.1), 0 4px 12px -4px rgb(0 0 0 / 0.05);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+/* Thread Switcher  */
+[data-thread-switcher-trigger] {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-thread-switcher-trigger]:hover {
+  transform: translateY(-1px);
+}
+
+[data-thread-switcher-trigger]:active {
+  transform: translateY(0);
+}
+
+/* Popover  */
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+[data-state='open'][data-radix-popper-content-wrapper] {
+  animation: popover-in 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}

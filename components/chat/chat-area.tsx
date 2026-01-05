@@ -1,13 +1,14 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
+import { useQueryClient } from '@tanstack/react-query'
 import { DefaultChatTransport } from 'ai'
-import { Loader2 } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { ChatInput } from '@/components/chat/chat-input'
 import { MessageList } from '@/components/chat/message-list'
 
+import { useThreadMessages } from '@/hooks/use-thread-messages'
 import apiClient from '@/libs/utils/axios'
 import { MyUIMessage } from '@/schema/chat'
 import { useAuthStore } from '@/store/auth-store'
@@ -16,61 +17,23 @@ interface ChatAreaProps {
   type: 'PROJECT'
   entityId: string // projectId
   workspaceId: string
+  currentThreadId: string | null
 }
 
-export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
-  const [chatThreadId, setChatThreadId] = useState<string | null>(null)
-  const [initialMessages, setInitialMessages] = useState<MyUIMessage[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [chatReady, setChatReady] = useState(false)
+export function ChatArea({ entityId, workspaceId, currentThreadId }: ChatAreaProps) {
   const messageRefs = useRef<Map<string, HTMLElement>>(new Map())
+  const queryClient = useQueryClient()
 
-  // Load or create chat thread
-  useEffect(() => {
-    const loadChatThread = async () => {
-      try {
-        setIsLoading(true)
-
-        // Get existing chat thread for this project
-        const params = { projectId: entityId, type: 'PROJECT' }
-
-        const response = await apiClient.get('/api/chat-threads', { params })
-
-        let thread = response.data.threads?.[0]
-
-        // If no thread exists, create one
-        if (!thread) {
-          const createResponse = await apiClient.post('/api/chat-threads', {
-            ...params,
-            workspaceId,
-          })
-          thread = createResponse.data
-        }
-
-        setChatThreadId(thread.id)
-
-        // Load messages
-        if (thread.messages && thread.messages.length > 0) {
-          setInitialMessages(thread.messages)
-        }
-
-        setChatReady(true)
-      } catch (error) {
-        console.error('Failed to load chat thread:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadChatThread()
-  }, [type, entityId, workspaceId])
+  // Fetch messages with caching
+  const { data: cachedMessages, isLoading } = useThreadMessages({
+    threadId: currentThreadId,
+  })
 
   const { messages, sendMessage, status, stop, setMessages } = useChat<MyUIMessage>({
-    id: chatThreadId || undefined,
-    messages: initialMessages,
-    transport: chatThreadId
+    id: currentThreadId || undefined,
+    transport: currentThreadId
       ? new DefaultChatTransport({
-          api: `/api/chat-threads/${chatThreadId}/messages`,
+          api: `/api/chat-threads/${currentThreadId}/messages`,
           headers: () => ({
             Authorization: `Bearer ${useAuthStore.getState().token}`,
           }),
@@ -79,10 +42,25 @@ export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
     onError: (error) => {
       console.error('Chat error:', error)
     },
+    onFinish: () => {
+      // Invalidate cache when message is complete
+      if (currentThreadId) {
+        queryClient.invalidateQueries({ queryKey: ['threadMessages', currentThreadId] })
+      }
+    },
   })
 
+  // Sync cached messages to useChat state
+  useEffect(() => {
+    if (cachedMessages && cachedMessages.length > 0) {
+      setMessages(cachedMessages)
+    } else if (cachedMessages) {
+      setMessages([])
+    }
+  }, [cachedMessages, setMessages])
+
   const handleSendMessage = (message: { text: string }) => {
-    if (!chatReady || status !== 'ready') {
+    if (isLoading || status !== 'ready') {
       console.warn('Chat not ready')
       return
     }
@@ -90,7 +68,7 @@ export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
   }
 
   const handleRetry = () => {
-    if (!chatReady || status !== 'ready') {
+    if (isLoading || status !== 'ready') {
       return
     }
     const lastUserMessage = messages.findLast((m) => m.role === 'user')
@@ -126,12 +104,14 @@ export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
 
     setMessages(rollbackMessages)
 
-    // Save rollback to server
-    if (chatThreadId) {
+    // Save rollback to server and invalidate cache
+    if (currentThreadId) {
       try {
-        await apiClient.patch(`/api/chat-threads/${chatThreadId}/messages`, {
+        await apiClient.patch(`/api/chat-threads/${currentThreadId}/messages`, {
           messages: rollbackMessages,
         })
+        // Invalidate the cache to refetch messages
+        queryClient.invalidateQueries({ queryKey: ['threadMessages', currentThreadId] })
       } catch (error) {
         console.error('Failed to save rollback:', error)
       }
@@ -151,18 +131,10 @@ export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
     stop()
   }
 
-  if (isLoading) {
+  if (!currentThreadId) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
-      </div>
-    )
-  }
-
-  if (!chatThreadId) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">Failed to load chat</p>
+        <p className="text-muted-foreground">No conversation selected. Create or select one from the header.</p>
       </div>
     )
   }
@@ -182,6 +154,7 @@ export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
       <MessageList
         messages={filteredMessages}
         status={status}
+        isLoading={isLoading}
         onRetry={handleRetry}
         onSendMessage={sendMessage}
         onUpdateMessage={handleUpdateMessage}
@@ -198,7 +171,7 @@ export function ChatArea({ type, entityId, workspaceId }: ChatAreaProps) {
         status={status}
         quotes={[]}
         onRemoveQuote={() => {}}
-        chatId={chatThreadId}
+        chatId={currentThreadId}
         phase={null}
         onCompetitorSearchComplete={() => {}}
       />

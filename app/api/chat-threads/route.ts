@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSessionFromRequest } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 
-// GET /api/chat-threads?projectId=xxx or ?documentId=xxx&type=PROJECT|DOCUMENT
+// GET /api/chat-threads?projectId=xxx or ?documentId=xxx
 export async function GET(request: NextRequest) {
   try {
     const session = await getSessionFromRequest(request)
@@ -13,36 +13,42 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams
     const projectId = searchParams.get('projectId')
+    const documentId = searchParams.get('documentId')
 
-    if (!projectId) {
-      return NextResponse.json({ error: 'projectId is required' }, { status: 400 })
+    if (!projectId && !documentId) {
+      return NextResponse.json({ error: 'projectId or documentId is required' }, { status: 400 })
     }
 
-    // Query chat threads for project
+    // Query chat threads for project or document
     const threads = await prisma.chatThread.findMany({
       where: {
-        projectId,
-        type: 'PROJECT',
+        ...(projectId && { projectId }),
+        ...(documentId && { documentId }),
         isDeleted: false,
       },
       include: {
+        _count: { select: { messages: true } },
         messages: {
-          orderBy: { order: 'asc' },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { createdAt: true },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
     })
 
-    // Map ChatMessage to UIMessage format
+    // Map threads with metadata
     const mappedThreads = threads.map((thread) => ({
-      ...thread,
-      messages: thread.messages.map((msg) => ({
-        id: msg.id,
-        role: msg.role,
-        parts: msg.content, // content field stores parts array
-        metadata: msg.metadata,
-        createdAt: msg.createdAt,
-      })),
+      id: thread.id,
+      projectId: thread.projectId,
+      documentId: thread.documentId,
+      title: thread.title,
+      type: thread.type,
+      order: thread.order,
+      createdAt: thread.createdAt,
+      updatedAt: thread.updatedAt,
+      messageCount: thread._count.messages,
+      lastMessageAt: thread.messages[0]?.createdAt || thread.createdAt,
     }))
 
     return NextResponse.json({ threads: mappedThreads })

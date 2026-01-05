@@ -11,6 +11,7 @@ import { UserMessage } from '@/components/chat/user-message'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import { cn } from '@/libs/utils/utils'
 import { MyUIMessage } from '@/schema/chat'
@@ -20,6 +21,7 @@ import type { MessagePart } from '@/types/chat'
 interface MessageListProps {
   messages: MyUIMessage[]
   status: ChatStatus
+  isLoading?: boolean
   onRetry: () => void
   onSendMessage: (message: { text: string }) => void
   onUpdateMessage?: (messageId: string, metadata: MyUIMessage['metadata']) => void
@@ -29,9 +31,28 @@ interface MessageListProps {
   projectId?: string
 }
 
+// Loading skeleton component
+function MessageLoadingSkeleton() {
+  return (
+    <div className="mx-auto max-w-3xl space-y-6 py-6">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="space-y-4">
+          <div className="flex justify-end">
+            <Skeleton className="h-16 w-2/3 rounded-2xl" />
+          </div>
+          <div className="flex justify-start">
+            <Skeleton className="h-24 w-3/4 rounded-2xl" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function MessageList({
   messages,
   status,
+  isLoading = false,
   onRetry,
   onSendMessage,
   onUpdateMessage,
@@ -85,10 +106,13 @@ export function MessageList({
       <div className="from-background pointer-events-none absolute bottom-0 left-0 right-3 z-10 h-8 bg-gradient-to-t to-transparent" />
 
       <ScrollArea ref={scrollAreaRef} className="h-full px-4">
-        <div className="mx-auto max-w-3xl space-y-6 py-6">
-          {messages.filter((m) => m.role !== 'system').length === 0 ? (
-            <EmptyState onSendMessage={onSendMessage} />
-          ) : (
+        {isLoading ? (
+          <MessageLoadingSkeleton />
+        ) : (
+          <div className="mx-auto max-w-3xl space-y-6 py-6">
+            {messages.filter((m) => m.role !== 'system').length === 0 ? (
+              <EmptyState onSendMessage={onSendMessage} />
+            ) : (
             messages
               .filter((m) => m.role !== 'system')
               .map((message) => (
@@ -118,7 +142,8 @@ export function MessageList({
 
                         // If there are tool calls, only render the last text part (after tool execution)
                         // Otherwise, render all text parts
-                        const partsToRender = hasToolCalls && textParts.length > 1 ? [textParts[textParts.length - 1]] : textParts
+                        const partsToRender =
+                          hasToolCalls && textParts.length > 1 ? [textParts[textParts.length - 1]] : textParts
 
                         return partsToRender.map((part, i) => {
                           if (part.type === 'text') {
@@ -195,7 +220,8 @@ export function MessageList({
           )}
 
           <div ref={messagesEndRef} />
-        </div>
+          </div>
+        )}
       </ScrollArea>
 
       {/* Scroll to bottom button */}

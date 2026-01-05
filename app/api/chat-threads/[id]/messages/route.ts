@@ -14,6 +14,56 @@ const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+// GET /api/chat-threads/[id]/messages - Get all messages for a thread
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await getSessionFromRequest(req)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id: threadId } = await params
+
+    // Verify thread ownership
+    const thread = await prisma.chatThread.findFirst({
+      where: {
+        id: threadId,
+        isDeleted: false,
+      },
+      include: {
+        project: { include: { workspace: true } },
+        document: { include: { workspace: true } },
+        messages: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    })
+
+    if (!thread) {
+      return NextResponse.json({ error: 'Thread not found' }, { status: 404 })
+    }
+
+    const workspace = thread.project?.workspace || thread.document?.workspace
+    if (workspace?.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Map ChatMessage to UIMessage format
+    const messages = thread.messages.map((msg) => ({
+      id: msg.id,
+      role: msg.role,
+      parts: msg.content, // content field stores parts array
+      metadata: msg.metadata,
+      createdAt: msg.createdAt,
+    }))
+
+    return NextResponse.json({ messages })
+  } catch (error) {
+    console.error('Failed to get thread messages:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getSessionFromRequest(req as NextRequest)
