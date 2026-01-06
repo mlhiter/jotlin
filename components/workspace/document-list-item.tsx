@@ -1,5 +1,7 @@
 'use client'
 
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { File, Bot, MoreHorizontal, Trash2, Edit2 } from 'lucide-react'
 import Link from 'next/link'
@@ -13,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar'
 
 import apiClient from '@/libs/utils/axios'
+import { cn } from '@/libs/utils/utils'
 
 interface DocumentListItemProps {
   doc: {
@@ -42,6 +45,14 @@ export const DocumentListItem = memo(function DocumentListItem({
   const queryClient = useQueryClient()
   const pathname = usePathname()
   const router = useRouter()
+
+  // Drag and drop
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: doc.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
 
   // Sync with props when they change from server
   useEffect(() => {
@@ -234,7 +245,7 @@ export const DocumentListItem = memo(function DocumentListItem({
 
   if (isEditing) {
     return (
-      <SidebarMenuSubItem>
+      <SidebarMenuSubItem ref={setNodeRef} style={style}>
         <div className="px-2">
           <Input
             ref={inputRef}
@@ -250,12 +261,19 @@ export const DocumentListItem = memo(function DocumentListItem({
   }
 
   return (
-    <SidebarMenuSubItem>
-      <div className="group/document relative flex w-full items-center rounded-md pl-2 transition-colors">
+    <SidebarMenuSubItem ref={setNodeRef} style={style}>
+      <div
+        className={cn(
+          'group/document relative flex w-full items-center rounded-md transition-colors',
+          'cursor-grab active:cursor-grabbing',
+          isDragging && 'z-50 opacity-50'
+        )}
+        {...attributes}
+        {...listeners}>
         <SidebarMenuSubButton asChild isActive={isActive} className="min-w-0 flex-1">
           <Link
             href={`/${workspaceId}/${projectId}/${doc.id}`}
-            className="flex min-w-0 items-center gap-1.5"
+            className="flex min-w-0 items-center gap-1"
             onDoubleClick={handleDoubleClick}>
             {doc.icon && doc.icon !== '📄' ? <span className="text-sm">{doc.icon}</span> : <File className="h-4 w-4" />}
             <span className="min-w-0 flex-1 truncate group-hover/document:pr-8">{localTitle}</span>

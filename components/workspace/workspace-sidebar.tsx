@@ -1,5 +1,8 @@
 'use client'
 
+import { DndContext, closestCenter, DragEndEvent, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronRight, Folder, FolderPlus, Plus, MoreHorizontal, Trash2 } from 'lucide-react'
 import Link from 'next/link'
@@ -23,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 import { useDocuments } from '@/hooks/use-documents'
 import { useProjects } from '@/hooks/use-projects'
+import { useSortableList } from '@/hooks/use-sortable-list'
 import { useWorkspace } from '@/hooks/use-workspace'
 import apiClient from '@/libs/utils/axios'
 import { cn } from '@/libs/utils/utils'
@@ -35,10 +39,28 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar() {
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set())
   const [creatingProject, setCreatingProject] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState<number>(-1)
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null)
   const pathname = usePathname()
   const router = useRouter()
 
   const isLoading = useMemo(() => isLoadingWorkspace || isLoadingProjects, [isLoadingWorkspace, isLoadingProjects])
+
+  // Drag sensors - require 8px movement to activate drag
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  )
+
+  // Drag and drop sorting
+  const { handleDragEnd, isReordering } = useSortableList({
+    items: projects ?? [],
+    queryKey: ['projects', workspace?.id],
+    reorderEndpoint: '/api/projects/reorder',
+    additionalData: { workspaceId: workspace?.id },
+  })
 
   // Auto-expand project based on current path
   useEffect(() => {
@@ -150,54 +172,78 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar() {
   }, [projects, focusedIndex, workspace?.id, router])
 
   return (
-    <SidebarGroup>
-      <div className="flex items-center justify-between px-2">
-        {isLoadingWorkspace ? (
-          <Skeleton className="h-4 w-28" />
-        ) : (
-          <SidebarGroupLabel>{workspace?.title || 'Workspace'}</SidebarGroupLabel>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6"
-          onClick={handleCreateProject}
-          disabled={!workspace?.id || isCreating || creatingProject}>
-          <Plus className="h-3.5 w-3.5" />
-          <span className="sr-only">New Project</span>
-        </Button>
-      </div>
-
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {isLoading ? (
-            <>
-              <ProjectSkeleton key="skeleton-1" />
-              <ProjectSkeleton key="skeleton-2" />
-              <ProjectSkeleton key="skeleton-3" />
-            </>
-          ) : projects.length > 0 ? (
-            projects.map((project, index) => (
-              <ProjectTreeItemWrapper
-                key={project.id}
-                project={project}
-                workspaceId={workspace?.id || ''}
-                isExpanded={expandedProjects.has(project.id)}
-                isFocused={focusedIndex === index}
-                onToggle={() => toggleProject(project.id)}
-                onExpand={expandProject}
-              />
-            ))
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={(event) => setActiveProjectId(event.active.id as string)}
+      onDragEnd={(event) => {
+        handleDragEnd(event)
+        setActiveProjectId(null)
+      }}
+      onDragCancel={() => setActiveProjectId(null)}>
+      <SidebarGroup>
+        <div className="flex items-center justify-between px-2">
+          {isLoadingWorkspace ? (
+            <Skeleton className="h-4 w-28" />
           ) : (
-            <div className="text-muted-foreground px-2 py-8 text-center text-sm">
-              <FolderPlus className="mx-auto mb-2 h-8 w-8 opacity-50" />
-              <p>No projects yet</p>
-              <p className="mt-1 text-xs">Click + to create one</p>
-            </div>
+            <SidebarGroupLabel>{workspace?.title || 'Workspace'}</SidebarGroupLabel>
           )}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={handleCreateProject}
+            disabled={!workspace?.id || isCreating || creatingProject}>
+            <Plus className="h-3.5 w-3.5" />
+            <span className="sr-only">New Project</span>
+          </Button>
+        </div>
+
+        <SidebarGroupContent>
+          <SortableContext items={projects?.map((p) => p.id) ?? []} strategy={verticalListSortingStrategy}>
+            <SidebarMenu>
+              {isLoading ? (
+                <>
+                  <ProjectSkeleton key="skeleton-1" />
+                  <ProjectSkeleton key="skeleton-2" />
+                  <ProjectSkeleton key="skeleton-3" />
+                </>
+              ) : projects.length > 0 ? (
+                projects.map((project, index) => (
+                  <ProjectTreeItemWrapper
+                    key={project.id}
+                    project={project}
+                    workspaceId={workspace?.id || ''}
+                    isExpanded={expandedProjects.has(project.id)}
+                    isFocused={focusedIndex === index}
+                    onToggle={() => toggleProject(project.id)}
+                    onExpand={expandProject}
+                  />
+                ))
+              ) : (
+                <div className="text-muted-foreground px-2 py-8 text-center text-sm">
+                  <FolderPlus className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                  <p>No projects yet</p>
+                  <p className="mt-1 text-xs">Click + to create one</p>
+                </div>
+              )}
+            </SidebarMenu>
+          </SortableContext>
+        </SidebarGroupContent>
+      </SidebarGroup>
+
+      {/* Drag preview overlay */}
+      <DragOverlay>
+        {activeProjectId && projects ? (
+          <div className="bg-sidebar-accent border-sidebar-border flex items-center gap-2 rounded-lg border p-2 opacity-90 shadow-lg">
+            <span className="text-base leading-none">
+              {projects.find((p) => p.id === activeProjectId)?.icon || '📁'}
+            </span>
+            <span className="font-medium">{projects.find((p) => p.id === activeProjectId)?.title}</span>
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   )
 })
 
@@ -235,6 +281,31 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({
   const pathname = usePathname()
   const router = useRouter()
   const queryClient = useQueryClient()
+
+  // Drag and drop for projects
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: project.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  // Drag sensors for documents - require 8px movement to activate drag
+  const docSensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  )
+
+  // Drag and drop for documents
+  const { handleDragEnd: handleDocDragEnd, isReordering: isDocReordering } = useSortableList({
+    items: documents ?? [],
+    queryKey: ['documents', project.id],
+    reorderEndpoint: '/api/documents/reorder',
+    additionalData: { projectId: project.id },
+  })
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -332,15 +403,19 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({
   )
 
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem ref={setNodeRef} style={style}>
       <div
         className={cn(
           'group/project relative flex w-full items-center rounded-md transition-colors',
-          isFocused && 'bg-sidebar-accent ring-sidebar-border/50 ring-1'
-        )}>
+          'cursor-grab active:cursor-grabbing',
+          isFocused && 'bg-sidebar-accent ring-sidebar-border/50 ring-1',
+          isDragging && 'z-50 opacity-50'
+        )}
+        {...attributes}
+        {...listeners}>
         {/* Project link - flexible width */}
         <SidebarMenuButton asChild isActive={isProjectChatActive} className="min-w-0 flex-1 pr-0">
-          <Link href={`/${workspaceId}/${project.id}`} className="flex min-w-0 items-center gap-2 pl-2">
+          <Link href={`/${workspaceId}/${project.id}`} className="flex min-w-0 items-center gap-1 pl-1">
             {/* Icon/Chevron container - icon by default, chevron on hover */}
             <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
               {/* Chevron - only shown on hover, replaces icon */}
@@ -422,17 +497,21 @@ const ProjectTreeItemWrapper = memo(function ProjectTreeItem({
       )}
 
       {isExpanded && !isLoading && documents.length > 0 && (
-        <SidebarMenuSub>
-          {documents.map((doc) => (
-            <DocumentListItem
-              key={doc.id}
-              doc={doc}
-              workspaceId={workspaceId}
-              projectId={project.id}
-              isActive={pathname === `/${workspaceId}/${project.id}/${doc.id}`}
-            />
-          ))}
-        </SidebarMenuSub>
+        <DndContext sensors={docSensors} collisionDetection={closestCenter} onDragEnd={handleDocDragEnd}>
+          <SortableContext items={documents.map((d) => d.id)} strategy={verticalListSortingStrategy}>
+            <SidebarMenuSub>
+              {documents.map((doc) => (
+                <DocumentListItem
+                  key={doc.id}
+                  doc={doc}
+                  workspaceId={workspaceId}
+                  projectId={project.id}
+                  isActive={pathname === `/${workspaceId}/${project.id}/${doc.id}`}
+                />
+              ))}
+            </SidebarMenuSub>
+          </SortableContext>
+        </DndContext>
       )}
 
       {isExpanded && !isLoading && documents.length === 0 && (
