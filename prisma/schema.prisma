@@ -185,6 +185,7 @@ model ChatThread {
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
   isDeleted  Boolean       @default(false)
+  deletedAt  DateTime?
   order      Int           @default(0)
 
   project  Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)

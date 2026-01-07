@@ -1,0 +1,39 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+import { getSessionFromRequest } from '@/libs/auth/auth'
+import { prisma } from '@/libs/utils/prisma'
+
+// DELETE /api/projects/[id]/permanent - Permanently delete project (physical delete)
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await getSessionFromRequest(request)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = await params
+
+    // Verify ownership and check if project is soft-deleted
+    const existingProject = await prisma.project.findFirst({
+      where: {
+        id,
+        workspace: { userId: session.user.id },
+        isDeleted: true, // Must be soft-deleted first
+      },
+    })
+
+    if (!existingProject) {
+      return NextResponse.json({ error: 'Deleted project not found' }, { status: 404 })
+    }
+
+    // Physical delete - Prisma's onDelete: Cascade will automatically delete all related data
+    await prisma.$transaction(async (tx) => {
+      await tx.project.delete({ where: { id } })
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error permanently deleting project:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

@@ -301,7 +301,7 @@ export const DocumentListItem = memo(function DocumentListItem({
                 <Edit2 className="mr-2 h-4 w-4" />
                 Rename
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDelete} disabled={deleteMutation.isPending} className="text-destructive">
+              <DropdownMenuItem onClick={handleDelete} disabled={deleteMutation.isPending}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>

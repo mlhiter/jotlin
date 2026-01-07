@@ -112,15 +112,27 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
     }
 
-    const deletedDocument = await prisma.document.update({
-      where: { id },
-      data: {
-        isDeleted: true,
-        deletedAt: new Date(),
-      },
+    const now = new Date()
+
+    // Cascade soft delete: document + chat threads
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Soft delete all document-level chat threads
+      await tx.chatThread.updateMany({
+        where: { documentId: id, isDeleted: false },
+        data: { isDeleted: true, deletedAt: now },
+      })
+
+      // 2. Soft delete document
+      return await tx.document.update({
+        where: { id },
+        data: {
+          isDeleted: true,
+          deletedAt: now,
+        },
+      })
     })
 
-    return NextResponse.json(deletedDocument)
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Error deleting document:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

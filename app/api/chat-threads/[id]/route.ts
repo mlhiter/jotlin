@@ -83,6 +83,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       where: { id },
       data: {
         isDeleted: true,
+        deletedAt: new Date(),
       },
     })
 

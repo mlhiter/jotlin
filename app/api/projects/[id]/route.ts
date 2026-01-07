@@ -112,16 +112,33 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
-    // Soft delete project
-    const deletedProject = await prisma.project.update({
-      where: { id },
-      data: {
-        isDeleted: true,
-        deletedAt: new Date(),
-      },
+    const now = new Date()
+
+    // Cascade soft delete: project + documents + chat threads
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Soft delete all documents
+      await tx.document.updateMany({
+        where: { projectId: id, isDeleted: false },
+        data: { isDeleted: true, deletedAt: now },
+      })
+
+      // 2. Soft delete all project-level chat threads
+      await tx.chatThread.updateMany({
+        where: { projectId: id, isDeleted: false },
+        data: { isDeleted: true, deletedAt: now },
+      })
+
+      // 3. Soft delete project
+      return await tx.project.update({
+        where: { id },
+        data: {
+          isDeleted: true,
+          deletedAt: now,
+        },
+      })
     })
 
-    return NextResponse.json(deletedProject)
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Error deleting project:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
