@@ -2,10 +2,11 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
-import { Bot, Plus } from 'lucide-react'
+import { Bot, Clock, Plus } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
@@ -13,6 +14,7 @@ import { SaveStatus } from '@/hooks/use-auto-save'
 import apiClient from '@/libs/utils/axios'
 
 import { AutoSaveIndicator } from './auto-save-indicator'
+import { VersionHistoryDialog } from './version-history-dialog'
 
 import type { Document } from '@/types/document'
 
@@ -22,6 +24,7 @@ interface EditorHeaderProps {
   documentType: string
   icon?: string
   isAIGenerated?: boolean
+  currentVersion?: number
   saveStatus: SaveStatus
   lastSavedAt: Date | null
 }
@@ -34,6 +37,7 @@ export function EditorHeader({
   documentType: propDocumentType,
   icon: propIcon,
   isAIGenerated,
+  currentVersion = 1,
   saveStatus,
   lastSavedAt,
 }: EditorHeaderProps) {
@@ -42,6 +46,7 @@ export function EditorHeader({
   const [isEditingLabel, setIsEditingLabel] = useState(false)
   const [editedLabel, setEditedLabel] = useState(propDocumentType)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [showVersionHistory, setShowVersionHistory] = useState(false)
 
   const [localTitle, setLocalTitle] = useState(propTitle)
   const [localDocumentType, setLocalDocumentType] = useState(propDocumentType)
@@ -239,7 +244,23 @@ export function EditorHeader({
         )}
 
         <AutoSaveIndicator status={saveStatus} lastSavedAt={lastSavedAt} className="ml-2" />
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowVersionHistory(true)}
+          className="ml-2 h-7 gap-1.5 px-2 text-xs">
+          <Clock className="h-3.5 w-3.5" />
+          Version {currentVersion}
+        </Button>
       </div>
+
+      <VersionHistoryDialog
+        open={showVersionHistory}
+        onOpenChange={setShowVersionHistory}
+        documentId={documentId}
+        currentVersion={currentVersion}
+      />
     </div>
   )
 }

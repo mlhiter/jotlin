@@ -21,6 +21,7 @@ interface DocumentHeaderProps {
   documentType: string
   icon?: string
   isAIGenerated?: boolean
+  currentVersion?: number
   saveStatus: SaveStatus
   lastSavedAt: Date | null
 
@@ -49,6 +50,7 @@ export function DocumentHeader({
   documentType,
   icon,
   isAIGenerated,
+  currentVersion = 1,
   saveStatus,
   lastSavedAt,
   currentTab = 'editor',
@@ -79,6 +81,7 @@ export function DocumentHeader({
             documentType={documentType}
             icon={icon}
             isAIGenerated={isAIGenerated}
+            currentVersion={currentVersion}
             saveStatus={saveStatus}
             lastSavedAt={lastSavedAt}
           />

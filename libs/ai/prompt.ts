@@ -278,14 +278,21 @@ You now have access to document management tools for persisting content. These t
 - Refining previously created content
 - Adding new sections based on feedback
 
+**CRITICAL REQUIREMENT - MANDATORY WORKFLOW:**
+1. **ALWAYS call get_document FIRST** to retrieve current content - NO EXCEPTIONS
+2. Review the current content to understand context
+3. Plan your changes based on the current content
+4. Then call update_document with appropriate changes
+
 **Best Practices:**
-- Call get_document first to see current content
-- Provide clear changeDescription
+- Provide clear changeDescription explaining what changed
 - Use 'replace' for full rewrites, 'append' for additions, 'prepend' for inserting at start
-- Preserve document structure
+- Preserve document structure and formatting
+- Ensure new content naturally flows with existing content
 
 **Parameters:**
 - \`documentId\`: ID of the document to update (required)
+- \`currentContentSummary\`: Brief summary of current document content from get_document (required, minimum 30 characters). This proves you called get_document first.
 - \`content\`: New content (required)
 - \`changeType\`: 'replace', 'append', or 'prepend' (required)
 - \`changeDescription\`: Description of what changed (optional but recommended)
@@ -409,35 +416,68 @@ Step 3: Confirm success to user
 
 ## Example: Updating Existing Document
 
+**MANDATORY WORKFLOW - Follow this exact sequence:**
+
 \`\`\`xml
+User: "Update the requirements document, add payment functionality to the end"
+
+Step 1: ALWAYS call list_documents first to find the document
+[Call list_documents with documentType: "REQUIREMENT"]
+→ Returns: [{ id: "doc_abc123", title: "E-commerce Platform Requirements Analysis", ... }]
+
+Step 2: ALWAYS call get_document to see current content
 <response>
 <prose>
-Let me check the current document content first.
+I found your requirements document. Let me check its current content first to ensure the new section flows naturally.
 </prose>
 </response>
 
-[Call get_document with documentId]
+[Call get_document with documentId: "doc_abc123"]
+→ Returns: {
+  content: "# Requirements Analysis Report\n## 1. Project Core\n...\n## 5. Core Features\n- User authentication\n- Product catalog\n",
+  currentVersion: 3
+}
 
+Step 3: Review and plan based on current content
 <response>
 <prose>
-I see the current document. I'll add the payment functionality section you requested.
+I see the document currently has 5 sections ending with Core Features. I'll add a new Payment Functionality section that follows the same format and structure.
 </prose>
 </response>
 
+Step 4: Call update_document with context-aware changes (MUST include currentContentSummary)
 [Call update_document with:
 {
-  documentId: "doc_123",
-  content: "\\n\\n## Payment Functionality\\n- Credit card support\\n- PayPal integration\\n",
+  documentId: "doc_abc123",
+  currentContentSummary: "Document currently has 5 sections: Project Core, Target Users, Business Positioning, Competitive Analysis, and Core Features. Ends with feature list for authentication and product catalog. Written in structured Markdown with competitive context for each feature.",
+  content: "\n\n## 6. Payment Functionality\n### Payment Methods\n- Credit card support (Visa, Mastercard, Amex)\n  - **Competitive Context**: All major competitors support these cards\n  - **Our Approach**: Use Stripe for PCI compliance\n- PayPal integration\n  - **Competitive Context**: 70% of competitors offer PayPal\n  - **Our Approach**: Direct API integration\n\n### Payment Flow\n- Secure checkout page\n- Order confirmation emails\n- Payment receipt generation",
   changeType: "append",
-  changeDescription: "Added payment functionality section"
+  changeDescription: "Added comprehensive payment functionality section with competitive analysis"
 }]
 
+Step 5: Confirm success
 <response>
 <prose>
-✅ Document updated! I've added the payment functionality section to your requirements document.
+✅ Document updated successfully! I've added a detailed payment functionality section to your requirements document. The new section follows your existing structure and includes competitive context for each payment method.
 </prose>
 </response>
 \`\`\`
+
+**Critical Rules:**
+- **NEVER** skip get_document when updating - it provides essential context
+- **ALWAYS** follow the 4-step sequence: list → get → plan → update
+- **ENSURE** new content matches the style and format of existing content
+- **currentContentSummary is MANDATORY**: If you try to call update_document without providing a proper currentContentSummary (minimum 30 characters), the tool will return an error and refuse to update. You MUST call get_document first to obtain this summary.
+
+**What happens if you skip get_document:**
+If you call update_document without first calling get_document and providing currentContentSummary, you will receive this error:
+\`\`\`
+{
+  success: false,
+  message: "CRITICAL ERROR: You must call get_document first to retrieve the current document content, then provide a summary in the currentContentSummary parameter."
+}
+\`\`\`
+When you see this error, immediately call get_document, review the content, and retry update_document with the proper summary.
 
 **Remember: Keep using XML tags for conversation flow, and use tools for document persistence. They work together!**
 `

@@ -87,35 +87,62 @@ export function createDocumentTools(context: DocumentToolContext) {
         // Update existing document instead of creating a new one
         const newVersion = existingDocument.currentVersion + 1
 
-        const updatedDocument = await prisma.document.update({
-          where: { id: existingDocument.id },
-          data: {
-            title,
-            icon: icon || existingDocument.icon,
-            content,
-            currentVersion: newVersion,
-            lastEditedAt: new Date(),
-            generationPrompt: existingDocument.generationPrompt
-              ? `${existingDocument.generationPrompt}\n\nVersion ${newVersion}: ${description || 'Updated via AI tool'}`
-              : `Version ${newVersion}: ${description || 'Updated via AI tool'}`,
-          },
-        })
+        // Transaction: Create version snapshot + Update document + Cleanup old versions
+        const result = await prisma.$transaction(async (tx) => {
+          // 1. Create version snapshot of CURRENT state
+          const version = await tx.documentVersion.create({
+            data: {
+              documentId: existingDocument.id,
+              content: existingDocument.content, // OLD content
+              versionNumber: newVersion,
+              createdBy: messageId,
+            },
+          })
 
-        const version = await prisma.documentVersion.create({
-          data: {
-            documentId: existingDocument.id,
-            content,
-            versionNumber: newVersion,
-            createdBy: messageId,
-          },
+          // 2. Update document with NEW content
+          const updatedDocument = await tx.document.update({
+            where: { id: existingDocument.id },
+            data: {
+              title,
+              icon: icon || existingDocument.icon,
+              content,
+              currentVersion: newVersion,
+              lastEditedAt: new Date(),
+              generationPrompt: existingDocument.generationPrompt
+                ? `${existingDocument.generationPrompt}\n\nVersion ${newVersion}: ${description || 'Updated via AI tool'}`
+                : `Version ${newVersion}: ${description || 'Updated via AI tool'}`,
+            },
+          })
+
+          // 3. Cleanup old versions (keep last 50)
+          const versionCount = await tx.documentVersion.count({
+            where: { documentId: existingDocument.id },
+          })
+
+          if (versionCount > 50) {
+            const toDelete = await tx.documentVersion.findMany({
+              where: { documentId: existingDocument.id },
+              orderBy: { versionNumber: 'asc' },
+              take: versionCount - 50,
+              select: { id: true },
+            })
+
+            await tx.documentVersion.deleteMany({
+              where: {
+                id: { in: toDelete.map((v) => v.id) },
+              },
+            })
+          }
+
+          return { updatedDocument, version }
         })
 
         return {
           success: true,
-          documentId: updatedDocument.id,
-          versionId: version.id,
-          title: updatedDocument.title,
-          type: updatedDocument.documentType,
+          documentId: result.updatedDocument.id,
+          versionId: result.version.id,
+          title: result.updatedDocument.title,
+          type: result.updatedDocument.documentType,
           message: `Document "${title}" updated to version ${newVersion} (existing ${type} document found)`,
         }
       }
@@ -271,9 +298,15 @@ export function createDocumentTools(context: DocumentToolContext) {
  * - Preserve document structure when making partial updates
  */
   const updateDocument = tool({
-    description: "Update an existing document's content with version tracking",
+    description:
+      "Update an existing document's content with version tracking. CRITICAL: You MUST call get_document first to retrieve the current content before calling this tool.",
     inputSchema: z.object({
       documentId: z.string().describe('The ID of the document to update'),
+      currentContentSummary: z
+        .string()
+        .describe(
+          'Brief summary of the CURRENT document content obtained from get_document (e.g., "Document has 3 sections: Core Vision, Target Users, Features"). This proves you called get_document first. Minimum 30 characters required.'
+        ),
       content: z.string().describe('New content to apply (interpretation depends on changeType)'),
       changeType: z
         .enum(['replace', 'append', 'prepend'])
@@ -286,7 +319,16 @@ export function createDocumentTools(context: DocumentToolContext) {
     execute: async (args) => {
       try {
         const { workspaceId, userId, messageId } = context
-        const { documentId, content, changeType, changeDescription } = args
+        const { documentId, currentContentSummary, content, changeType, changeDescription } = args
+
+      // Validate that currentContentSummary was provided (ensures get_document was called)
+      if (!currentContentSummary || currentContentSummary.trim().length < 30) {
+        return {
+          success: false,
+          message:
+            'CRITICAL ERROR: You must call get_document first to retrieve the current document content, then provide a summary (minimum 30 characters) in the currentContentSummary parameter. This ensures your update is context-aware and flows naturally with existing content.',
+        }
+      }
 
       const workspace = await prisma.workspace.findFirst({
         where: {
@@ -333,35 +375,62 @@ export function createDocumentTools(context: DocumentToolContext) {
 
       const newVersion = document.currentVersion + 1
 
-      const updatedDocument = await prisma.document.update({
-        where: { id: documentId },
-        data: {
-          content: newContent,
-          currentVersion: newVersion,
-          lastEditedAt: new Date(),
-          generationPrompt: document.generationPrompt
-            ? `${document.generationPrompt}\n\nVersion ${newVersion}: ${changeDescription || changeType}`
-            : `Version ${newVersion}: ${changeDescription || changeType}`,
-        },
-      })
+      // Transaction: Create version snapshot BEFORE update + Update document + Cleanup old versions
+      const result = await prisma.$transaction(async (tx) => {
+        // 1. Create version snapshot of CURRENT state (before update)
+        const version = await tx.documentVersion.create({
+          data: {
+            documentId,
+            content: document.content, // OLD content
+            versionNumber: newVersion,
+            createdBy: messageId,
+          },
+        })
 
-      const version = await prisma.documentVersion.create({
-        data: {
-          documentId,
-          content: newContent,
-          versionNumber: newVersion,
-          createdBy: messageId,
-        },
+        // 2. Update document with NEW content
+        const updatedDocument = await tx.document.update({
+          where: { id: documentId },
+          data: {
+            content: newContent,
+            currentVersion: newVersion,
+            lastEditedAt: new Date(),
+            generationPrompt: document.generationPrompt
+              ? `${document.generationPrompt}\n\nVersion ${newVersion}: ${changeDescription || changeType}`
+              : `Version ${newVersion}: ${changeDescription || changeType}`,
+          },
+        })
+
+        // 3. Cleanup old versions (keep last 50)
+        const versionCount = await tx.documentVersion.count({
+          where: { documentId },
+        })
+
+        if (versionCount > 50) {
+          const toDelete = await tx.documentVersion.findMany({
+            where: { documentId },
+            orderBy: { versionNumber: 'asc' },
+            take: versionCount - 50,
+            select: { id: true },
+          })
+
+          await tx.documentVersion.deleteMany({
+            where: {
+              id: { in: toDelete.map((v) => v.id) },
+            },
+          })
+        }
+
+        return { updatedDocument, version }
       })
 
       return {
         success: true,
-        documentId: updatedDocument.id,
-        versionId: version.id,
-        title: updatedDocument.title,
+        documentId: result.updatedDocument.id,
+        versionId: result.version.id,
+        title: result.updatedDocument.title,
         changeType,
         newVersion,
-        message: `Document "${updatedDocument.title}" updated to version ${newVersion} (${changeType})`,
+        message: `Document "${result.updatedDocument.title}" updated to version ${newVersion} (${changeType}: ${changeDescription || 'content updated'})`,
       }
     } catch (error) {
       console.error('update_document error:', error)

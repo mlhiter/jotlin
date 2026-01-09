@@ -26,6 +26,7 @@ interface Document {
   documentType: string
   icon: string | null
   isAIGenerated: boolean
+  currentVersion?: number
   lastEditedAt: string
 }
 
@@ -116,6 +117,7 @@ export function DocumentView({ document }: DocumentViewProps) {
         documentType={document.documentType}
         icon={document.icon || undefined}
         isAIGenerated={document.isAIGenerated}
+        currentVersion={document.currentVersion || 1}
         saveStatus={status}
         lastSavedAt={lastSavedAt}
         currentTab={currentTab}

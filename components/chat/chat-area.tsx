@@ -46,6 +46,9 @@ export function ChatArea({ entityId, workspaceId, currentThreadId }: ChatAreaPro
       // Invalidate cache when message is complete
       if (currentThreadId) {
         queryClient.invalidateQueries({ queryKey: ['threadMessages', currentThreadId] })
+        // Invalidate documents and projects to refresh sidebar when AI creates/updates documents
+        queryClient.invalidateQueries({ queryKey: ['documents'] })
+        queryClient.invalidateQueries({ queryKey: ['projects'] })
       }
     },
   })
