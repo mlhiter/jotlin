@@ -26,7 +26,7 @@ interface MessageListProps {
   onSendMessage: (message: { text: string }) => void
   onUpdateMessage?: (messageId: string, metadata: MyUIMessage['metadata']) => void
   onRollback: (messageId: string) => void
-  messageRefs?: React.MutableRefObject<Map<string, HTMLElement>>
+  messageRefs?: React.RefObject<Map<string, HTMLElement>>
   workspaceId?: string
   projectId?: string
 }
@@ -135,55 +135,75 @@ export function MessageList({
                     />
                   ) : message.role === 'assistant' ? (
                     <div className="flex-1 space-y-2">
-                      {/* Render text content first */}
                       {(() => {
-                        const textParts = message.parts.filter((part) => part.type === 'text')
+                        // Check if there are any executing tool calls
+                        const hasExecutingTools = message.parts.some(
+                          (part: any) =>
+                            part.type?.startsWith('tool-') &&
+                            part.state !== 'output-available' &&
+                            part.state !== 'output-error'
+                        )
+
+                        // Check if message has any tool calls (executing or completed)
                         const hasToolCalls = message.parts.some((part: any) => part.type?.startsWith('tool-'))
 
-                        // If there are tool calls, only render the last text part (after tool execution)
-                        // Otherwise, render all text parts
-                        const partsToRender =
-                          hasToolCalls && textParts.length > 1 ? [textParts[textParts.length - 1]] : textParts
+                        return message.parts
+                          .map((part: any, i) => {
+                            // Skip text parts if there are executing tools
+                            if (part.type === 'text') {
+                              // Don't render text when tools are executing
+                              if (hasExecutingTools) {
+                                return null
+                              }
 
-                        return partsToRender.map((part, i) => {
-                          if (part.type === 'text') {
-                            return (
-                              <AssistantMessage
-                                key={`${message.id}-${i}`}
-                                content={part.text}
-                                messageId={message.id}
-                                metadata={message.metadata}
-                                onOptionSelect={(value) => onSendMessage({ text: value })}
-                                onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
-                                onRollback={() => onRollback(message.id)}
-                              />
-                            )
-                          }
-                          return null
-                        })
-                      })()}
+                              return (
+                                <AssistantMessage
+                                  key={`${message.id}-${i}`}
+                                  content={part.text}
+                                  messageId={message.id}
+                                  metadata={message.metadata}
+                                  onOptionSelect={(value) => onSendMessage({ text: value })}
+                                  onUpdateMetadata={(metadata) => onUpdateMessage?.(message.id, metadata)}
+                                  onRollback={() => onRollback(message.id)}
+                                  // Hide rollback button if message has tool calls
+                                  showRollback={!hasToolCalls}
+                                />
+                              )
+                            }
 
-                      {/* Render tool-calls after text content */}
-                      {message.parts
-                        .filter((part: any) => part.type?.startsWith('tool-'))
-                        .map((part: any) => {
-                          // Extract tool name from type (e.g., 'tool-create_document' -> 'create_document')
-                          const toolName = part.type.replace('tool-', '')
+                            // Render tool calls - only for tools that show UI
+                            if (part.type?.startsWith('tool-')) {
+                              const toolName = part.type.replace('tool-', '')
+                              const isExecuting =
+                                part.state !== 'output-available' && part.state !== 'output-error'
 
-                          return (
-                            <ToolCallCard
-                              key={part.toolCallId}
-                              toolName={toolName}
-                              toolCallId={part.toolCallId}
-                              args={part.input}
-                              result={part.output}
-                              isExecuting={part.state !== 'output-available' && part.state !== 'output-error'}
-                              defaultCollapsed={message.metadata?.isCollapsed ?? true}
-                              workspaceId={workspaceId}
-                              projectId={projectId}
-                            />
-                          )
-                        })}
+                              // Only render create/update tools, or tools that are currently executing
+                              const shouldRender =
+                                isExecuting || toolName === 'create_document' || toolName === 'update_document'
+
+                              if (!shouldRender) {
+                                return null
+                              }
+
+                              return (
+                                <ToolCallCard
+                                  key={part.toolCallId}
+                                  toolName={toolName}
+                                  toolCallId={part.toolCallId}
+                                  args={part.input}
+                                  result={part.output}
+                                  isExecuting={isExecuting}
+                                  defaultCollapsed={message.metadata?.isCollapsed ?? true}
+                                  workspaceId={workspaceId}
+                                  projectId={projectId}
+                                />
+                              )
+                            }
+
+                            return null
+                          })
+                          .filter(Boolean)
+                      })()}{/* Filter out null values to avoid empty space */}
                     </div>
                   ) : null}
                 </div>

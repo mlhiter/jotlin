@@ -20,6 +20,7 @@ interface AssistantMessageProps {
   onRollback: () => void
   onOptionSelect: (value: string, text: string) => void
   onUpdateMetadata?: (metadata: MyUIMessage['metadata']) => void
+  showRollback?: boolean
 }
 
 export function AssistantMessage({
@@ -29,6 +30,7 @@ export function AssistantMessage({
   onUpdateMetadata,
   messageId,
   onRollback,
+  showRollback = true,
 }: AssistantMessageProps) {
   const [answered, setAnswered] = useState(metadata?.answered || false)
   const [selectedOptions, setSelectedOptions] = useState<string[]>(metadata?.selectedOptions || [])
@@ -109,11 +111,11 @@ export function AssistantMessage({
   }
 
   return (
-    <div className="flex max-w-[85%] flex-col items-end">
-      <div className="space-y-4 rounded-lg p-2.5">
+    <div className="flex min-w-0 max-w-[85%] flex-col items-start overflow-hidden">
+      <div className="w-full space-y-4 rounded-lg p-2.5">
         {/* Prose */}
         {parsed.prose && parsed.prose.length > 0 && (
-          <div className="text-muted-foreground space-y-2 text-sm">
+          <div className="text-muted-foreground w-full space-y-2 text-sm">
             {parsed.prose.map((prose, index) => (
               <Markdown key={index} content={prose} hideMermaid={true} />
             ))}
@@ -198,23 +200,25 @@ export function AssistantMessage({
           !parsed.wireframe &&
           !parsed.input && <Markdown content={parsed.rawText} className="text-sm" hideMermaid={true} />}
       </div>
-      <div className="mt-1 flex w-full items-center justify-between gap-1 px-2.5">
-        {answered && (
-          <div className="text-muted-foreground flex items-center gap-1 text-xs">
-            <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
-            Answered
-          </div>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onRollback()}
-          className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-          title="Rollback to this message">
-          <RotateCcw className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} />
-          Rollback
-        </Button>
-      </div>
+      {showRollback && (
+        <div className="mt-1 flex w-full items-center justify-between gap-1 px-2.5">
+          {answered && (
+            <div className="text-muted-foreground flex items-center gap-1 text-xs">
+              <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+              Answered
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onRollback()}
+            className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            title="Rollback to this message">
+            <RotateCcw className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} />
+            Rollback
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

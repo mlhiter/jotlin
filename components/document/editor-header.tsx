@@ -251,7 +251,7 @@ export function EditorHeader({
           onClick={() => setShowVersionHistory(true)}
           className="ml-2 h-7 gap-1.5 px-2 text-xs">
           <Clock className="h-3.5 w-3.5" />
-          Version {currentVersion}
+          Version
         </Button>
       </div>
 

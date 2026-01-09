@@ -32,7 +32,7 @@ export function Markdown({ content, className, inline = false, hideMermaid = fal
   }
 
   return (
-    <div className={cn(inline ? '' : 'prose prose-sm prose-neutral dark:prose-invert max-w-none', className)}>
+    <div className={cn(inline ? '' : 'prose prose-sm prose-neutral dark:prose-invert w-full max-w-full overflow-hidden', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -63,7 +63,7 @@ export function Markdown({ content, className, inline = false, hideMermaid = fal
             }
 
             return (
-              <div className="group relative">
+              <div className="group relative overflow-hidden">
                 <div className="bg-muted flex items-center justify-between rounded-t-lg px-2 py-1">
                   <span className="text-muted-foreground text-xs font-medium">{language}</span>
                   <Button
@@ -79,13 +79,15 @@ export function Markdown({ content, className, inline = false, hideMermaid = fal
                     )}
                   </Button>
                 </div>
-                <SyntaxHighlighter
-                  style={theme === 'dark' ? oneDark : oneLight}
-                  language={language}
-                  PreTag="div"
-                  className="!mt-0 !rounded-b-lg !rounded-t-none border border-neutral-200">
-                  {codeContent}
-                </SyntaxHighlighter>
+                <div className="overflow-x-auto">
+                  <SyntaxHighlighter
+                    style={theme === 'dark' ? oneDark : oneLight}
+                    language={language}
+                    PreTag="div"
+                    className="!mt-0 !rounded-b-lg !rounded-t-none border border-neutral-200">
+                    {codeContent}
+                  </SyntaxHighlighter>
+                </div>
               </div>
             )
           },

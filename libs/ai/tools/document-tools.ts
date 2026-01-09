@@ -89,15 +89,26 @@ export function createDocumentTools(context: DocumentToolContext) {
 
         // Transaction: Create version snapshot + Update document + Cleanup old versions
         const result = await prisma.$transaction(async (tx) => {
-          // 1. Create version snapshot of CURRENT state
-          const version = await tx.documentVersion.create({
-            data: {
+          // 1. Create version snapshot of CURRENT state (old version + old content)
+          // Check if version snapshot already exists to avoid unique constraint error
+          let version = await tx.documentVersion.findFirst({
+            where: {
               documentId: existingDocument.id,
-              content: existingDocument.content, // OLD content
-              versionNumber: newVersion,
-              createdBy: messageId,
+              versionNumber: existingDocument.currentVersion,
             },
           })
+
+          // Only create if it doesn't exist
+          if (!version) {
+            version = await tx.documentVersion.create({
+              data: {
+                documentId: existingDocument.id,
+                content: existingDocument.content, // OLD content
+                versionNumber: existingDocument.currentVersion, // OLD version number
+                createdBy: messageId,
+              },
+            })
+          }
 
           // 2. Update document with NEW content
           const updatedDocument = await tx.document.update({
@@ -377,15 +388,26 @@ export function createDocumentTools(context: DocumentToolContext) {
 
       // Transaction: Create version snapshot BEFORE update + Update document + Cleanup old versions
       const result = await prisma.$transaction(async (tx) => {
-        // 1. Create version snapshot of CURRENT state (before update)
-        const version = await tx.documentVersion.create({
-          data: {
+        // 1. Create version snapshot of CURRENT state (old version + old content)
+        // Check if version snapshot already exists to avoid unique constraint error
+        let version = await tx.documentVersion.findFirst({
+          where: {
             documentId,
-            content: document.content, // OLD content
-            versionNumber: newVersion,
-            createdBy: messageId,
+            versionNumber: document.currentVersion,
           },
         })
+
+        // Only create if it doesn't exist
+        if (!version) {
+          version = await tx.documentVersion.create({
+            data: {
+              documentId,
+              content: document.content, // OLD content
+              versionNumber: document.currentVersion, // OLD version number
+              createdBy: messageId,
+            },
+          })
+        }
 
         // 2. Update document with NEW content
         const updatedDocument = await tx.document.update({

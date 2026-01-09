@@ -48,6 +48,8 @@ export function ChatArea({ entityId, workspaceId, currentThreadId }: ChatAreaPro
         queryClient.invalidateQueries({ queryKey: ['threadMessages', currentThreadId] })
         // Invalidate documents and projects to refresh sidebar when AI creates/updates documents
         queryClient.invalidateQueries({ queryKey: ['documents'] })
+        // Invalidate all document detail queries to refresh editor content
+        queryClient.invalidateQueries({ queryKey: ['document'] })
         queryClient.invalidateQueries({ queryKey: ['projects'] })
       }
     },
