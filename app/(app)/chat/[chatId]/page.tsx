@@ -8,6 +8,7 @@ import { useParams, useSearchParams, notFound } from 'next/navigation'
 import { useState, useEffect, useRef, useMemo } from 'react'
 
 import { ChatInput } from '@/components/chat/chat-input'
+import { GenerationProgress } from '@/components/chat/generation-progress'
 import { MessageList } from '@/components/chat/message-list'
 import { PublicButton } from '@/components/chat/public-button'
 import { PageHeader } from '@/components/page-header'
@@ -22,6 +23,7 @@ const DraftPanel = dynamicImport(
 
 export const dynamic = 'force-dynamic'
 
+import { useLatestRequirement } from '@/hooks/use-latest-requirement'
 import { useMessageLimits } from '@/hooks/use-message-limits'
 import { parseAIResponse } from '@/libs/ai/xml-parser'
 import apiClient from '@/libs/utils/axios'
@@ -357,6 +359,18 @@ export default function ChatIdPage() {
     return filteredMessages.some((m) => m.metadata?.documentType && m.metadata.documentType !== 'REQUIREMENT')
   }, [filteredMessages])
 
+  // Get the last requirement document ID for progress tracking
+  const projectIdForRequirement = projectData?.rootChatId || chatId
+  const { data: latestRequirementData } = useLatestRequirement(projectIdForRequirement)
+  const lastRequirementDocId = latestRequirementData?.requirementDoc?.id || null
+
+  // Debug logging for requirement detection
+  useEffect(() => {
+    console.log('[Chat:Progress] Project ID:', projectIdForRequirement)
+    console.log('[Chat:Progress] Latest requirement data:', latestRequirementData)
+    console.log('[Chat:Progress] Last requirement doc ID:', lastRequirementDocId)
+  }, [projectIdForRequirement, latestRequirementData, lastRequirementDocId])
+
   // Auto show draft panel when there's content (but respect user's manual close)
   useEffect(() => {
     const hasLiveContent = !!(phaseLiveContent.requirement.draft || phaseLiveContent.requirement.final)
@@ -655,6 +669,17 @@ export default function ChatIdPage() {
               onRollback={handleRollback}
               messageRefs={messageRefs}
             />
+
+            {lastRequirementDocId && (
+              <div className="mb-4 px-4">
+                <GenerationProgress
+                  requirementDocId={lastRequirementDocId}
+                  onComplete={() => {
+                    queryClient.invalidateQueries({ queryKey: ['documents'] })
+                  }}
+                />
+              </div>
+            )}
 
             <ChatInput
               onSendMessage={handleSendMessage}

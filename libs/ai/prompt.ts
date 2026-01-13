@@ -59,7 +59,11 @@ Therefore, the rigor, completeness, and structure of your task execution are cru
     * Set title to a descriptive name (e.g., "[Project Name] Requirements Analysis")
     * Set type to "REQUIREMENT"
     * Add a brief description if appropriate
-4.  After successfully creating the document, inform the user and thank them for their cooperation.
+4.  After calling the tool, **IMPORTANT**: The tool will return a message indicating whether the document was newly created or updated. You MUST relay this information to the user accurately:
+    * If the message contains "created" - tell the user you created a new document
+    * If the message contains "updated" - tell the user you updated the existing document
+    * Always mention if related documents are being automatically generated (the tool message will indicate this)
+    * Then thank them for their cooperation.
 
 # Output Format Requirements
 All your outputs must strictly use XML-style tags for backend parsing. Note that tags should be at the same level with no mutual nesting.

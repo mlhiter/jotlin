@@ -26,6 +26,8 @@ import {
 // --- Tiptap Node ---
 import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension"
 import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension"
+import { MermaidNode } from "@/components/tiptap-node/mermaid-node"
+import { CodeBlock } from "@/components/tiptap-node/code-block-node/code-block-node-extension"
 import "@/components/tiptap-node/blockquote-node/blockquote-node.scss"
 import "@/components/tiptap-node/code-block-node/code-block-node.scss"
 import "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node.scss"
@@ -33,10 +35,12 @@ import "@/components/tiptap-node/list-node/list-node.scss"
 import "@/components/tiptap-node/image-node/image-node.scss"
 import "@/components/tiptap-node/heading-node/heading-node.scss"
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss"
+import "@/components/tiptap-node/mermaid-node/mermaid-node.scss"
 
 // --- Tiptap UI ---
 import { HeadingDropdownMenu } from "@/components/tiptap-ui/heading-dropdown-menu"
 import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button"
+import { MermaidButton } from "@/components/tiptap-ui/mermaid-button"
 import { ListDropdownMenu } from "@/components/tiptap-ui/list-dropdown-menu"
 import { BlockquoteButton } from "@/components/tiptap-ui/blockquote-button"
 import { CodeBlockButton } from "@/components/tiptap-ui/code-block-button"
@@ -134,6 +138,7 @@ const MainToolbarContent = ({
 
       <ToolbarGroup>
         <ImageUploadButton text="Add" />
+        <MermaidButton />
       </ToolbarGroup>
 
       <Spacer />
@@ -196,12 +201,14 @@ export function SimpleEditor({ initialContent = '', onChange }: SimpleEditorProp
     extensions: [
       StarterKit.configure({
         horizontalRule: false,
+        codeBlock: false,
         link: {
           openOnClick: false,
           enableClickSelection: true,
         },
       }),
       HorizontalRule,
+      CodeBlock,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       TaskList,
       TaskItem.configure({ nested: true }),
@@ -218,6 +225,7 @@ export function SimpleEditor({ initialContent = '', onChange }: SimpleEditorProp
         upload: handleImageUpload,
         onError: (error) => console.error("Upload failed:", error),
       }),
+      MermaidNode,
     ],
     content: initialContent,
     onUpdate: ({ editor }) => {

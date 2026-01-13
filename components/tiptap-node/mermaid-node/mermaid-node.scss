@@ -1,0 +1,39 @@
+.tiptap-mermaid-node {
+  position: relative;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+  padding: 1rem;
+  background: hsl(var(--muted) / 0.2);
+
+  &:hover {
+    .tiptap-mermaid-controls {
+      opacity: 1;
+    }
+  }
+}
+
+.tiptap-mermaid-controls {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  .tiptap-button-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+.tiptap-mermaid-content {
+  min-height: 200px;
+
+  .mermaid-container {
+    border: none;
+    background: transparent;
+  }
+}

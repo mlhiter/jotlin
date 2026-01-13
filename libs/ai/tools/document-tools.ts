@@ -1,6 +1,7 @@
 import { tool } from 'ai'
 import { z } from 'zod'
 
+import { autoDocumentGenerationService } from '@/libs/services/auto-document-generation-service'
 import { prisma } from '@/libs/utils/prisma'
 
 import type { DocumentToolContext } from './types'
@@ -148,13 +149,24 @@ export function createDocumentTools(context: DocumentToolContext) {
           return { updatedDocument, version }
         })
 
+        // Trigger auto-generation if this is a REQUIREMENT document update
+        console.log('[create_document] Document updated:', { id: result.updatedDocument.id, type, title })
+        if (type === 'REQUIREMENT') {
+          console.log('[create_document] ✅ REQUIREMENT updated! Triggering auto-generation...')
+          console.log('[create_document] Document ID:', result.updatedDocument.id)
+          console.log('[create_document] New version:', newVersion)
+          autoDocumentGenerationService.triggerAutoGeneration(result.updatedDocument.id).catch((err) => {
+            console.error('[create_document] ❌ Auto-generation trigger failed:', err)
+          })
+        }
+
         return {
           success: true,
           documentId: result.updatedDocument.id,
           versionId: result.version.id,
           title: result.updatedDocument.title,
           type: result.updatedDocument.documentType,
-          message: `Document "${title}" updated to version ${newVersion} (existing ${type} document found)`,
+          message: `Document "${title}" updated to version ${newVersion}${type === 'REQUIREMENT' ? '. Related documents (Product Doc, Flowchart, Sitemap, Wireframe) are being automatically regenerated.' : ''}`,
         }
       }
 
@@ -202,13 +214,26 @@ export function createDocumentTools(context: DocumentToolContext) {
         },
       })
 
+      // Auto-generate related documents if this is a REQUIREMENT document
+      console.log('[create_document] Document created:', { id: document.id, type, title })
+      if (type === 'REQUIREMENT') {
+        console.log('[create_document] ✅ REQUIREMENT detected! Triggering auto-generation...')
+        console.log('[create_document] Document ID:', document.id)
+        console.log('[create_document] Document content length:', content.length)
+        autoDocumentGenerationService.triggerAutoGeneration(document.id).catch((err) => {
+          console.error('[create_document] ❌ Auto-generation trigger failed:', err)
+        })
+      } else {
+        console.log('[create_document] Type is not REQUIREMENT, skipping auto-generation')
+      }
+
       return {
         success: true,
         documentId: document.id,
         versionId: version.id,
         title: document.title,
         type: document.documentType,
-        message: `Document "${title}" created successfully with version 1`,
+        message: `Document "${title}" created successfully with version 1${type === 'REQUIREMENT' ? '. Related documents (Product Doc, Flowchart, Sitemap, Wireframe) are being generated automatically.' : ''}`,
       }
     } catch (error) {
       console.error('create_document error:', error)

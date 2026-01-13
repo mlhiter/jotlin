@@ -56,12 +56,28 @@ export function MermaidChart({ code, className }: MermaidChartProps) {
         let cleanCode = code.trim().replace(/^```mermaid\n?/, '').replace(/\n?```$/, '')
 
         // Fix common Mermaid syntax errors
-        // Remove parentheses and their content from node labels
+        // Step 1: Replace special syntax globally BEFORE processing node labels
+
+        // Replace wiki-style links [[Page Name]] with «Page Name»
+        cleanCode = cleanCode.replace(/\[\[([^\]]+)\]\]/g, '«$1»')
+
+        // Replace checkbox syntax
+        cleanCode = cleanCode.replace(/- ?\[ ?\]/g, '☐')
+        cleanCode = cleanCode.replace(/- ?\[x\]/gi, '☑')
+
+        // Step 2: Now process node labels (remove nested brackets and parentheses)
         cleanCode = cleanCode.replace(/\[([^\]]*)\]/g, (match) => {
-          // Remove parentheses and their content from inside the brackets
-          let content = match.slice(1, -1) // Remove [ and ]
-          content = content.replace(/\s*\([^)]*\)\s*/g, ' ') // Remove (xxx) patterns
-          content = content.replace(/\s+/g, ' ').trim() // Clean up extra spaces
+          let content = match.slice(1, -1) // Remove outer [ and ]
+
+          // Remove any remaining square brackets
+          content = content.replace(/\[/g, '').replace(/\]/g, '')
+
+          // Remove parentheses and their content
+          content = content.replace(/\s*\([^)]*\)\s*/g, ' ')
+
+          // Clean up extra spaces
+          content = content.replace(/\s+/g, ' ').trim()
+
           return `[${content}]`
         })
 
