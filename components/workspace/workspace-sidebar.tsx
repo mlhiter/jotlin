@@ -102,10 +102,11 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar() {
         title: 'New Project',
       })
       setExpandedProjects((prev) => new Set(prev).add(project.id))
+      router.push(`/${workspace.id}/${project.id}`)
     } finally {
       setCreatingProject(false)
     }
-  }, [workspace?.id, creatingProject, createProject])
+  }, [workspace?.id, creatingProject, createProject, router])
 
   // Keyboard navigation
   useEffect(() => {
