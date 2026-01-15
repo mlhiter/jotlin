@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { projectNameAgent } from '@/libs/ai/agents/project-name-agent'
 import { requirementAnalysisPrompt } from '@/libs/ai/prompt'
-import { createDocumentTools, DocumentToolContext } from '@/libs/ai/tools'
+import { DocumentToolContext } from '@/libs/ai/tools'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
