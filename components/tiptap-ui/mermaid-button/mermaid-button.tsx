@@ -1,31 +1,20 @@
-"use client"
+'use client'
 
-import { forwardRef, useCallback } from "react"
+import { forwardRef, useCallback } from 'react'
 
-// --- Lib ---
-import { parseShortcutKeys } from "@/libs/tiptap-utils"
+import type { UseMermaidConfig } from '@/components/tiptap-ui/mermaid-button'
+import { MERMAID_SHORTCUT_KEY, useMermaid } from '@/components/tiptap-ui/mermaid-button'
+import { Badge } from '@/components/tiptap-ui-primitive/badge'
+import type { ButtonProps } from '@/components/tiptap-ui-primitive/button'
+import { Button } from '@/components/tiptap-ui-primitive/button'
 
-// --- Hooks ---
-import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
-
-// --- Tiptap UI ---
-import type { UseMermaidConfig } from "@/components/tiptap-ui/mermaid-button"
-import {
-  MERMAID_SHORTCUT_KEY,
-  useMermaid,
-} from "@/components/tiptap-ui/mermaid-button"
-
-// --- UI Primitives ---
-import type { ButtonProps } from "@/components/tiptap-ui-primitive/button"
-import { Button } from "@/components/tiptap-ui-primitive/button"
-import { Badge } from "@/components/tiptap-ui-primitive/badge"
+import { useTiptapEditor } from '@/hooks/use-tiptap-editor'
+import { parseShortcutKeys } from '@/libs/tiptap-utils'
 
 type IconProps = React.SVGProps<SVGSVGElement>
 type IconComponent = ({ className, ...props }: IconProps) => React.ReactElement
 
-export interface MermaidButtonProps
-  extends Omit<ButtonProps, "type">,
-    UseMermaidConfig {
+export interface MermaidButtonProps extends Omit<ButtonProps, 'type'>, UseMermaidConfig {
   /**
    * Optional text to display alongside the icon.
    */
@@ -41,11 +30,7 @@ export interface MermaidButtonProps
   icon?: React.MemoExoticComponent<IconComponent> | React.FC<IconProps>
 }
 
-export function MermaidShortcutBadge({
-  shortcutKeys = MERMAID_SHORTCUT_KEY,
-}: {
-  shortcutKeys?: string
-}) {
+export function MermaidShortcutBadge({ shortcutKeys = MERMAID_SHORTCUT_KEY }: { shortcutKeys?: string }) {
   return <Badge>{parseShortcutKeys({ shortcutKeys })}</Badge>
 }
 
@@ -70,15 +55,7 @@ export const MermaidButton = forwardRef<HTMLButtonElement, MermaidButtonProps>(
     ref
   ) => {
     const { editor } = useTiptapEditor(providedEditor)
-    const {
-      isVisible,
-      canInsert,
-      handleMermaid,
-      label,
-      isActive,
-      shortcutKeys,
-      Icon,
-    } = useMermaid({
+    const { isVisible, canInsert, handleMermaid, label, isActive, shortcutKeys, Icon } = useMermaid({
       editor,
       hideWhenUnavailable,
       onInserted,
@@ -103,7 +80,7 @@ export const MermaidButton = forwardRef<HTMLButtonElement, MermaidButtonProps>(
       <Button
         type="button"
         data-style="ghost"
-        data-active-state={isActive ? "on" : "off"}
+        data-active-state={isActive ? 'on' : 'off'}
         role="button"
         tabIndex={-1}
         disabled={!canInsert}
@@ -113,8 +90,7 @@ export const MermaidButton = forwardRef<HTMLButtonElement, MermaidButtonProps>(
         tooltip={label}
         onClick={handleClick}
         {...buttonProps}
-        ref={ref}
-      >
+        ref={ref}>
         {children ?? (
           <>
             <RenderIcon className="tiptap-button-icon" />
@@ -127,4 +103,4 @@ export const MermaidButton = forwardRef<HTMLButtonElement, MermaidButtonProps>(
   }
 )
 
-MermaidButton.displayName = "MermaidButton"
+MermaidButton.displayName = 'MermaidButton'

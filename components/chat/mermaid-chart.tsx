@@ -12,9 +12,10 @@ import { cn } from '@/libs/utils/utils'
 interface MermaidChartProps {
   code: string
   className?: string
+  showControls?: boolean
 }
 
-export function MermaidChart({ code, className }: MermaidChartProps) {
+export function MermaidChart({ code, className, showControls = true }: MermaidChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [svgContent, setSvgContent] = useState<string>('')
@@ -196,32 +197,34 @@ export function MermaidChart({ code, className }: MermaidChartProps) {
 
   return (
     <div className="group relative">
-      <div className="absolute right-2 top-2 z-10 flex gap-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleCopyCode}
-          className="h-7 w-7 rounded-md border border-border/40 bg-background/80 backdrop-blur-sm hover:bg-accent"
-          title="Copy Mermaid Code">
-          <Copy className="h-3.5 w-3.5" strokeWidth={1.5} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleDownloadPNG}
-          className="h-7 w-7 rounded-md border border-border/40 bg-background/80 backdrop-blur-sm hover:bg-accent"
-          title="Download as PNG">
-          <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleFullscreen}
-          className="h-7 w-7 rounded-md border border-border/40 bg-background/80 backdrop-blur-sm hover:bg-accent"
-          title="Toggle Fullscreen">
-          <Maximize2 className="h-3.5 w-3.5" strokeWidth={1.5} />
-        </Button>
-      </div>
+      {showControls && (
+        <div className="absolute right-2 top-2 z-10 flex gap-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCopyCode}
+            className="h-7 w-7 rounded-md border border-border/40 bg-background/80 backdrop-blur-sm hover:bg-accent"
+            title="Copy Mermaid Code">
+            <Copy className="h-3.5 w-3.5" strokeWidth={1.5} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDownloadPNG}
+            className="h-7 w-7 rounded-md border border-border/40 bg-background/80 backdrop-blur-sm hover:bg-accent"
+            title="Download as PNG">
+            <Download className="h-3.5 w-3.5" strokeWidth={1.5} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleFullscreen}
+            className="h-7 w-7 rounded-md border border-border/40 bg-background/80 backdrop-blur-sm hover:bg-accent"
+            title="Toggle Fullscreen">
+            <Maximize2 className="h-3.5 w-3.5" strokeWidth={1.5} />
+          </Button>
+        </div>
+      )}
 
       <div
         ref={containerRef}

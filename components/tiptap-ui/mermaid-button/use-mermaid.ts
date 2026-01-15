@@ -1,20 +1,16 @@
-"use client"
+'use client'
 
-import { useCallback, useEffect, useState } from "react"
-import { useHotkeys } from "react-hotkeys-hook"
-import { type Editor } from "@tiptap/react"
+import { type Editor } from '@tiptap/react'
+import { useCallback, useEffect, useState } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 
-// --- Hooks ---
-import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
-import { useIsBreakpoint } from "@/hooks/use-is-breakpoint"
+import { MermaidIcon } from '@/components/tiptap-icons/mermaid-icon'
 
-// --- Lib ---
-import { isExtensionAvailable } from "@/libs/tiptap-utils"
+import { useIsBreakpoint } from '@/hooks/use-is-breakpoint'
+import { useTiptapEditor } from '@/hooks/use-tiptap-editor'
+import { isExtensionAvailable } from '@/libs/tiptap-utils'
 
-// --- Icons ---
-import { MermaidIcon } from "@/components/tiptap-icons/mermaid-icon"
-
-export const MERMAID_SHORTCUT_KEY = "mod+shift+m"
+export const MERMAID_SHORTCUT_KEY = 'mod+shift+m'
 
 /**
  * Configuration for the mermaid functionality
@@ -40,9 +36,9 @@ export interface UseMermaidConfig {
  */
 export function canInsertMermaid(editor: Editor | null): boolean {
   if (!editor || !editor.isEditable) return false
-  if (!isExtensionAvailable(editor, "mermaid")) return false
+  if (!isExtensionAvailable(editor, 'mermaid')) return false
 
-  return editor.can().insertContent({ type: "mermaid" })
+  return editor.can().insertContent({ type: 'mermaid' })
 }
 
 /**
@@ -50,7 +46,7 @@ export function canInsertMermaid(editor: Editor | null): boolean {
  */
 export function isMermaidActive(editor: Editor | null): boolean {
   if (!editor || !editor.isEditable) return false
-  return editor.isActive("mermaid")
+  return editor.isActive('mermaid')
 }
 
 /**
@@ -65,9 +61,9 @@ export function insertMermaid(editor: Editor | null): boolean {
       .chain()
       .focus()
       .insertContent({
-        type: "mermaid",
+        type: 'mermaid',
         attrs: {
-          code: "flowchart TD\n    A[Start] --> B[End]",
+          code: 'flowchart TD\n    A[Start] --> B[End]',
         },
       })
       .run()
@@ -79,16 +75,13 @@ export function insertMermaid(editor: Editor | null): boolean {
 /**
  * Determines if the mermaid button should be shown
  */
-export function shouldShowButton(props: {
-  editor: Editor | null
-  hideWhenUnavailable: boolean
-}): boolean {
+export function shouldShowButton(props: { editor: Editor | null; hideWhenUnavailable: boolean }): boolean {
   const { editor, hideWhenUnavailable } = props
 
   if (!editor || !editor.isEditable) return false
-  if (!isExtensionAvailable(editor, "mermaid")) return false
+  if (!isExtensionAvailable(editor, 'mermaid')) return false
 
-  if (hideWhenUnavailable && !editor.isActive("code")) {
+  if (hideWhenUnavailable && !editor.isActive('code')) {
     return canInsertMermaid(editor)
   }
 
@@ -99,11 +92,7 @@ export function shouldShowButton(props: {
  * Custom hook that provides mermaid functionality for Tiptap editor
  */
 export function useMermaid(config?: UseMermaidConfig) {
-  const {
-    editor: providedEditor,
-    hideWhenUnavailable = false,
-    onInserted,
-  } = config || {}
+  const { editor: providedEditor, hideWhenUnavailable = false, onInserted } = config || {}
 
   const { editor } = useTiptapEditor(providedEditor)
   const isMobile = useIsBreakpoint()
@@ -120,10 +109,10 @@ export function useMermaid(config?: UseMermaidConfig) {
 
     handleSelectionUpdate()
 
-    editor.on("selectionUpdate", handleSelectionUpdate)
+    editor.on('selectionUpdate', handleSelectionUpdate)
 
     return () => {
-      editor.off("selectionUpdate", handleSelectionUpdate)
+      editor.off('selectionUpdate', handleSelectionUpdate)
     }
   }, [editor, hideWhenUnavailable])
 
@@ -155,7 +144,7 @@ export function useMermaid(config?: UseMermaidConfig) {
     isActive,
     handleMermaid,
     canInsert,
-    label: "Insert Mermaid diagram",
+    label: 'Insert Mermaid diagram',
     shortcutKeys: MERMAID_SHORTCUT_KEY,
     Icon: MermaidIcon,
   }
