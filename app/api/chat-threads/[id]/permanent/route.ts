@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSessionFromRequest } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 
-// DELETE /api/chat-threads/[id]/permanent - Permanently delete chat thread (physical delete)
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getSessionFromRequest(request)

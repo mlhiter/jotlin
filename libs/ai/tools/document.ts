@@ -1,10 +1,8 @@
 import { tool } from 'ai'
 import { z } from 'zod'
 
-import { autoDocumentGenerationService } from '@/libs/services/auto-document-generation-service'
 import { prisma } from '@/libs/utils/prisma'
-
-import type { DocumentToolContext } from './types'
+import { DocumentToolContext, documentTypes } from '@/types/document'
 
 /**
  * Create a new document in the project
@@ -20,20 +18,19 @@ import type { DocumentToolContext } from './types'
  * - Include complete Markdown content
  * - Check for duplicates first with list_documents
  */
-export function createDocumentTools(context: DocumentToolContext) {
-  const createDocument = tool({
-    description: 'Create a new document in the project with version tracking',
-    inputSchema: z.object({
-      title: z.string().describe('Document title (e.g., "E-commerce Platform Requirements")'),
-      type: z.string().describe('Document type (e.g., "REQUIREMENT", "PRODUCT_DOCUMENT", "CUSTOM")'),
-      content: z.string().describe('Complete document content in Markdown format'),
-      icon: z.string().optional().describe('Document icon emoji (default: 📄)'),
-      description: z.string().optional().describe('Optional document description'),
-    }),
-    execute: async (args) => {
-      try {
-        const { chatThreadId, projectId, workspaceId, userId, messageId } = context
-        const { title, type, content, icon, description } = args
+export const createDocumentTool = tool({
+  description: 'Create a new document in the project with version tracking',
+  inputSchema: z.object({
+    title: z.string().describe('Document title (e.g., "E-commerce Platform Requirements")'),
+    type: z.enum(documentTypes).describe('Document type (e.g., "REQUIREMENT", "PRODUCT_DOCUMENT", "CUSTOM")'),
+    content: z.string().describe('Complete document content in Markdown format'),
+    icon: z.string().optional().describe('Document icon emoji (default: 📄)'),
+    description: z.string().optional().describe('Optional document description'),
+  }),
+  execute: async (args, { experimental_context: context }) => {
+    try {
+      const { chatThreadId, projectId, workspaceId, userId, messageId } = context as DocumentToolContext
+      const { title, type, content, icon, description } = args
 
       if (!projectId) {
         return {
@@ -149,17 +146,6 @@ export function createDocumentTools(context: DocumentToolContext) {
           return { updatedDocument, version }
         })
 
-        // Trigger auto-generation if this is a REQUIREMENT document update
-        console.log('[create_document] Document updated:', { id: result.updatedDocument.id, type, title })
-        if (type === 'REQUIREMENT') {
-          console.log('[create_document] ✅ REQUIREMENT updated! Triggering auto-generation...')
-          console.log('[create_document] Document ID:', result.updatedDocument.id)
-          console.log('[create_document] New version:', newVersion)
-          autoDocumentGenerationService.triggerAutoGeneration(result.updatedDocument.id).catch((err) => {
-            console.error('[create_document] ❌ Auto-generation trigger failed:', err)
-          })
-        }
-
         return {
           success: true,
           documentId: result.updatedDocument.id,
@@ -214,19 +200,6 @@ export function createDocumentTools(context: DocumentToolContext) {
         },
       })
 
-      // Auto-generate related documents if this is a REQUIREMENT document
-      console.log('[create_document] Document created:', { id: document.id, type, title })
-      if (type === 'REQUIREMENT') {
-        console.log('[create_document] ✅ REQUIREMENT detected! Triggering auto-generation...')
-        console.log('[create_document] Document ID:', document.id)
-        console.log('[create_document] Document content length:', content.length)
-        autoDocumentGenerationService.triggerAutoGeneration(document.id).catch((err) => {
-          console.error('[create_document] ❌ Auto-generation trigger failed:', err)
-        })
-      } else {
-        console.log('[create_document] Type is not REQUIREMENT, skipping auto-generation')
-      }
-
       return {
         success: true,
         documentId: document.id,
@@ -242,11 +215,11 @@ export function createDocumentTools(context: DocumentToolContext) {
         message: `Failed to create document: ${error instanceof Error ? error.message : 'Unknown error'}`,
       }
     }
-    },
-  })
+  },
+})
 
-  /**
-   * Get a document's current content and metadata
+/**
+ * Get a document's current content and metadata
  *
  * Use this tool when:
  * - You need to read a document's current content before updating it
@@ -257,15 +230,15 @@ export function createDocumentTools(context: DocumentToolContext) {
  * - Always get_document before update_document to know current content
  * - Verify document exists before referencing it in conversation
  */
-  const getDocument = tool({
-    description: "Retrieve a document's current content and metadata",
-    inputSchema: z.object({
-      documentId: z.string().describe('The ID of the document to retrieve'),
-    }),
-    execute: async (args) => {
-      try {
-        const { workspaceId, userId } = context
-        const { documentId } = args
+export const getDocumentTool = tool({
+  description: "Retrieve a document's current content and metadata",
+  inputSchema: z.object({
+    documentId: z.string().describe('The ID of the document to retrieve'),
+  }),
+  execute: async (args, { experimental_context: context }) => {
+    try {
+      const { workspaceId, userId } = context as DocumentToolContext
+      const { documentId } = args
 
       const workspace = await prisma.workspace.findFirst({
         where: {
@@ -316,11 +289,11 @@ export function createDocumentTools(context: DocumentToolContext) {
         message: `Failed to retrieve document: ${error instanceof Error ? error.message : 'Unknown error'}`,
       }
     }
-    },
-  })
+  },
+})
 
-  /**
-   * Update an existing document's content
+/**
+ * Update an existing document's content
  *
  * Use this tool when:
  * - User requests changes to existing documents
@@ -333,29 +306,29 @@ export function createDocumentTools(context: DocumentToolContext) {
  * - Use 'replace' for full rewrites, 'append' for additions, 'prepend' for insertions
  * - Preserve document structure when making partial updates
  */
-  const updateDocument = tool({
-    description:
-      "Update an existing document's content with version tracking. CRITICAL: You MUST call get_document first to retrieve the current content before calling this tool.",
-    inputSchema: z.object({
-      documentId: z.string().describe('The ID of the document to update'),
-      currentContentSummary: z
-        .string()
-        .describe(
-          'Brief summary of the CURRENT document content obtained from get_document (e.g., "Document has 3 sections: Core Vision, Target Users, Features"). This proves you called get_document first. Minimum 30 characters required.'
-        ),
-      content: z.string().describe('New content to apply (interpretation depends on changeType)'),
-      changeType: z
-        .enum(['replace', 'append', 'prepend'])
-        .describe('How to apply the content: replace (full rewrite), append (add to end), prepend (add to beginning)'),
-      changeDescription: z
-        .string()
-        .optional()
-        .describe('Description of what changed (e.g., "Added payment requirements section")'),
-    }),
-    execute: async (args) => {
-      try {
-        const { workspaceId, userId, messageId } = context
-        const { documentId, currentContentSummary, content, changeType, changeDescription } = args
+export const updateDocumentTool = tool({
+  description:
+    "Update an existing document's content with version tracking. CRITICAL: You MUST call get_document first to retrieve the current content before calling this tool.",
+  inputSchema: z.object({
+    documentId: z.string().describe('The ID of the document to update'),
+    currentContentSummary: z
+      .string()
+      .describe(
+        'Brief summary of the CURRENT document content obtained from get_document (e.g., "Document has 3 sections: Core Vision, Target Users, Features"). This proves you called get_document first. Minimum 30 characters required.'
+      ),
+    content: z.string().describe('New content to apply (interpretation depends on changeType)'),
+    changeType: z
+      .enum(['replace', 'append', 'prepend'])
+      .describe('How to apply the content: replace (full rewrite), append (add to end), prepend (add to beginning)'),
+    changeDescription: z
+      .string()
+      .optional()
+      .describe('Description of what changed (e.g., "Added payment requirements section")'),
+  }),
+  execute: async (args, { experimental_context: context }) => {
+    try {
+      const { workspaceId, userId, messageId } = context as DocumentToolContext
+      const { documentId, currentContentSummary, content, changeType, changeDescription } = args
 
       // Validate that currentContentSummary was provided (ensures get_document was called)
       if (!currentContentSummary || currentContentSummary.trim().length < 30) {
@@ -486,11 +459,11 @@ export function createDocumentTools(context: DocumentToolContext) {
         message: `Failed to update document: ${error instanceof Error ? error.message : 'Unknown error'}`,
       }
     }
-    },
-  })
+  },
+})
 
-  /**
-   * List all documents in the current project
+/**
+ * List all documents in the current project
  *
  * Use this tool when:
  * - Before creating documents to avoid duplicates
@@ -502,18 +475,18 @@ export function createDocumentTools(context: DocumentToolContext) {
  * - Use documentType filter when looking for specific types
  * - Check list before creating to avoid duplicates
  */
-  const listDocuments = tool({
-    description: 'List all documents in the current project',
-    inputSchema: z.object({
-      documentType: z
-        .string()
-        .optional()
-        .describe('Optional filter by document type (e.g., "REQUIREMENT", "PRODUCT_DOCUMENT")'),
-    }),
-    execute: async (args) => {
-      try {
-        const { projectId, workspaceId, userId } = context
-        const { documentType } = args
+export const listDocumentsTool = tool({
+  description: 'List all documents in the current project',
+  inputSchema: z.object({
+    documentType: z
+      .enum(documentTypes)
+      .optional()
+      .describe('Optional filter by document type (e.g., "REQUIREMENT", "PRODUCT_DOCUMENT")'),
+  }),
+  execute: async (args, { experimental_context: context }) => {
+    try {
+      const { projectId, workspaceId, userId } = context as DocumentToolContext
+      const { documentType } = args
 
       const workspace = await prisma.workspace.findFirst({
         where: {
@@ -585,13 +558,5 @@ export function createDocumentTools(context: DocumentToolContext) {
         message: `Failed to list documents: ${error instanceof Error ? error.message : 'Unknown error'}`,
       }
     }
-    },
-  })
-
-  return {
-    create_document: createDocument,
-    get_document: getDocument,
-    update_document: updateDocument,
-    list_documents: listDocuments,
-  }
-}
+  },
+})

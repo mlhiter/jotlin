@@ -3,12 +3,13 @@ import { InputJsonValue } from '@prisma/client/runtime/library'
 import { streamText, convertToModelMessages, validateUIMessages, stepCountIs, createIdGenerator } from 'ai'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { projectNameAgent } from '@/libs/ai/agents/project-name-agent'
-import { requirementAnalysisPrompt } from '@/libs/ai/prompt'
-import { DocumentToolContext } from '@/libs/ai/tools'
+import { projectNameAgent } from '@/libs/ai/agents/project-name'
+import { requirementAnalysisPrompt } from '@/libs/ai/prompts/requirement'
+import { createDocumentTool, getDocumentTool, listDocumentsTool, updateDocumentTool } from '@/libs/ai/tools/document'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
 import { prisma } from '@/libs/utils/prisma'
 import { metadataSchema, MyUIMessage } from '@/schema/chat'
+import { DocumentToolContext } from '@/types/document'
 
 const openai = createOpenAI({
   baseURL: process.env.OPENAI_API_BASE_URL,
@@ -143,7 +144,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const toolContext: DocumentToolContext = {
       chatThreadId: threadId,
-      projectId: thread.projectId || undefined,
+      projectId: thread.projectId || null,
       workspaceId,
       userId: session.user.id,
       messageId: '',
@@ -154,7 +155,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       system: systemPrompt,
       messages: modelMessages,
       stopWhen: stepCountIs(5),
-      tools: createDocumentTools(toolContext),
+      tools: {
+        createDocument: createDocumentTool,
+        updateDocument: updateDocumentTool,
+        listDocument: listDocumentsTool,
+        getDocument: getDocumentTool,
+      },
       experimental_context: toolContext,
     })
 
