@@ -18,7 +18,7 @@ Requirements:
 - It should be in User Language
 - Use the validateProjectName tool to check if the name meets requirements
 - If validation fails, generate alternatives until you find a suitable name
-- Only generate one name at a time
+- Only generate one name at a time, only response with the name,not other things
 
 Process:
 1. Analyze the user's description
@@ -27,7 +27,7 @@ Process:
 4. If valid, return the name; if not, refine and try again`
 
 export const projectNameAgent = new ToolLoopAgent({
-  model: openai.chat('gemini-2.5-pro'),
+  model: openai.chat('gemini-2.5-flash'),
   instructions: agentPrompt,
   tools: {
     validateProjectName: tool({
@@ -68,3 +68,25 @@ export const projectNameAgent = new ToolLoopAgent({
   stopWhen: stepCountIs(5),
   temperature: 0.7,
 })
+
+export async function generateProjectNameFromDescription(description: string): Promise<string | null> {
+  try {
+    const result = await projectNameAgent.generate({
+      prompt: `Generate a project name for: ${description}`,
+    })
+
+    const projectName = result.text
+      .trim()
+      .replace(/^[""'"`]|[""'"`]$/, '')
+      .trim()
+
+    if (!projectName || projectName.length === 0 || projectName === description) {
+      return null
+    }
+
+    return projectName
+  } catch (error) {
+    console.error('Failed to generate project name:', error)
+    return null
+  }
+}

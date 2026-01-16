@@ -51,6 +51,8 @@ export function ChatArea({ entityId, workspaceId, currentThreadId }: ChatAreaPro
         // Invalidate all document detail queries to refresh editor content
         queryClient.invalidateQueries({ queryKey: ['document'] })
         queryClient.invalidateQueries({ queryKey: ['projects'] })
+        // Refresh chat threads to update auto-generated title
+        queryClient.invalidateQueries({ queryKey: ['chatThreads', entityId] })
       }
     },
   })

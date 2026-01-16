@@ -3,7 +3,8 @@ import { InputJsonValue } from '@prisma/client/runtime/library'
 import { streamText, convertToModelMessages, validateUIMessages, stepCountIs, createIdGenerator } from 'ai'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { projectNameAgent } from '@/libs/ai/agents/project-name'
+import { generateChatTitle } from '@/libs/ai/agents/chat-title'
+import { generateProjectNameFromDescription } from '@/libs/ai/agents/project-name'
 import { requirementAnalysisPrompt } from '@/libs/ai/prompts/requirement'
 import { createDocumentTool, getDocumentTool, listDocumentsTool, updateDocumentTool } from '@/libs/ai/tools/document'
 import { getSessionFromRequest, getUserMessageUsage } from '@/libs/auth/auth'
@@ -198,6 +199,38 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           })
 
           const isFirstMessage = messages.filter((msg) => msg.role === 'user').length === 1
+
+          // If this is the first user message and thread title is default, generate a chat title
+          if (isFirstMessage) {
+            const currentThread = await prisma.chatThread.findUnique({
+              where: { id: threadId },
+              select: { title: true },
+            })
+
+            const isDefaultTitle = !currentThread?.title || currentThread.title === 'New Conversation'
+
+            if (isDefaultTitle) {
+              const userMessage = validatedMessages.find((msg) => msg.role === 'user')
+              if (userMessage?.parts && userMessage.parts.length > 0) {
+                const messageText = userMessage.parts
+                  .filter((part) => part.type === 'text')
+                  .map((part) => part.text)
+                  .join(' ')
+                  .trim()
+
+                if (messageText && messageText.length > 0) {
+                  const generatedTitle = await generateChatTitle(messageText)
+                  if (generatedTitle) {
+                    await prisma.chatThread.update({
+                      where: { id: threadId },
+                      data: { title: generatedTitle },
+                    })
+                  }
+                }
+              }
+            }
+          }
+
           // If this is the first user message and the project title is default, generate a project name
           if (isFirstMessage && thread.projectId) {
             const project = await prisma.project.findUnique({
@@ -314,27 +347,5 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   } catch (error) {
     console.error('Failed to rollback messages:', error)
     return NextResponse.json({ error: 'Failed to rollback messages' }, { status: 500 })
-  }
-}
-
-export async function generateProjectNameFromDescription(description: string): Promise<string | null> {
-  try {
-    const result = await projectNameAgent.generate({
-      prompt: `Generate a project name for: ${description}`,
-    })
-
-    const projectName = result.text
-      .trim()
-      .replace(/^[""'"`]|[""'"`]$/, '')
-      .trim()
-
-    if (!projectName || projectName.length === 0 || projectName === description) {
-      return null
-    }
-
-    return projectName
-  } catch (error) {
-    console.error('Failed to generate project name:', error)
-    return null
   }
 }
