@@ -1,20 +1,19 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import type { Editor } from "@tiptap/react"
+
 
 // --- Hooks ---
-import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
-
-// --- Icons ---
 import { LinkIcon } from "@/components/tiptap-icons/link-icon"
 
-// --- Lib ---
+import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
 import {
   isMarkInSchema,
   isNodeTypeSelected,
   sanitizeUrl,
 } from "@/libs/tiptap-utils"
+
+import type { Editor } from "@tiptap/react"
 
 /**
  * Configuration for the link popover functionality

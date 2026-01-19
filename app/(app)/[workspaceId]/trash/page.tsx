@@ -1,13 +1,14 @@
 'use client'
 
-import { useParams } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
+import { useParams } from 'next/navigation'
+
+import { TrashChatThreadItem } from '@/components/trash/trash-chat-thread-item'
+import { TrashDocumentItem } from '@/components/trash/trash-document-item'
+import { TrashProjectItem } from '@/components/trash/trash-project-item'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import { useTrash } from '@/hooks/use-trash'
-import { TrashProjectItem } from '@/components/trash/trash-project-item'
-import { TrashDocumentItem } from '@/components/trash/trash-document-item'
-import { TrashChatThreadItem } from '@/components/trash/trash-chat-thread-item'
-import { Skeleton } from '@/components/ui/skeleton'
 
 export default function TrashPage() {
   const params = useParams()

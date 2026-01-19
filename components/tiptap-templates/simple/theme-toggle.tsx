@@ -1,12 +1,12 @@
 "use client"
 
 // --- UI Primitives ---
-import { Button } from "@/components/tiptap-ui-primitive/button"
+import { useEffect, useState } from "react"
 
-// --- Icons ---
 import { MoonStarIcon } from "@/components/tiptap-icons/moon-star-icon"
 import { SunIcon } from "@/components/tiptap-icons/sun-icon"
-import { useEffect, useState } from "react"
+import { Button } from "@/components/tiptap-ui-primitive/button"
+
 
 export function ThemeToggle() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false)

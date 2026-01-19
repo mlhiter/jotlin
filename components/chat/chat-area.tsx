@@ -179,7 +179,6 @@ export function ChatArea({ entityId, workspaceId, currentThreadId }: ChatAreaPro
         quotes={[]}
         onRemoveQuote={() => {}}
         chatId={currentThreadId}
-        phase={null}
         onCompetitorSearchComplete={() => {}}
       />
     </div>

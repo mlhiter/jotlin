@@ -1,12 +1,15 @@
 "use client"
 
+import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
 import { Pencil, Code } from "lucide-react"
 import { useState } from "react"
-import type { NodeViewProps } from "@tiptap/react"
-import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
-import { Button } from "@/components/tiptap-ui-primitive/button"
-import "@/components/tiptap-node/code-block-node/code-block-node.scss"
+
 import { MermaidChart } from "@/components/chat/mermaid-chart"
+import { Button } from "@/components/tiptap-ui-primitive/button"
+
+import type { NodeViewProps } from "@tiptap/react"
+
+import "@/components/tiptap-node/code-block-node/code-block-node.scss"
 
 export const CodeBlockNode: React.FC<NodeViewProps> = (props) => {
   const language = props.node.attrs.language || ""
@@ -50,7 +53,7 @@ export const CodeBlockNode: React.FC<NodeViewProps> = (props) => {
           </Button>
         </div>
         <pre>
-          <NodeViewContent as="code" />
+          <NodeViewContent as={"code" as any} />
         </pre>
       </NodeViewWrapper>
     )
@@ -59,7 +62,7 @@ export const CodeBlockNode: React.FC<NodeViewProps> = (props) => {
   return (
     <NodeViewWrapper className="tiptap-codeblock">
       <pre>
-        <NodeViewContent as="code" />
+        <NodeViewContent as={"code" as any} />
       </pre>
     </NodeViewWrapper>
   )

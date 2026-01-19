@@ -49,7 +49,7 @@ export function ConfirmDeleteDialog({
           </div>
           <AlertDialogDescription className="space-y-2">
             <p>
-              Are you sure you want to permanently delete <strong>"{title}"</strong>?
+              Are you sure you want to permanently delete <strong>&quot;{title}&quot;</strong>?
             </p>
             <p className="text-destructive font-medium">This action cannot be undone.</p>
             {hasChildren && (

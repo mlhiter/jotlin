@@ -1,6 +1,7 @@
 "use client"
 
 import { forwardRef } from "react"
+
 import "@/components/tiptap-ui-primitive/separator/separator.scss"
 import { cn } from "@/libs/tiptap-utils"
 

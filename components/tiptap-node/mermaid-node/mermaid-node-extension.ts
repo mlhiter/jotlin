@@ -1,5 +1,6 @@
 import { mergeAttributes, Node } from "@tiptap/react"
 import { ReactNodeViewRenderer } from "@tiptap/react"
+
 import { MermaidNode as MermaidNodeComponent } from "@/components/tiptap-node/mermaid-node/mermaid-node"
 
 export interface MermaidNodeOptions {
@@ -7,7 +8,7 @@ export interface MermaidNodeOptions {
    * HTML attributes to add to the mermaid element.
    * @default {}
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   HTMLAttributes: Record<string, any>
 }
 

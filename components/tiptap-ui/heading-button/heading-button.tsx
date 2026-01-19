@@ -3,7 +3,6 @@
 import { forwardRef, useCallback } from "react"
 
 // --- Lib ---
-import { parseShortcutKeys } from "@/libs/tiptap-utils"
 
 // --- Tiptap UI ---
 import type {
@@ -14,12 +13,12 @@ import {
   HEADING_SHORTCUT_KEYS,
   useHeading,
 } from "@/components/tiptap-ui/heading-button"
-
-// --- UI Primitives ---
+import { Badge } from "@/components/tiptap-ui-primitive/badge"
 import type { ButtonProps } from "@/components/tiptap-ui-primitive/button"
 import { Button } from "@/components/tiptap-ui-primitive/button"
-import { Badge } from "@/components/tiptap-ui-primitive/badge"
+
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
+import { parseShortcutKeys } from "@/libs/tiptap-utils"
 
 export interface HeadingButtonProps
   extends Omit<ButtonProps, "type">,

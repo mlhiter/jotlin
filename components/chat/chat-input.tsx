@@ -1,6 +1,5 @@
 'use client'
 
-import { ChatPhase } from '@prisma/client'
 import { ChatStatus } from 'ai'
 import { ArrowUp, Square, X, TextAlignStart, Image as ImageIcon, Target, Loader2 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
@@ -29,7 +28,6 @@ interface ChatInputProps {
   onMarkMessageAnswered?: (messageId: string, selectedOptions: SelectedOption[]) => void
   autoFocus?: boolean
   chatId?: string
-  phase?: ChatPhase | null
   onCompetitorSearchComplete?: () => void
 }
 
@@ -43,7 +41,6 @@ export function ChatInput({
   onMarkMessageAnswered,
   autoFocus = false,
   chatId,
-  phase,
   onCompetitorSearchComplete,
 }: ChatInputProps) {
   const [input, setInput] = useState('')
@@ -365,7 +362,7 @@ export function ChatInput({
                 </Tooltip>
               </TooltipProvider>
 
-              {chatId && phase === 'REQUIREMENT' && (
+              {chatId && (
                 <TooltipProvider delayDuration={300}>
                   <Tooltip>
                     <TooltipTrigger asChild>

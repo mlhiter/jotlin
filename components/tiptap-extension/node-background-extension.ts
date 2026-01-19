@@ -1,8 +1,10 @@
-import type { NodeWithPos } from "@tiptap/core"
 import { Extension } from "@tiptap/core"
-import type { EditorState, Transaction } from "@tiptap/pm/state"
+
 import { getSelectedNodesOfType } from "@/libs/tiptap-utils"
 import { updateNodesAttr } from "@/libs/tiptap-utils"
+
+import type { NodeWithPos } from "@tiptap/core"
+import type { EditorState, Transaction } from "@tiptap/pm/state"
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {

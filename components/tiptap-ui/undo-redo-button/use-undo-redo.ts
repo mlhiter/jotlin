@@ -1,17 +1,15 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
 import { type Editor } from "@tiptap/react"
+import { useCallback, useEffect, useState } from "react"
 
 // --- Hooks ---
-import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
-
-// --- Lib ---
-import { isNodeTypeSelected } from "@/libs/tiptap-utils"
-
-// --- Icons ---
 import { Redo2Icon } from "@/components/tiptap-icons/redo2-icon"
 import { Undo2Icon } from "@/components/tiptap-icons/undo2-icon"
+
+import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
+import { isNodeTypeSelected } from "@/libs/tiptap-utils"
+
 
 export type UndoRedoAction = "undo" | "redo"
 
