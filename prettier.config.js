@@ -2,7 +2,7 @@
 
 module.exports = {
   plugins: ['prettier-plugin-tailwindcss'],
-  tailwindStylesheet: './app/[locale]/globals.css',
+  tailwindStylesheet: './app/globals.css',
   tailwindFunctions: ['cn', 'clsx', 'cva'],
 
   // basic config

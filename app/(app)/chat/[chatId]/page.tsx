@@ -207,16 +207,21 @@ export default function ChatIdPage() {
             messages: MyUIMessage[]
           }> = phaseChatsRes.data
 
-          // Try to restore the last viewed phase from localStorage
-          const savedPhase = localStorage.getItem(`lastPhase_${chatId}`) as 'REQUIREMENT' | null
+          // Try to restore the last viewed chat from localStorage
+          const savedActiveChatId = localStorage.getItem(`lastActiveChat_${chatId}`)
 
-          // Find the active chat: either saved phase or the last one
+          // Find the active chat: either saved chat ID or the last one
           let activeChat = phaseChats[phaseChats.length - 1]
-          if (savedPhase) {
-            const savedPhaseChat = phaseChats.find((pc) => pc.phase === savedPhase)
-            if (savedPhaseChat) {
-              activeChat = savedPhaseChat
+          if (savedActiveChatId) {
+            const savedChat = phaseChats.find((pc) => pc.id === savedActiveChatId)
+            if (savedChat) {
+              activeChat = savedChat
             }
+          }
+
+          // Save the active chat ID for next refresh
+          if (activeChat) {
+            localStorage.setItem(`lastActiveChat_${chatId}`, activeChat.id)
           }
 
           setProjectData({

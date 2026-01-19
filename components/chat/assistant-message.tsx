@@ -40,20 +40,22 @@ export function AssistantMessage({
   const parsed: ParsedResponse = parseAIResponse(content)
 
   useEffect(() => {
-    if (parsed.optionType === 'multiple') {
+    if (parsed.optionType === 'multiple' && !answered) {
       const currentMessageOptions = parsed.options.map((opt) => opt.value)
       const globalSelectedValues = globalSelectedOptions.map((opt) => opt.value)
 
       const syncedSelectedOptions = currentMessageOptions.filter((value) => globalSelectedValues.includes(value))
 
-      const currentSelectedStr = selectedOptions.sort().join(',')
-      const syncedSelectedStr = syncedSelectedOptions.sort().join(',')
+      const currentSelectedStr = [...selectedOptions].sort().join(',')
+      const syncedSelectedStr = [...syncedSelectedOptions].sort().join(',')
 
-      if (currentSelectedStr !== syncedSelectedStr && !answered) {
+      // Only sync if global has selections and they differ from current
+      // Don't clear existing selections from metadata when global is empty
+      if (globalSelectedValues.length > 0 && currentSelectedStr !== syncedSelectedStr) {
         setSelectedOptions(syncedSelectedOptions)
       }
     }
-  }, [globalSelectedOptions, parsed.optionType])
+  }, [globalSelectedOptions, parsed.optionType, answered])
 
   useEffect(() => {
     if (metadata) {
@@ -88,8 +90,13 @@ export function AssistantMessage({
         : [...selectedOptions, value]
 
       setSelectedOptions(newSelected)
-
       toggleOption({ value, text }, messageId)
+
+      // Save selected options to metadata for persistence
+      onUpdateMetadata?.({
+        ...metadata,
+        selectedOptions: newSelected,
+      })
     } else {
       onOptionSelect(value, text)
       setAnswered(true)
@@ -145,7 +152,7 @@ export function AssistantMessage({
                   <Button
                     key={`${option.value}-${index}`}
                     variant="outline"
-                    className={`h-auto justify-start whitespace-pre-wrap border-border/40 px-4 py-3 text-left transition-all duration-150 ${
+                    className={`border-border/40 h-auto justify-start whitespace-pre-wrap px-4 py-3 text-left transition-all duration-150 ${
                       isSelected && 'bg-accent/80'
                     }`}
                     disabled={answered}
