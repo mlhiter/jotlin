@@ -183,7 +183,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar() {
       }}
       onDragCancel={() => setActiveProjectId(null)}>
       <SidebarGroup>
-        <div className="flex items-center justify-between px-2">
+        <div className="flex items-center justify-between">
           {isLoadingWorkspace ? (
             <Skeleton className="h-4 w-28" />
           ) : (
@@ -192,7 +192,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebar() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6"
+            className="h-6 w-6 cursor-pointer"
             onClick={handleCreateProject}
             disabled={!workspace?.id || isCreating || creatingProject}>
             <Plus className="h-3.5 w-3.5" />
